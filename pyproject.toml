@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scitex-dsp"
-version = "0.1.1"
+version = "0.1.2"
 description = "Digital signal processing (PAC, Hilbert, Wavelet, filters, demo signals, …) — standalone module from the SciTeX ecosystem"
 readme = "README.md"
 license = "AGPL-3.0-only"
@@ -24,15 +24,17 @@ dependencies = [
     "numpy",
     "scipy",
     "torch",
-    "scitex-decorators>=0.1.0",
-    "scitex-gen>=0.1.0",
-    "scitex-nn>=0.1.0",
+    "scitex-decorators>=0.1.1",
+    "scitex-gen>=0.1.3",
+    "scitex-nn>=0.1.2",
 ]
 
 [project.optional-dependencies]
+audio = ["sounddevice"]      # for _listen.py (lazy-imported in __init__)
+pac = ["tensorpac"]          # for _pac.py validation against tensorpac
 dev = ["pytest", "pytest-cov", "ruff"]
 docs = ["sphinx>=7.0", "sphinx-rtd-theme>=2.0", "myst-parser>=2.0"]
-all = ["scitex-dsp[dev]", "scitex-dsp[docs]"]
+all = ["scitex-dsp[audio,pac,dev,docs]"]
 
 [project.urls]
 Homepage = "https://github.com/ywatanabe1989/scitex-dsp"
