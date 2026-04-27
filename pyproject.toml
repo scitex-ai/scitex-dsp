@@ -37,6 +37,7 @@ pac = [
     "tensorpac",
 ]
 dev = [
+    "scitex",
     "pytest",
     "pytest-cov",
     "ruff",
