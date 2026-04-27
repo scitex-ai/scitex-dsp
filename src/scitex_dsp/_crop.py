@@ -60,11 +60,36 @@ def crop(sig_2d, window_length, overlap_factor=0.0, axis=-1, time=None):
     cropped_windows = np.array(cropped_windows)
     cropped_times = np.array(cropped_times)
 
-    # Move the last axis back to its original position if necessary
+    # cropped_windows now has shape (n_windows, *permuted_dims_except_last, window_length).
+    # The original `axis` was moved to the last position before windowing; we keep the
+    # window_length at the end and move the n_windows axis to where the original `axis` was.
     if axis != sig_2d.ndim - 1:
-        # Compute the inverse permutation
-        inv_axes = np.argsort(axes)
-        cropped_windows = np.transpose(cropped_windows, axes=inv_axes)
+        # cropped_windows axes: 0=n_windows, 1..ndim-1 = permuted other dims, ndim=window_length.
+        # We want output axes: at position `axis` -> n_windows; remaining permuted dims fill
+        # the other positions (excluding the trailing window_length).
+        n_dims = cropped_windows.ndim  # = sig_2d.ndim + 1
+        # Positions in cropped_windows: 0 (n_windows) and 1..n_dims-2 (other dims), n_dims-1 (window_length).
+        # The "other dims" correspond to permuted axes [0..ndim-2] of sig_2d_permuted, which are
+        # the original axes with `axis` swapped to the end. So permuted_other_axes = axes[:-1].
+        permuted_other = list(
+            axes[:-1]
+        )  # original-axis labels for cropped_windows[1..n_dims-2]
+        # Build the target ordering of original-axis labels for the output (excluding window_length):
+        # Place n_windows (label = `axis`) at position `axis`, fill rest with permuted_other in order.
+        new_order_labels = []
+        other_iter = iter(permuted_other)
+        for i in range(sig_2d.ndim):
+            if i == axis:
+                new_order_labels.append(axis)
+            else:
+                new_order_labels.append(next(other_iter))
+        # Map labels to source positions in cropped_windows (excluding the last window dim):
+        # source position 0 has label `axis` (n_windows); positions 1..n_dims-2 have labels permuted_other.
+        label_to_src = {axis: 0}
+        for src_pos, lbl in enumerate(permuted_other, start=1):
+            label_to_src[lbl] = src_pos
+        perm = [label_to_src[lbl] for lbl in new_order_labels] + [n_dims - 1]
+        cropped_windows = np.transpose(cropped_windows, axes=perm)
 
     if time is None:
         return cropped_windows
@@ -109,7 +134,6 @@ if __name__ == "__main__":
     import sys
 
     import matplotlib.pyplot as plt
-
     import scitex
 
     # parser.add_argument('--var', '-v', type=int, default=1, help='')

@@ -122,13 +122,19 @@ def demo_sig(
 
     if sig_type == "uniform":
         return (
-            np.random.uniform(low=-0.5, high=0.5, size=(batch_size, n_chs, len(tt))),
+            np.random.uniform(
+                low=-0.5, high=0.5, size=(batch_size, n_chs, len(tt))
+            ).astype(np.float32),
             tt,
             fs,
         )
 
     elif sig_type == "gauss":
-        return np.random.randn(batch_size, n_chs, len(tt)), tt, fs
+        return (
+            np.random.randn(batch_size, n_chs, len(tt)).astype(np.float32),
+            tt,
+            fs,
+        )
 
     elif sig_type == "meg":
         return (
@@ -221,7 +227,7 @@ def _demo_sig_pac(
     -------
         np.array: Generated signals with shape (batch_size, n_chs, n_segments, seq_len).
     """
-    seq_len = t_sec * fs
+    seq_len = int(t_sec * fs)
     t = np.arange(seq_len) / fs
     if verbose:
         print(f"Generating signal with length: {seq_len}")
