@@ -21,7 +21,7 @@ except ImportError:
 from scitex_decorators import signal_fn
 
 if TORCH_AVAILABLE:
-    from scitex.nn._PAC import PAC
+    from scitex_nn._PAC import PAC
 
 
 def _check_torch():

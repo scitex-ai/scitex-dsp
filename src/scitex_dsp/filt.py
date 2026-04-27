@@ -13,7 +13,7 @@ from scitex_decorators import signal_fn
 
 @signal_fn
 def gauss(x, sigma, t=None):
-    from scitex.nn._Filters import GaussianFilter
+    from scitex_nn._Filters import GaussianFilter
 
     return GaussianFilter(sigma)(x, t=t)
 
@@ -22,7 +22,7 @@ def gauss(x, sigma, t=None):
 def bandpass(x, fs, bands, t=None):
     import torch
 
-    from scitex.nn._Filters import BandPassFilter
+    from scitex_nn._Filters import BandPassFilter
 
     # Convert bands to tensor if it's not already
     if not isinstance(bands, torch.Tensor):
@@ -34,7 +34,7 @@ def bandpass(x, fs, bands, t=None):
 def bandstop(x, fs, bands, t=None):
     import torch
 
-    from scitex.nn._Filters import BandStopFilter
+    from scitex_nn._Filters import BandStopFilter
 
     # Convert bands to tensor if it's not already
     if not isinstance(bands, torch.Tensor):
@@ -44,14 +44,14 @@ def bandstop(x, fs, bands, t=None):
 
 @signal_fn
 def lowpass(x, fs, cutoffs_hz, t=None):
-    from scitex.nn._Filters import LowPassFilter
+    from scitex_nn._Filters import LowPassFilter
 
     return LowPassFilter(cutoffs_hz, fs, x.shape[-1])(x, t=t)
 
 
 @signal_fn
 def highpass(x, fs, cutoffs_hz, t=None):
-    from scitex.nn._Filters import HighPassFilter
+    from scitex_nn._Filters import HighPassFilter
 
     return HighPassFilter(cutoffs_hz, fs, x.shape[-1])(x, t=t)
 

@@ -64,7 +64,7 @@ def pink(x, amp=1.0, dim=-1):
 
 @signal_fn
 def brown(x, amp=1.0, dim=-1):
-    from scitex.dsp import norm
+    from scitex_dsp import norm
 
     noise = _uniform(x.shape, amp=amp)
     noise = torch.cumsum(noise, dim=dim)

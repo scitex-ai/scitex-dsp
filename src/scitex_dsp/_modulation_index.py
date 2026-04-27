@@ -13,7 +13,7 @@ except ImportError:
 from scitex_decorators import signal_fn
 
 if TORCH_AVAILABLE:
-    from scitex.nn._ModulationIndex import ModulationIndex
+    from scitex_nn._ModulationIndex import ModulationIndex
 
 
 @signal_fn
