@@ -39,6 +39,8 @@ pac = [
 dev = [
     "joblib",
     "scitex",
+    "flask",
+    "tensorpac",
     "pytest",
     "pytest-cov",
     "ruff",
