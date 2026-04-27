@@ -30,11 +30,26 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-audio = ["sounddevice"]      # for _listen.py (lazy-imported in __init__)
-pac = ["tensorpac"]          # for _pac.py validation against tensorpac
-dev = ["pytest", "pytest-cov", "ruff"]
-docs = ["sphinx>=7.0", "sphinx-rtd-theme>=2.0", "myst-parser>=2.0"]
-all = ["scitex-dsp[audio,pac,dev,docs]"]
+audio = [
+    "sounddevice",
+]
+pac = [
+    "tensorpac",
+]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "ruff",
+]
+docs = [
+    "sphinx>=7.0",
+    "sphinx-rtd-theme>=2.0",
+    "myst-parser>=2.0",
+]
+all = [
+    "scitex-dsp[audio]",
+    "scitex-dsp[pac]",
+]
 
 [project.urls]
 Homepage = "https://github.com/ywatanabe1989/scitex-dsp"
