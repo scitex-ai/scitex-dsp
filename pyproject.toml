@@ -42,6 +42,8 @@ dev = [
     "scitex",
     "flask",
     "tensorpac",
+    "sounddevice",
+    "ripple_detection",
     "pytest",
     "pytest-cov",
     "ruff",
