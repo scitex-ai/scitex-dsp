@@ -36,13 +36,13 @@ class TestCrop:
 
     def test_import(self):
         """Test that crop can be imported."""
-        from scitex.dsp import crop
+        from scitex_dsp import crop
 
         assert callable(crop)
 
     def test_basic_crop_no_overlap(self, simple_signal_2d):
         """Test basic cropping without overlap."""
-        from scitex.dsp import crop
+        from scitex_dsp import crop
 
         window_length = 20
         result = crop(simple_signal_2d, window_length, overlap_factor=0.0)
@@ -57,7 +57,7 @@ class TestCrop:
 
     def test_crop_with_50_percent_overlap(self, simple_signal_2d):
         """Test cropping with 50% overlap."""
-        from scitex.dsp import crop
+        from scitex_dsp import crop
 
         window_length = 20
         result = crop(simple_signal_2d, window_length, overlap_factor=0.5)
@@ -70,7 +70,7 @@ class TestCrop:
 
     def test_crop_with_time_vector(self, simple_signal_2d, time_vector):
         """Test cropping with time vector."""
-        from scitex.dsp import crop
+        from scitex_dsp import crop
 
         window_length = 20
         windows, times = crop(
@@ -87,7 +87,7 @@ class TestCrop:
 
     def test_crop_different_axis(self):
         """Test cropping along different axes."""
-        from scitex.dsp import crop
+        from scitex_dsp import crop
 
         # Create 3D signal (trials x channels x time)
         signal_3d = np.arange(4 * 5 * 100).reshape(4, 5, 100)
@@ -103,7 +103,7 @@ class TestCrop:
 
     def test_crop_with_various_overlaps(self, simple_signal_1d):
         """Test cropping with various overlap factors."""
-        from scitex.dsp import crop
+        from scitex_dsp import crop
 
         window_length = 20
 
@@ -125,7 +125,7 @@ class TestCrop:
 
     def test_window_longer_than_signal(self):
         """Test when window length exceeds signal length."""
-        from scitex.dsp import crop
+        from scitex_dsp import crop
 
         short_signal = np.arange(10)
         result = crop(short_signal, window_length=20)
@@ -135,14 +135,14 @@ class TestCrop:
 
     def test_invalid_axis(self, simple_signal_2d):
         """Test error handling for invalid axis."""
-        from scitex.dsp import crop
+        from scitex_dsp import crop
 
         with pytest.raises(ValueError, match="Invalid axis"):
             crop(simple_signal_2d, window_length=20, axis=5)
 
     def test_time_vector_length_mismatch(self, simple_signal_2d):
         """Test error when time vector length doesn't match signal."""
-        from scitex.dsp import crop
+        from scitex_dsp import crop
 
         wrong_time = np.arange(50)  # Wrong length
 
@@ -151,7 +151,7 @@ class TestCrop:
 
     def test_negative_axis_indexing(self):
         """Test negative axis indexing."""
-        from scitex.dsp import crop
+        from scitex_dsp import crop
 
         signal_3d = np.random.rand(3, 4, 50)
 
@@ -162,7 +162,7 @@ class TestCrop:
 
     def test_exact_fit_windows(self):
         """Test when signal length is exact multiple of window length."""
-        from scitex.dsp import crop
+        from scitex_dsp import crop
 
         # Signal of length 100, window of 25 -> exactly 4 windows
         signal = np.arange(100)
@@ -174,7 +174,7 @@ class TestCrop:
 
     def test_multichannel_consistency(self):
         """Test that all channels are cropped consistently."""
-        from scitex.dsp import crop
+        from scitex_dsp import crop
 
         n_channels = 8
         signal = np.random.rand(n_channels, 200)
@@ -201,7 +201,7 @@ class TestCrop:
     )
     def test_window_calculations(self, window_length, overlap, expected_windows):
         """Test window count calculations with various parameters."""
-        from scitex.dsp import crop
+        from scitex_dsp import crop
 
         signal = np.arange(100)
         result = crop(signal, window_length, overlap_factor=overlap)
@@ -209,7 +209,7 @@ class TestCrop:
 
     def test_preserve_data_integrity(self, simple_signal_2d):
         """Test that cropping preserves data without modification."""
-        from scitex.dsp import crop
+        from scitex_dsp import crop
 
         window_length = 30
         overlap = 0.5

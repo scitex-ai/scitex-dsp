@@ -15,37 +15,37 @@ class TestDemoSigAvailableFlags:
 
     def test_mne_available_flag_exists(self):
         """Test that MNE_AVAILABLE flag is exported."""
-        from scitex.dsp._demo_sig import MNE_AVAILABLE
+        from scitex_dsp._demo_sig import MNE_AVAILABLE
 
         assert isinstance(MNE_AVAILABLE, bool)
 
     def test_ripple_detection_available_flag_exists(self):
         """Test that RIPPLE_DETECTION_AVAILABLE flag is exported."""
-        from scitex.dsp._demo_sig import RIPPLE_DETECTION_AVAILABLE
+        from scitex_dsp._demo_sig import RIPPLE_DETECTION_AVAILABLE
 
         assert isinstance(RIPPLE_DETECTION_AVAILABLE, bool)
 
     def test_tensorpac_available_flag_exists(self):
         """Test that TENSORPAC_AVAILABLE flag is exported."""
-        from scitex.dsp._demo_sig import TENSORPAC_AVAILABLE
+        from scitex_dsp._demo_sig import TENSORPAC_AVAILABLE
 
         assert isinstance(TENSORPAC_AVAILABLE, bool)
 
     def test_check_mne_function_exists(self):
         """Test that _check_mne function is exported."""
-        from scitex.dsp._demo_sig import _check_mne
+        from scitex_dsp._demo_sig import _check_mne
 
         assert callable(_check_mne)
 
     def test_check_ripple_detection_function_exists(self):
         """Test that _check_ripple_detection function is exported."""
-        from scitex.dsp._demo_sig import _check_ripple_detection
+        from scitex_dsp._demo_sig import _check_ripple_detection
 
         assert callable(_check_ripple_detection)
 
     def test_check_tensorpac_function_exists(self):
         """Test that _check_tensorpac function is exported."""
-        from scitex.dsp._demo_sig import _check_tensorpac
+        from scitex_dsp._demo_sig import _check_tensorpac
 
         assert callable(_check_tensorpac)
 
@@ -55,14 +55,14 @@ class TestDemoSig:
 
     def test_import(self):
         """Test that demo_sig can be imported."""
-        from scitex.dsp import demo_sig
+        from scitex_dsp import demo_sig
 
         assert callable(demo_sig)
 
     @pytest.mark.parametrize("sig_type", ["uniform", "gauss", "periodic", "chirp"])
     def test_basic_signal_types(self, sig_type):
         """Test basic signal generation for various types."""
-        from scitex.dsp import demo_sig
+        from scitex_dsp import demo_sig
 
         batch_size = 2
         n_chs = 3
@@ -94,7 +94,7 @@ class TestDemoSig:
 
     def test_uniform_signal_range(self):
         """Test that uniform signal is in expected range."""
-        from scitex.dsp import demo_sig
+        from scitex_dsp import demo_sig
 
         sig, _, _ = demo_sig(sig_type="uniform", batch_size=1, n_chs=1, t_sec=1)
 
@@ -104,7 +104,7 @@ class TestDemoSig:
 
     def test_gauss_signal_statistics(self):
         """Test that Gaussian signal has expected statistics."""
-        from scitex.dsp import demo_sig
+        from scitex_dsp import demo_sig
 
         # Generate larger signal for better statistics
         sig, _, _ = demo_sig(sig_type="gauss", batch_size=10, n_chs=10, t_sec=10)
@@ -115,7 +115,7 @@ class TestDemoSig:
 
     def test_periodic_signal_with_freqs(self):
         """Test periodic signal generation with specified frequencies."""
-        from scitex.dsp import demo_sig
+        from scitex_dsp import demo_sig
 
         freqs_hz = [10, 20]  # 10 Hz and 20 Hz
         try:
@@ -137,7 +137,7 @@ class TestDemoSig:
 
     def test_different_sampling_rates(self):
         """Test signal generation with different sampling rates."""
-        from scitex.dsp import demo_sig
+        from scitex_dsp import demo_sig
 
         for fs in [100, 256, 512, 1000]:
             sig, tt, fs_out = demo_sig(
@@ -150,7 +150,7 @@ class TestDemoSig:
 
     def test_different_durations(self):
         """Test signal generation with different durations."""
-        from scitex.dsp import demo_sig
+        from scitex_dsp import demo_sig
 
         fs = 100
         for t_sec in [0.5, 1.0, 2.0, 5.0]:
@@ -164,7 +164,7 @@ class TestDemoSig:
 
     def test_batch_and_channel_dimensions(self):
         """Test various batch size and channel configurations."""
-        from scitex.dsp import demo_sig
+        from scitex_dsp import demo_sig
 
         configs = [
             (1, 1),  # Single batch, single channel
@@ -183,7 +183,7 @@ class TestDemoSig:
 
     def test_signal_dtype(self):
         """Test that signals have correct data type."""
-        from scitex.dsp import demo_sig
+        from scitex_dsp import demo_sig
 
         sig, tt, _ = demo_sig(sig_type="gauss")
 
@@ -194,7 +194,7 @@ class TestDemoSig:
 
     def test_time_vector_properties(self):
         """Test properties of the time vector."""
-        from scitex.dsp import demo_sig
+        from scitex_dsp import demo_sig
 
         t_sec = 2.0
         fs = 500
@@ -210,7 +210,7 @@ class TestDemoSig:
 
     def test_invalid_signal_type(self):
         """Test error handling for invalid signal type."""
-        from scitex.dsp import demo_sig
+        from scitex_dsp import demo_sig
 
         with pytest.raises(AssertionError):
             demo_sig(sig_type="invalid_type")
@@ -218,7 +218,7 @@ class TestDemoSig:
     @pytest.mark.parametrize("sig_type", ["ripple", "meg", "tensorpac", "pac"])
     def test_complex_signal_types(self, sig_type):
         """Test complex signal types that may require special dependencies."""
-        from scitex.dsp import demo_sig
+        from scitex_dsp import demo_sig
 
         try:
             sig, tt, fs = demo_sig(
@@ -235,7 +235,7 @@ class TestDemoSig:
 
     def test_reproducibility_with_seed(self):
         """Test that results are reproducible with same random seed."""
-        from scitex.dsp import demo_sig
+        from scitex_dsp import demo_sig
 
         # Set seed and generate signal
         np.random.seed(42)
@@ -250,7 +250,7 @@ class TestDemoSig:
 
     def test_chirp_signal_properties(self):
         """Test chirp signal has increasing frequency."""
-        from scitex.dsp import demo_sig
+        from scitex_dsp import demo_sig
 
         try:
             sig, tt, fs = demo_sig(

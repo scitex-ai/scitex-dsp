@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 
 # Import the function to test
-from scitex.dsp import (
+from scitex_dsp import (
     _calc_relative_peak_position,
     _drop_ripples_at_edges,
     _find_events,
@@ -320,7 +320,7 @@ class TestPreprocessing:
     def test_preprocess_filtering(self):
         """Test filtering in preprocessing."""
         # Use demo signal which is known to work
-        from scitex.dsp import demo_sig
+        from scitex_dsp import demo_sig
 
         # Get a ripple demo signal
         signal, t, fs = demo_sig(sig_type="ripple", n_chs=4)
