@@ -6,12 +6,17 @@
 
 import numpy as np
 
-import scitex
-
 
 def time(start_sec, end_sec, fs):
-    # return np.linspace(start_sec, end_sec, (end_sec - start_sec) * fs)
-    return scitex.gen.float_linspace(start_sec, end_sec, (end_sec - start_sec) * fs)
+    """Linearly spaced time samples between [start_sec, end_sec) at sample rate fs.
+
+    Replaces the prior ``scitex.gen.float_linspace`` call so this module
+    doesn't pull the umbrella ``scitex`` distribution at import time. The
+    behaviour matches np.linspace(endpoint=False) which is also what the
+    legacy float_linspace returned.
+    """
+    n = int((end_sec - start_sec) * fs)
+    return np.linspace(start_sec, end_sec, n, endpoint=False)
 
 
 def main():
@@ -24,13 +29,10 @@ if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
 
-    # # Argument Parser
-    # import argparse
-    # parser = argparse.ArgumentParser(description='')
-    # parser.add_argument('--var', '-v', type=int, default=1, help='')
-    # parser.add_argument('--flag', '-f', action='store_true', default=False, help='')
-    # args = parser.parse_args()
-    # Main
+    # Lazy-imported here so `import scitex_dsp` doesn't require the umbrella
+    # at runtime — only the script entry-point uses session lifecycle.
+    import scitex  # noqa: E402
+
     CONFIG, sys.stdout, sys.stderr, plt, CC = scitex.session.start(
         sys, plt, verbose=False
     )

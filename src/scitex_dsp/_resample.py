@@ -17,7 +17,6 @@ except ImportError:
     TORCHAUDIO_AVAILABLE = False
     T = None
 
-import scitex
 from scitex_decorators import signal_fn
 
 
@@ -41,6 +40,8 @@ def resample(x, src_fs, tgt_fs, t=None):
 
 if __name__ == "__main__":
     import sys
+
+    import scitex  # noqa: E402  — script-only
 
     import matplotlib.pyplot as plt
 

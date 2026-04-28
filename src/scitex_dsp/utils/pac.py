@@ -24,7 +24,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorpac
 
-import scitex
+try:
+    import scitex  # type: ignore
+except ImportError:  # umbrella optional
+    scitex = None  # type: ignore
 
 
 # Functions

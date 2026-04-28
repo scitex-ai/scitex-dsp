@@ -7,7 +7,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 
-import scitex
+try:
+    import scitex  # type: ignore
+except ImportError:  # umbrella optional
+    scitex = None  # type: ignore
 
 # Module-level constants (defaults for example functions)
 TGT_FS = 512

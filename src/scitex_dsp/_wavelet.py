@@ -5,7 +5,10 @@
 
 """scitex.dsp.wavelet function"""
 
-import scitex
+try:
+    import scitex  # type: ignore
+except ImportError:  # umbrella optional
+    scitex = None  # type: ignore
 from scitex_decorators import batch_fn, signal_fn
 from scitex_nn._Wavelet import Wavelet
 

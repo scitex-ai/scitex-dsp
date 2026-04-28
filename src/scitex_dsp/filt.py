@@ -4,7 +4,6 @@
 
 import numpy as np
 
-import scitex
 from scitex_decorators import signal_fn
 
 # No top-level imports from nn module to avoid circular dependency
@@ -62,6 +61,8 @@ def _custom_print(x):
 
 if __name__ == "__main__":
     import sys
+
+    import scitex  # noqa: E402  — script-only
 
     import matplotlib.pyplot as plt
 
