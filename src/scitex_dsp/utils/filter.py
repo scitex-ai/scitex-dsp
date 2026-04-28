@@ -6,7 +6,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import firwin, freqz
-
 from scitex_decorators import numpy_fn
 from scitex_gen._to_even import to_even
 
@@ -122,7 +121,13 @@ def plot_filter_responses(filter, fs, worN=8000, title=None):
     Returns:
     - matplotlib.figure.Figure: The figure object containing the impulse and frequency response plots.
     """
-    import scitex
+    try:
+        import scitex  # type: ignore
+    except ImportError as exc:
+        raise ImportError(
+            "scitex.plt requires additional dependencies. "
+            "Install with: pip install scitex[plt]"
+        ) from exc
 
     ww, hh = freqz(filter, worN=worN, fs=fs)
 
