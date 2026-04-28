@@ -10,7 +10,6 @@ This script does XYZ.
 import sys
 
 import matplotlib.pyplot as plt
-
 from scitex_decorators import signal_fn
 from scitex_nn._Hilbert import Hilbert
 
@@ -21,7 +20,16 @@ def hilbert(
     x,
     dim=-1,
 ):
-    y = Hilbert(x.shape[-1], dim=dim)(x)
+    seq_len = x.shape[dim]
+    if seq_len == 0:
+        # Empty signal: return empty phase + amplitude with the right shape.
+        empty = (
+            x[..., :0]
+            if dim in (-1, x.ndim - 1)
+            else x.swapaxes(dim, -1)[..., :0].swapaxes(dim, -1)
+        )
+        return empty, empty
+    y = Hilbert(seq_len, dim=dim)(x)
     return y[..., 0], y[..., 1]
 
 
