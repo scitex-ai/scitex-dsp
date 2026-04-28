@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scitex-dsp"
-version = "0.1.4"
+version = "0.1.5"
 description = "Digital signal processing (PAC, Hilbert, Wavelet, filters, demo signals, …) — standalone module from the SciTeX ecosystem"
 readme = "README.md"
 license = "AGPL-3.0-only"

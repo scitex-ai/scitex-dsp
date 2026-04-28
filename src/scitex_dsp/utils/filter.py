@@ -81,7 +81,9 @@ def design_filter(sig_len, fs, low_hz=None, high_hz=None, cycle=3, is_bandstop=F
         order = to_even(order)
         return order
 
-    fs = int(fs)
+    # fs may arrive as a 0-d torch tensor (from @signal_fn-decorated callers
+    # or numpy-array wrappers); int(tensor) needs .item() on 0-d.
+    fs = int(fs.item()) if hasattr(fs, "item") else int(fs)
     low_hz = float(low_hz) if low_hz is not None else low_hz
     high_hz = float(high_hz) if high_hz is not None else high_hz
     filter_mode = estimate_filter_type(low_hz, high_hz, is_bandstop)
