@@ -11,7 +11,6 @@ import pytest
 
 torch = pytest.importorskip("torch")
 import numpy as np
-from numpy.testing import assert_allclose
 
 
 class TestFilt:
@@ -261,10 +260,14 @@ class TestFilt:
         """Test Gaussian filter with different sigma values."""
         from scitex.dsp.filt import gauss
 
-        # Create noisy signal
+        # Create noisy signal + matching time vector. We pass `t=` so gauss
+        # returns the canonical (filtered, t_out) tuple shape — without it
+        # the wrapper returns just the array (per BaseFilter1D.forward's
+        # `if t is None: return x` branch) and the unpack fails.
         signal = np.random.randn(1000).astype(np.float32)
+        t = np.arange(1000, dtype=np.float32)
 
-        filtered, _ = gauss(signal, sigma)
+        filtered, _ = gauss(signal, sigma, t=t)
 
         # Larger sigma should smooth more
         roughness = np.std(np.diff(filtered))

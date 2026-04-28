@@ -9,7 +9,6 @@ import os
 import pytest
 
 torch = pytest.importorskip("torch")
-from unittest.mock import patch
 
 import numpy as np
 
@@ -114,7 +113,11 @@ def test_zero_pad_1d_numpy_input():
 
 
 def test_zero_pad_basic():
-    """Test basic zero padding of multiple tensors."""
+    """Test basic zero padding of multiple tensors.
+
+    Implementation uses centered padding: padding_left = needed // 2,
+    padding_right = needed - padding_left. So odd-padding biases right.
+    """
     from scitex.dsp.utils import zero_pad
 
     x1 = torch.tensor([1, 2, 3])
@@ -126,13 +129,13 @@ def test_zero_pad_basic():
     # Should stack into a tensor of shape (3, 4)
     assert result.shape == (3, 4)
 
-    # Check first tensor (length 3 -> 4)
-    assert torch.equal(result[0], torch.tensor([0, 1, 2, 3]))
+    # x1 (len=3 → 4): needed=1, left=0, right=1 → [1,2,3,0]
+    assert torch.equal(result[0], torch.tensor([1, 2, 3, 0]))
 
-    # Check second tensor (length 2 -> 4)
-    assert torch.equal(result[1], torch.tensor([1, 4, 5, 0]))
+    # x2 (len=2 → 4): needed=2, left=1, right=1 → [0,4,5,0]
+    assert torch.equal(result[1], torch.tensor([0, 4, 5, 0]))
 
-    # Check third tensor (length 4 -> 4, no padding)
+    # x3 (len=4 → 4): no padding
     assert torch.equal(result[2], torch.tensor([6, 7, 8, 9]))
 
 
@@ -150,14 +153,13 @@ def test_zero_pad_mixed_inputs():
     assert result.shape == (3, 5)
     assert isinstance(result, torch.Tensor)
 
-    # Check that all data is preserved correctly
-    assert torch.equal(
-        result[0], torch.tensor([1, 1, 2, 3, 0])
-    )  # 1 left, 1 right padding
-    assert torch.equal(
-        result[1], torch.tensor([1, 1, 4, 5, 0])
-    )  # 1 left, 1 right padding
-    assert torch.equal(result[2], torch.tensor([6, 7, 8, 9, 10]))  # no padding
+    # Check that all data is preserved correctly. Centered padding:
+    #   x1=[1,2,3] len=3 → 5: needed=2, left=1, right=1 → [0,1,2,3,0]
+    #   x2=[4,5]   len=2 → 5: needed=3, left=1, right=2 → [0,4,5,0,0]
+    #   x3=[6..10] len=5 → 5: no padding
+    assert torch.equal(result[0], torch.tensor([0, 1, 2, 3, 0]))
+    assert torch.equal(result[1], torch.tensor([0, 4, 5, 0, 0]))
+    assert torch.equal(result[2], torch.tensor([6, 7, 8, 9, 10]))
 
 
 def test_zero_pad_single_tensor():
@@ -187,13 +189,15 @@ def test_zero_pad_different_dimensions():
     x1 = torch.tensor([1, 2])
     x2 = torch.tensor([3, 4, 5])
 
-    # Test dim=0 (default)
+    # Test dim=0 (default): two 1-D tensors stacked along new axis 0
+    # → shape (n_inputs, max_len) = (2, 3)
     result_dim0 = zero_pad([x1, x2], dim=0)
     assert result_dim0.shape == (2, 3)
 
-    # Test dim=1 (should give same result for this case)
+    # Test dim=1: stacked along axis 1 → shape (max_len, n_inputs) = (3, 2).
+    # torch.stack(.., dim=1) inserts the new axis AT 1, not at 0.
     result_dim1 = zero_pad([x1, x2], dim=1)
-    assert result_dim1.shape == (2, 3)
+    assert result_dim1.shape == (3, 2)
 
 
 def test_zero_pad_preserve_dtype():
@@ -264,19 +268,15 @@ def test_zero_pad_real_signal_example():
     # Should be padded to longest trial (2 seconds = 500 samples)
     assert result.shape == (3, 500)
 
-    # Check that original signals are preserved (approximately)
-    # Due to padding, signals should be centered
+    # Check that original signals are preserved (centered-padding offsets)
+    # rather than scanning for nonzero — sine waves cross zero at interior
+    # points and the heuristic mis-detects boundaries.
+    max_len = result.shape[1]
     for i, trial in enumerate(trials):
-        # Find where the non-zero (non-padded) values are
-        non_zero_mask = torch.abs(result[i]) > 1e-6
-        non_zero_indices = torch.where(non_zero_mask)[0]
-        start_idx = non_zero_indices[0]
-        end_idx = non_zero_indices[-1] + 1
-
-        # Extract the non-padded part
-        extracted = result[i, start_idx:end_idx]
-
-        # Should match original (with some tolerance for floating point)
+        L = trial.shape[0]
+        needed = max_len - L
+        left = needed // 2
+        extracted = result[i, left : left + L]
         assert extracted.shape == trial.shape
         assert torch.allclose(extracted, trial, atol=1e-6)
 

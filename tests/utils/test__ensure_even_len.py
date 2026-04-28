@@ -208,10 +208,11 @@ def test_ensure_even_len_real_signal_example():
     """Test ensure_even_len with realistic signal processing example."""
     from scitex.dsp.utils import ensure_even_len
 
-    # Simulate EEG signal with odd number of samples
+    # Simulate EEG signal with odd number of samples. fs * 2.001 = 500.25
+    # truncates to 500 (even); use fs * 2.004 = 501.0 → 501 (odd).
     fs = 250  # Hz
-    duration = 2.001  # Slightly over 2 seconds to get odd samples
-    n_samples = int(fs * duration)  # Should be 501 (odd)
+    duration = 2.004
+    n_samples = int(fs * duration)  # 501 (odd)
 
     # Create a sine wave signal
     t = torch.linspace(0, duration, n_samples)

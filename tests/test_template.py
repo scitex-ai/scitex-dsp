@@ -7,7 +7,6 @@
 Test module for scitex.dsp.template
 """
 
-import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -69,12 +68,14 @@ class TestTemplate:
         # This template should provide a standard structure
         # for other DSP modules
 
-        # Expected structure elements
+        # Expected structure elements. The session lifecycle moved from
+        # scitex.gen.{start,close} to scitex.session.{start,close} during
+        # the 2026-01 standalonization sweep.
         expected_patterns = [
             "import sys",
             "import matplotlib.pyplot",
-            "scitex.gen.start",
-            "scitex.gen.close",
+            "scitex.session.start",
+            "scitex.session.close",
         ]
 
         # Read the template file content
@@ -88,9 +89,9 @@ class TestTemplate:
 
             # Check for expected patterns
             for pattern in expected_patterns:
-                assert (
-                    pattern in content
-                ), f"Expected pattern '{pattern}' not found in template"
+                assert pattern in content, (
+                    f"Expected pattern '{pattern}' not found in template"
+                )
 
         except FileNotFoundError:
             # If we can't read the file, at least check it exists as a module
