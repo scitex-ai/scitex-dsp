@@ -57,21 +57,24 @@ def _preprocess(xx, fs, low_hz, high_hz, smoothing_sigma_ms=4):
 
     # Downsampling
     fs_tgt = low_hz * 3
-    xx = resample(xx, float(fs), float(fs_tgt))
-    fs = fs_tgt
 
-    # signal_fn squeezes 1-size dims off the input; restore 3D shape
-    # before per-channel ops below.
-    xx = np.asarray(xx)
-    while xx.ndim < 3:
-        xx = xx[np.newaxis]
+    # Helper: scitex_decorators.signal_fn squeezes 1-size dims off the input
+    # of every decorated signal call. Restore 3D before each per-channel op.
+    def _ensure_3d(arr):
+        arr = np.asarray(arr)
+        while arr.ndim < 3:
+            arr = arr[np.newaxis]
+        return arr
+
+    xx = _ensure_3d(resample(xx, float(fs), float(fs_tgt)))
+    fs = fs_tgt
 
     # Subtracts the global mean to reduce false detection due to EMG signal
     xx -= np.nanmean(xx, axis=1, keepdims=True)
 
     # Bandpass Filtering
-    xx = (
-        (
+    xx = _ensure_3d(
+        np.asarray(
             bandpass(
                 np.array(xx),
                 fs_tgt,
@@ -84,8 +87,11 @@ def _preprocess(xx, fs, low_hz, high_hz, smoothing_sigma_ms=4):
 
     # Calculate RMS
     xx = xx**2
-    _, xx = hilbert(xx)
-    xx = gauss(xx, smoothing_sigma_ms * 1e-3 * fs_tgt).squeeze(-2)
+    _, xx_h = hilbert(xx)
+    xx = _ensure_3d(np.asarray(xx_h))
+    xx = _ensure_3d(
+        np.asarray(gauss(xx, smoothing_sigma_ms * 1e-3 * fs_tgt)).squeeze(-2)
+    )
     xx = np.sqrt(xx)
 
     # Scales across channels
