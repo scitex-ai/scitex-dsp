@@ -3,6 +3,16 @@
 
 from __future__ import annotations
 
+try:
+    from importlib.metadata import version as _v, PackageNotFoundError
+    try:
+        __version__ = _v("scitex-dsp")
+    except PackageNotFoundError:
+        __version__ = "0.0.0+local"
+    del _v, PackageNotFoundError
+except ImportError:  # pragma: no cover — only on ancient Pythons
+    __version__ = "0.0.0+local"
+
 import warnings
 
 # Import example, params, norm, reference, filt, and add_noise modules as submodules
@@ -57,12 +67,7 @@ except ImportError:
     _mne_available = False
 
 __all__ = [
-    "_calc_relative_peak_position",
-    "_drop_ripples_at_edges",
-    "_find_events",
-    "_preprocess",
-    "_reshape",
-    "_sort_columns",
+    "__version__",
     "add_noise",
     "band_powers",
     "crop",
