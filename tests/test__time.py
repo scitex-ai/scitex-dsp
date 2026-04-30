@@ -7,7 +7,6 @@ import pytest
 
 pytest.importorskip("mne")
 import numpy as np
-
 from scitex.dsp import time
 
 
@@ -29,7 +28,8 @@ class TestTime:
         assert isinstance(t, np.ndarray)
         assert len(t) == (end_sec - start_sec) * fs
         assert t[0] == start_sec
-        assert t[-1] == end_sec
+        # endpoint=False: last sample is end_sec - 1/fs
+        assert abs(t[-1] - (end_sec - 1.0 / fs)) < 1e-9
 
     def test_time_non_zero_start(self):
         """Test time array with non-zero start."""
@@ -41,7 +41,8 @@ class TestTime:
 
         assert len(t) == (end_sec - start_sec) * fs
         assert t[0] == start_sec
-        assert t[-1] == end_sec
+        # endpoint=False: last sample is end_sec - 1/fs
+        assert abs(t[-1] - (end_sec - 1.0 / fs)) < 1e-9
 
     def test_time_high_sampling_rate(self):
         """Test time array with high sampling rate."""
@@ -89,7 +90,8 @@ class TestTime:
 
         assert len(t) == (end_sec - start_sec) * fs
         assert t[0] == start_sec
-        assert t[-1] == end_sec
+        # endpoint=False: last sample is end_sec - 1/fs
+        assert abs(t[-1] - (end_sec - 1.0 / fs)) < 1e-9
 
     def test_time_low_sampling_rate(self):
         """Test time array with low sampling rate."""
@@ -149,7 +151,8 @@ class TestTime:
 
         assert len(t) == 3600
         assert t[0] == start_sec
-        assert t[-1] == end_sec
+        # endpoint=False: last sample is end_sec - 1/fs
+        assert abs(t[-1] - (end_sec - 1.0 / fs)) < 1e-9
 
     def test_time_floating_point_consistency(self):
         """Test that floating point calculations are consistent."""
