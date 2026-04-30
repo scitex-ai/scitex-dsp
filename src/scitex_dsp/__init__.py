@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Scitex dsp module."""
 
+from __future__ import annotations
+
 import warnings
 
 # Import example, params, norm, reference, filt, and add_noise modules as submodules
