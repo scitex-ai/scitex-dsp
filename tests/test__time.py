@@ -54,7 +54,8 @@ class TestTime:
 
         assert len(t) == int((end_sec - start_sec) * fs)
         assert abs(t[0] - start_sec) < 1e-9
-        assert abs(t[-1] - end_sec) < 1e-9
+        # endpoint=False: last sample is end_sec - 1/fs
+        assert abs(t[-1] - (end_sec - 1.0 / fs)) < 1e-9
 
     def test_time_fractional_duration(self):
         """Test time array with fractional duration."""
@@ -166,9 +167,9 @@ class TestTime:
         expected_samples = int((end_sec - start_sec) * fs)
         assert len(t) == expected_samples
 
-        # Check endpoints
+        # Check endpoints (endpoint=False: t[-1] = end_sec - 1/fs)
         assert abs(t[0] - start_sec) < 1e-9
-        assert abs(t[-1] - end_sec) < 1e-9
+        assert abs(t[-1] - (end_sec - 1.0 / fs)) < 1e-9
 
 
 if __name__ == "__main__":
