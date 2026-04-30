@@ -6,7 +6,6 @@
 import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
-
 from scitex_gen._norm import to_z
 
 from ._demo_sig import demo_sig
@@ -60,6 +59,12 @@ def _preprocess(xx, fs, low_hz, high_hz, smoothing_sigma_ms=4):
     fs_tgt = low_hz * 3
     xx = resample(xx, float(fs), float(fs_tgt))
     fs = fs_tgt
+
+    # signal_fn squeezes 1-size dims off the input; restore 3D shape
+    # before per-channel ops below.
+    xx = np.asarray(xx)
+    while xx.ndim < 3:
+        xx = xx[np.newaxis]
 
     # Subtracts the global mean to reduce false detection due to EMG signal
     xx -= np.nanmean(xx, axis=1, keepdims=True)
@@ -197,7 +202,6 @@ if __name__ == "__main__":
     import sys
 
     import matplotlib.pyplot as plt
-
     import scitex
 
     # # Argument Parser
