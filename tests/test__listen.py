@@ -6,6 +6,17 @@
 import pytest
 
 pytest.importorskip("mne")
+# CI runners lack the PortAudio C library; sounddevice imports fine but raises
+# OSError at runtime. Skip the whole module rather than test-by-test.
+try:
+    import sounddevice  # noqa: F401
+
+    sounddevice.query_devices()
+except (OSError, ImportError) as _exc:  # pragma: no cover - env-specific
+    pytest.skip(
+        f"PortAudio/sounddevice unavailable: {_exc}",
+        allow_module_level=True,
+    )
 import unittest.mock as mock
 
 from scitex.dsp import list_and_select_device
