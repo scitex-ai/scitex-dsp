@@ -5,10 +5,11 @@
 import pytest
 
 torch = pytest.importorskip("torch")
-import unittest.mock as mock
+# pac requires CUDA via tensorpac/julius — skip on CPU-only runners
+if not torch.cuda.is_available():
+    pytest.skip("CUDA unavailable; pac is GPU-only", allow_module_level=True)
 
 import numpy as np
-
 from scitex.dsp import pac
 
 
