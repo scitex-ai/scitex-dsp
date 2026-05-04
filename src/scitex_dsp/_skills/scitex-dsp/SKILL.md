@@ -77,3 +77,10 @@ ref = dsp.reference.car(x)                  # common-average reference
 - `scitex-nn` — trainable PyTorch counterparts of these primitives
 - `scitex-stats` — statistical tests on derived spectral metrics
 - `scitex-plt` / `figrecipe` — publication-ready spectrograms
+
+## Sub-skills
+
+### Core (01–09)
+- [01_installation.md](01_installation.md) — install + import sanity check
+- [02_quick-start.md](02_quick-start.md) — 30-second tour
+- [03_python-api.md](03_python-api.md) — Python API surface
