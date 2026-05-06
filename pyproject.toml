@@ -67,7 +67,11 @@ Documentation = "https://scitex-dsp.readthedocs.io"
 where = ["src"]
 
 [tool.setuptools.package-data]
-scitex_dsp = ["_skills/**/*.md"]
+scitex_dsp = [
+  "_skills/**/*.md",
+  "_sphinx_html/**/*",
+  "_sphinx_html/.nojekyll",
+]
 
 [project.entry-points."scitex_dev.skills"]
 scitex-dsp = "scitex_dsp"

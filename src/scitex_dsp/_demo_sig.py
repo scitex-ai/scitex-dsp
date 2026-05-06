@@ -38,7 +38,7 @@ except ImportError:
     pac_signals_wavelet = None
 
 try:
-    from scitex.io import load_configs
+    from scitex_io import load_configs
 
     CONFIG = load_configs(verbose=False)
 except ImportError:

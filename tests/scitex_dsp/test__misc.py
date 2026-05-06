@@ -1,4 +1,17 @@
-# Add your tests here
+"""Tests for scitex_dsp miscellaneous utilities."""
+
+import scitex_dsp
+
+
+def test_module_importable():
+    """The package imports cleanly."""
+    assert hasattr(scitex_dsp, "__version__")
+
+
+def test_ensure_3d_top_level_exposed():
+    """`ensure_3d` is reachable from the top-level namespace."""
+    assert callable(scitex_dsp.ensure_3d)
+
 
 if __name__ == "__main__":
     import os
@@ -6,41 +19,3 @@ if __name__ == "__main__":
     import pytest
 
     pytest.main([os.path.abspath(__file__)])
-
-# --------------------------------------------------------------------------------
-# Start of Source Code from: /home/ywatanabe/proj/scitex-code/src/scitex/dsp/_misc.py
-# --------------------------------------------------------------------------------
-# #!/usr/bin/env python3
-# # -*- coding: utf-8 -*-
-# # Time-stamp: "2024-11-05 01:03:32 (ywatanabe)"
-# # File: ./scitex_repo/src/scitex/dsp/_misc.py
-#
-# #!/usr/bin/env python3
-# # -*- coding: utf-8 -*-
-# # Time-stamp: "2024-04-05 12:14:08 (ywatanabe)"
-#
-# from scitex.decorators import torch_fn
-#
-#
-# @torch_fn
-# def ensure_3d(x):
-#     if x.ndim == 1:  # assumes (seq_len,)
-#         x = x.unsqueeze(0).unsqueeze(0)
-#     elif x.ndim == 2:  # assumes (batch_siize, seq_len)
-#         x = x.unsqueeze(1)
-#     return x
-#
-#
-# # @torch_fn
-# # def unbias(x, dim=-1, fn="mean"):
-# #     if fn == "mean":
-# #         return x - x.mean(dim=dim, keepdims=True)
-# #     if fn == "min":
-# #         return x - x.min(dim=dim, keepdims=True)[0]
-#
-#
-# # EOF
-
-# --------------------------------------------------------------------------------
-# End of Source Code from: /home/ywatanabe/proj/scitex-code/src/scitex/dsp/_misc.py
-# --------------------------------------------------------------------------------
