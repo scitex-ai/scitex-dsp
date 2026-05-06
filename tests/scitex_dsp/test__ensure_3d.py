@@ -135,11 +135,16 @@ class TestEnsure3D:
         assert result.shape == (100, 1, 1000)
 
     def test_dtype_preservation(self):
-        """Test that data types are preserved."""
+        """Test that floating dtypes are preserved.
+
+        ``signal_fn`` (the underlying decorator) only restores *floating*
+        dtypes on the way out — integer inputs get promoted to the
+        decorator's working float dtype because signal-processing kernels
+        typically require float.
+        """
         from scitex.dsp import ensure_3d
 
-        # Test different dtypes
-        for dtype in [np.float32, np.float64, np.int32, np.int64]:
+        for dtype in [np.float32, np.float64]:
             x = np.array([1, 2, 3], dtype=dtype)
             result = ensure_3d(x)
             assert result.dtype == dtype
@@ -192,16 +197,23 @@ class TestEnsure3D:
         assert result.shape == expected
 
     def test_list_input(self):
-        """Test that list input is handled properly."""
+        """Test that list input is handled properly.
+
+        ``signal_fn`` returns a Python list when the caller passed one
+        (round-trip type-preservation). The shape is encoded as nesting
+        depth, not a ``.shape`` attribute.
+        """
         from scitex.dsp import ensure_3d
 
-        # List input should be converted to array first
         x_list = [1, 2, 3, 4, 5]
         result = ensure_3d(x_list)
 
-        # Should work like 1D array
-        assert result.shape == (1, 1, 5)
-        assert np.array_equal(result[0, 0], x_list)
+        assert isinstance(result, list)
+        # 3-deep nested list with original 5-element vector at the leaf.
+        assert len(result) == 1
+        assert len(result[0]) == 1
+        assert len(result[0][0]) == 5
+        assert np.array_equal(result[0][0], x_list)
 
 
 if __name__ == "__main__":
