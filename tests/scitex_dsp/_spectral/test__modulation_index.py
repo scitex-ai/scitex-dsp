@@ -7,7 +7,6 @@ import pytest
 
 torch = pytest.importorskip("torch")
 import numpy as np
-
 from scitex.dsp import _reshape, modulation_index
 
 
@@ -73,9 +72,14 @@ class TestModulationIndex:
         result_false = modulation_index(pha, amp, amp_prob=False)
         result_true = modulation_index(pha, amp, amp_prob=True)
 
-        assert result_false.shape == result_true.shape
-        # Results should be different with different amp_prob settings
-        assert not np.allclose(result_false, result_true)
+        # The two modes return *different* shapes by design:
+        # amp_prob=False -> collapsed MI scalar per (B, C, n_pha, n_amp)
+        # amp_prob=True  -> full per-segment per-bin amp distribution
+        # Verify amp_prob=True keeps the extra trailing axes.
+        assert result_true.ndim > result_false.ndim
+        assert tuple(result_false.shape) == tuple(
+            result_true.shape[: result_false.ndim]
+        )
 
     def test_reshape_basic(self):
         """Test _reshape function basic functionality."""

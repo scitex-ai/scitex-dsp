@@ -7,7 +7,6 @@ import pytest
 
 torch = pytest.importorskip("torch")
 import numpy as np
-
 from scitex.dsp import wavelet
 
 
@@ -128,10 +127,11 @@ class TestWavelet:
 
         pha, amp, freqs = wavelet(x, fs, device="cpu")
 
-        # Find frequency with maximum amplitude
-        amp_mean = np.mean(amp[0, 0], axis=0)
-        peak_freq_idx = np.argmax(amp_mean)
-        peak_freq = freqs.flatten()[peak_freq_idx]
+        # amp[0, 0] has shape (n_freqs, n_samples). Average over the
+        # time axis to get one scalar per frequency, then pick the
+        # peak frequency index.
+        amp_per_freq = np.asarray(amp[0, 0]).mean(axis=-1)
+        peak_freq = np.asarray(freqs).flatten()[np.argmax(amp_per_freq)]
 
         # Should be close to the input frequency
         assert abs(peak_freq - freq) < 10  # Within 10 Hz tolerance
@@ -180,18 +180,19 @@ class TestWavelet:
 
         pha, amp, freqs = wavelet(x, fs, device="cpu")
 
-        # Should detect increasing frequency content over time
-        amp_data = amp[0, 0]
+        # amp[0, 0] has shape (n_freqs, n_samples). Slice along the
+        # time axis (last) to compare early vs late spectra.
+        amp_data = np.asarray(amp[0, 0])
+        n_samples = amp_data.shape[-1]
+        early_amp = amp_data[..., : n_samples // 4].mean(axis=-1)
+        late_amp = amp_data[..., -n_samples // 4 :].mean(axis=-1)
 
-        # Early time should have more low frequency content
-        early_amp = amp_data[: len(amp_data) // 4].mean(axis=0)
-        late_amp = amp_data[-len(amp_data) // 4 :].mean(axis=0)
+        # Find peak frequencies (1-D over the freq axis).
+        freqs_arr = np.asarray(freqs).flatten()
+        early_peak = freqs_arr[np.argmax(early_amp)]
+        late_peak = freqs_arr[np.argmax(late_amp)]
 
-        # Find peak frequencies
-        early_peak = freqs.flatten()[np.argmax(early_amp)]
-        late_peak = freqs.flatten()[np.argmax(late_amp)]
-
-        # Late peak should be higher frequency than early peak
+        # Late peak should be higher frequency than early peak.
         assert late_peak > early_peak
 
     def test_wavelet_dtype_preservation(self):

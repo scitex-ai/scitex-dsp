@@ -31,7 +31,11 @@ def get_eeg_pos(channel_names=EEG_MONTAGE_1020):
 
     df = pd.DataFrame(positions["ch_pos"])[channel_names]
 
-    df.set_index(pd.Series(["x", "y", "z"]))
+    # 3-row coordinate frame: rename rows to x/y/z. Skip when the
+    # column selection produced an empty frame (e.g., empty
+    # channel_names) so set_index doesn't blow up on length mismatch.
+    if len(df) == 3:
+        df = df.set_index(pd.Index(["x", "y", "z"]))
 
     return df
 
