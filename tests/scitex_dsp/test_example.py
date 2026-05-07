@@ -2,8 +2,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
-
 import scitex
+
+# This file exercises the umbrella `scitex.plt.ax` convenience layer
+# (and the dead `scitex.dsp.example` module) — neither is part of the
+# scitex-dsp standalone surface, and both depend on the umbrella's
+# optional `[plt]` extra. Skip the whole module unless those are
+# available. See HANDOFF: "test_example.py is dead — rewrite or move
+# to legacy".
+pytest.importorskip("scitex.plt")
+if not hasattr(getattr(scitex, "plt", None), "ax"):
+    pytest.skip(
+        "scitex.plt.ax not available; install scitex[plt] to run.",
+        allow_module_level=True,
+    )
 
 
 class TestCalcNormResampleFiltHilbert:

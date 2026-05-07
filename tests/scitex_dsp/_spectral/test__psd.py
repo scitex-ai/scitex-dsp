@@ -7,7 +7,6 @@ import pytest
 
 torch = pytest.importorskip("torch")
 import numpy as np
-
 from scitex.dsp import psd
 
 
@@ -182,7 +181,8 @@ class TestPsd:
 
         # DC component should be at first frequency bin (0 Hz)
         assert freqs[0] == 0 or abs(freqs[0]) < 1
-        assert power[0, 0, 0] > power[0, 0, 1:]  # DC should dominate
+        # DC bin should dominate over every other bin.
+        assert power[0, 0, 0] > power[0, 0, 1:].max()
 
     def test_psd_dtype_preservation(self):
         """Test PSD preserves data types appropriately."""
@@ -214,20 +214,25 @@ class TestPsd:
         assert freqs.is_cuda
 
     def test_psd_parseval_theorem(self):
-        """Test that PSD satisfies Parseval's theorem approximately."""
+        """PSD integral should match the per-sample variance.
+
+        scitex_nn's PSD is *one-sided but undoubled* (scipy's welch
+        doubles off-DC bins; this implementation does not), so
+        ``sum(P) * fs/N`` ≈ ``var(x) / 2``. The test asserts that
+        relationship within 25 %, which catches gross normalization
+        regressions while tolerating the convention.
+        """
         fs = 256
         n_samples = 1024
         x = np.random.randn(1, 1, n_samples).astype(np.float32)
 
-        # Time domain energy
-        time_energy = np.sum(x**2)
+        time_var = np.var(x)
+        power, _ = psd(x, fs)
+        freq_integral = np.sum(power[0, 0]) * (fs / n_samples)
 
-        # Frequency domain energy from PSD
-        power, freqs = psd(x, fs)
-        freq_energy = np.sum(power[0, 0]) * (fs / n_samples)
-
-        # Should be approximately equal (within numerical precision)
-        assert abs(time_energy - freq_energy) / time_energy < 0.1
+        # Expected ratio is 0.5 (one-sided, undoubled).
+        ratio = freq_integral / time_var
+        assert 0.4 < ratio < 0.6, f"Parseval ratio out of band: {ratio:.3f}"
 
     def test_psd_window_effect(self):
         """Test that PSD is affected by windowing (implicit in implementation)."""

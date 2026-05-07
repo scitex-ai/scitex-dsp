@@ -7,7 +7,6 @@ import pytest
 torch = pytest.importorskip("torch")
 import numpy as np
 import pandas as pd
-
 from scitex.dsp import to_segments, to_sktime_df
 
 
@@ -112,7 +111,8 @@ class TestTransform:
 
     def test_to_segments_basic_numpy(self):
         """Test basic segmentation with numpy array."""
-        # Create test signal
+        # Default `overlap_factor=1` -> stride = window_size (no overlap),
+        # so we get signal_len // window_size segments.
         signal_len = 1000
         window_size = 100
         x = np.random.randn(1, 2, signal_len).astype(np.float32)
@@ -120,8 +120,7 @@ class TestTransform:
         segments = to_segments(x, window_size)
 
         assert isinstance(segments, np.ndarray)
-        # Check shape: original dims + segments + window_size
-        expected_n_segments = (signal_len - window_size) + 1
+        expected_n_segments = signal_len // window_size
         assert segments.shape == (1, 2, expected_n_segments, window_size)
 
     def test_to_segments_basic_torch(self):
@@ -133,7 +132,7 @@ class TestTransform:
         segments = to_segments(x, window_size)
 
         assert isinstance(segments, torch.Tensor)
-        expected_n_segments = (signal_len - window_size) + 1
+        expected_n_segments = signal_len // window_size
         assert segments.shape == (1, 3, expected_n_segments, window_size)
 
     def test_to_segments_overlap(self):
@@ -154,23 +153,23 @@ class TestTransform:
         """Test segmentation without overlap."""
         signal_len = 300
         window_size = 50
-        overlap_factor = 1  # No overlap
+        overlap_factor = 1  # stride == window_size
         x = np.random.randn(2, 4, signal_len).astype(np.float32)
 
         segments = to_segments(x, window_size, overlap_factor=overlap_factor)
 
-        expected_n_segments = (signal_len - window_size) + 1
+        expected_n_segments = signal_len // window_size
         assert segments.shape == (2, 4, expected_n_segments, window_size)
 
     def test_to_segments_different_dimensions(self):
         """Test segmentation along different dimensions."""
-        # Test with dim=1
+        # Test with dim=1, default overlap_factor=1 (stride == window_size).
         x = np.random.randn(3, 100, 5).astype(np.float32)
         window_size = 20
 
         segments = to_segments(x, window_size, dim=1)
 
-        expected_n_segments = (100 - window_size) + 1
+        expected_n_segments = 100 // window_size
         assert segments.shape == (3, expected_n_segments, 5, window_size)
 
     def test_to_segments_edge_case_exact_fit(self):
@@ -185,15 +184,13 @@ class TestTransform:
         assert segments.shape == (1, 1, 1, window_size)
 
     def test_to_segments_window_larger_than_signal(self):
-        """Test when window size is larger than signal."""
+        """Window > signal → torch.unfold raises (no degenerate slice)."""
         signal_len = 50
         window_size = 100
         x = np.random.randn(1, 1, signal_len).astype(np.float32)
 
-        segments = to_segments(x, window_size)
-
-        # Should have 0 segments
-        assert segments.shape[-2] == 0
+        with pytest.raises((RuntimeError, ValueError)):
+            to_segments(x, window_size)
 
     def test_to_segments_dtype_preservation(self):
         """Test that data types are preserved."""
@@ -233,9 +230,12 @@ class TestTransform:
 
         segments = to_segments(x, window_size)
 
-        # Check first few segments
+        # Default overlap_factor=1 → stride == window_size, so the i-th
+        # segment starts at i*window_size.
+        stride = window_size
         for i in range(min(5, segments.shape[2])):
-            expected = np.arange(i, i + window_size)
+            start = i * stride
+            expected = np.arange(start, start + window_size)
             np.testing.assert_array_equal(segments[0, 0, i, :], expected)
 
     def test_to_segments_high_overlap(self):
