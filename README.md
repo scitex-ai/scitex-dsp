@@ -39,6 +39,41 @@
 pip install scitex-dsp
 ```
 
+## Architecture
+
+`scitex_dsp` is organised as flat building blocks plus four
+sub-modules. Public entry points compose left-to-right into typical
+neuroscience pipelines:
+
+```mermaid
+flowchart LR
+    raw[(raw LFP / EEG)] --> ensure_3d
+    ensure_3d --> reference[reference.common_average]
+    reference  --> filt[filt.bandpass]
+    filt --> hilbert
+    hilbert --> psd
+    hilbert --> wavelet
+    wavelet --> modulation_index
+    modulation_index --> pac
+    hilbert --> detect_ripples[detect_ripples]
+    psd  --> band_powers[per-band power]
+```
+
+```
+src/scitex_dsp/
+├── _hilbert.py   _psd.py        _wavelet.py
+├── _pac.py       _modulation_index.py
+├── _detect_ripples.py
+├── _resample.py  _crop.py       _ensure_3d.py
+├── _demo_sig.py  _transform.py
+├── filt.py       norm.py        reference.py
+├── add_noise.py  params.py      example.py
+└── utils/        # ensure_*, zero-pad, differential filters
+```
+
+All public functions accept `(channels, samples)` or
+`(batch, channels, samples)`.
+
 ## 2 Interfaces
 
 <details open>
@@ -70,15 +105,43 @@ scitex.dsp.demo_sig(sig_type="chirp")  # `scitex.dsp` aliases `scitex_dsp`
 
 </details>
 
-## Quick Start
+## Demo
 
-```python
-import scitex_dsp
+A 13-notebook progressive tutorial lives in [`examples/`](examples/),
+committed with executed cell outputs — read on GitHub without running
+anything locally.
 
-sig, t, fs = scitex_dsp.demo_sig(sig_type="periodic", batch_size=2, n_chs=4, t_sec=2, fs=256)
-pp, ff = scitex_dsp.psd(sig, fs)
-print("PSD shape:", pp.shape, "freqs:", ff[0], "->", ff[-1], "Hz")
+```mermaid
+flowchart LR
+    A[01 demo_sig] --> B[02 ensure_3d / crop]
+    B --> C[03 norm]
+    C --> D[04 filt]
+    D --> E[05 hilbert]
+    E --> F[06 psd]
+    E --> G[07 wavelet]
+    D --> H[08 resample]
+    A --> I[09 add_noise]
+    B --> J[10 reference]
+    E --> K[11 modulation_index]
+    K --> L[12 pac]
+    E --> M[13 detect_ripples]
 ```
+
+See [`examples/README.md`](examples/README.md) for the full index
+and suggested reading paths.
+
+| # | Notebook | Topic | Cross-check |
+|---|---|---|---|
+| 01 | [`01_demo_sig.ipynb`](examples/01_demo_sig.ipynb) | synthetic test signals — uniform / gauss / periodic / chirp | — |
+| 04 | [`04_filt.ipynb`](examples/04_filt.ipynb) | Butterworth bandpass / bandstop | — |
+| 05 | [`05_hilbert.ipynb`](examples/05_hilbert.ipynb) | analytic signal — phase + envelope | `scipy.signal.hilbert` |
+| 06 | [`06_psd.ipynb`](examples/06_psd.ipynb) | PSD + per-band integrated power | — |
+| 07 | [`07_wavelet.ipynb`](examples/07_wavelet.ipynb) | continuous wavelet transform | — |
+| 09 | [`09_add_noise.ipynb`](examples/09_add_noise.ipynb) | gauss / white / pink / brown — traces + PSDs | — |
+| 12 | [`12_pac.ipynb`](examples/12_pac.ipynb) | phase-amplitude coupling heatmap | `tensorpac.Pac` |
+| 13 | [`13_detect_ripples.ipynb`](examples/13_detect_ripples.ipynb) | end-to-end ripple detection — DataFrame + shaded events | — |
+
+Re-run them all with `./examples/00_run_all.sh`.
 
 ## Part of SciTeX
 

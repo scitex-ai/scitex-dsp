@@ -19,3 +19,6 @@ htmlcov/
 logs/
 *.log
 .DS_Store
+checkpoints
+.ipynb_checkpoints/
+.jupyter_ystore.db
