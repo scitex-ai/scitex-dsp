@@ -14,7 +14,6 @@ Testing ripple detection algorithm which:
 import pytest
 
 torch = pytest.importorskip("torch")
-from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
@@ -303,7 +302,11 @@ class TestPreprocessing:
         xx_r, fs_r = _preprocess(signal_2d, fs, low_hz=80, high_hz=140)
 
         assert xx_r.ndim == 2  # Returns 2D after processing
-        assert fs_r == 80 * 3  # Downsampled to 3x low_hz
+        # Nyquist safety: fs_r >= ceil(high_hz * 2.5) so the bandpass
+        # upper edge stays below Nyquist. Was `low_hz * 3` which
+        # silently violated Nyquist when high_hz > 1.5*low_hz.
+        assert fs_r >= int(np.ceil(140 * 2.5))
+        assert fs_r >= 80 * 3
 
     def test_preprocess_downsampling(self):
         """Test downsampling in preprocessing."""
@@ -313,7 +316,8 @@ class TestPreprocessing:
 
         xx_r, fs_r = _preprocess(signal, fs, low_hz=low_hz, high_hz=200)
 
-        assert fs_r == low_hz * 3
+        assert fs_r >= int(np.ceil(200 * 2.5))  # Nyquist > high_hz
+        assert fs_r >= low_hz * 3
         # Check signal is shorter after downsampling
         assert xx_r.shape[-1] < signal.shape[-1]
 
@@ -334,7 +338,8 @@ class TestPreprocessing:
         # Check that preprocessing returns valid data
         assert isinstance(xx_r, np.ndarray)
         assert xx_r.ndim == 2  # Should be 2D after processing
-        assert fs_r == 80 * 3  # Check downsampling
+        assert fs_r >= int(np.ceil(140 * 2.5))  # Nyquist > high_hz
+        assert fs_r >= 80 * 3
 
         # With a proper ripple signal, should get some valid data
         # Even if edges are NaN, center should have values
