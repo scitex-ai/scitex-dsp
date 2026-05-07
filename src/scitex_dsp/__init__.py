@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 try:
-    from importlib.metadata import version as _v, PackageNotFoundError
+    from importlib.metadata import PackageNotFoundError
+    from importlib.metadata import version as _v
+
     try:
         __version__ = _v("scitex-dsp")
     except PackageNotFoundError:
@@ -13,14 +15,22 @@ try:
 except ImportError:  # pragma: no cover — only on ancient Pythons
     __version__ = "0.0.0+local"
 
+# Backwards-compatibility submodule aliases — files moved into
+# topical subpackages (PS108b refactor) but downstream code still
+# imports them by the old flat path. Register the moved submodules
+# under their pre-refactor names so `import scitex_dsp.add_noise`,
+# `from scitex_dsp._hilbert import …` etc. keep working.
+import sys as _sys
 import warnings
 
-# Import example, params, norm, reference, filt, and add_noise modules as submodules
-from . import add_noise, example, filt, norm, params, reference
+# Submodules: example/params/norm/reference/filt at root,
+# add_noise re-exported from _synthesis for backwards compatibility.
+from . import example, filt, norm, params, reference
+from ._audio_io import _listen as _bc_listen
+from ._audio_io import _mne as _bc_mne
 
 # Core imports that should always work
 from ._crop import crop
-from ._demo_sig import demo_sig
 from ._detect_ripples import (
     _calc_relative_peak_position,
     _drop_ripples_at_edges,
@@ -30,18 +40,53 @@ from ._detect_ripples import (
     detect_ripples,
 )
 from ._ensure_3d import ensure_3d
-from ._hilbert import hilbert
-from ._modulation_index import _reshape, modulation_index
-from ._pac import pac
-from ._psd import band_powers, psd
 from ._resample import resample
+from ._spectral import (
+    _hilbert as _bc_hilbert,
+)
+from ._spectral import (
+    _modulation_index as _bc_modulation_index,
+)
+from ._spectral import (
+    _pac as _bc_pac,
+)
+from ._spectral import (
+    _psd as _bc_psd,
+)
+from ._spectral import (
+    _reshape,
+    band_powers,
+    hilbert,
+    modulation_index,
+    pac,
+    psd,
+    wavelet,
+)
+from ._spectral import (
+    _wavelet as _bc_wavelet,
+)
+from ._synthesis import _demo_sig as _bc_demo_sig
+from ._synthesis import add_noise, demo_sig
 from ._time import time
 from ._transform import to_segments, to_sktime_df
-from ._wavelet import wavelet
+
+for _old, _mod in {
+    "scitex_dsp.add_noise": add_noise,
+    "scitex_dsp._demo_sig": _bc_demo_sig,
+    "scitex_dsp._hilbert": _bc_hilbert,
+    "scitex_dsp._listen": _bc_listen,
+    "scitex_dsp._mne": _bc_mne,
+    "scitex_dsp._modulation_index": _bc_modulation_index,
+    "scitex_dsp._pac": _bc_pac,
+    "scitex_dsp._psd": _bc_psd,
+    "scitex_dsp._wavelet": _bc_wavelet,
+}.items():
+    _sys.modules.setdefault(_old, _mod)
+del _sys
 
 # Try to import audio-related functions that require PortAudio
 try:
-    from ._listen import list_and_select_device
+    from ._audio_io._listen import list_and_select_device
 
     _audio_available = True
 except (ImportError, OSError):
@@ -55,7 +100,7 @@ except (ImportError, OSError):
 
 # Try to import MNE-related functions
 try:
-    from ._mne import get_eeg_pos
+    from ._audio_io._mne import get_eeg_pos
 
     _mne_available = True
 except ImportError:

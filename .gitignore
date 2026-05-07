@@ -22,3 +22,5 @@ logs/
 checkpoints
 .ipynb_checkpoints/
 .jupyter_ystore.db
+src/scitex_dsp/_sphinx_html/
+docs/sphinx/api/

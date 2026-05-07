@@ -15,37 +15,37 @@ class TestDemoSigAvailableFlags:
 
     def test_mne_available_flag_exists(self):
         """Test that MNE_AVAILABLE flag is exported."""
-        from scitex_dsp._demo_sig import MNE_AVAILABLE
+        from scitex_dsp._synthesis._demo_sig import MNE_AVAILABLE
 
         assert isinstance(MNE_AVAILABLE, bool)
 
     def test_ripple_detection_available_flag_exists(self):
         """Test that RIPPLE_DETECTION_AVAILABLE flag is exported."""
-        from scitex_dsp._demo_sig import RIPPLE_DETECTION_AVAILABLE
+        from scitex_dsp._synthesis._demo_sig import RIPPLE_DETECTION_AVAILABLE
 
         assert isinstance(RIPPLE_DETECTION_AVAILABLE, bool)
 
     def test_tensorpac_available_flag_exists(self):
         """Test that TENSORPAC_AVAILABLE flag is exported."""
-        from scitex_dsp._demo_sig import TENSORPAC_AVAILABLE
+        from scitex_dsp._synthesis._demo_sig import TENSORPAC_AVAILABLE
 
         assert isinstance(TENSORPAC_AVAILABLE, bool)
 
     def test_check_mne_function_exists(self):
         """Test that _check_mne function is exported."""
-        from scitex_dsp._demo_sig import _check_mne
+        from scitex_dsp._synthesis._demo_sig import _check_mne
 
         assert callable(_check_mne)
 
     def test_check_ripple_detection_function_exists(self):
         """Test that _check_ripple_detection function is exported."""
-        from scitex_dsp._demo_sig import _check_ripple_detection
+        from scitex_dsp._synthesis._demo_sig import _check_ripple_detection
 
         assert callable(_check_ripple_detection)
 
     def test_check_tensorpac_function_exists(self):
         """Test that _check_tensorpac function is exported."""
-        from scitex_dsp._demo_sig import _check_tensorpac
+        from scitex_dsp._synthesis._demo_sig import _check_tensorpac
 
         assert callable(_check_tensorpac)
 

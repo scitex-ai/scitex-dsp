@@ -7,7 +7,6 @@ import pytest
 
 torch = pytest.importorskip("torch")
 import numpy as np
-
 from scitex.dsp import hilbert
 
 
@@ -94,10 +93,11 @@ class TestHilbert:
         assert np.all(phase >= -np.pi)
         assert np.all(phase <= np.pi)
 
-        # For a sine wave, amplitude should be relatively constant
-        # (except at edges due to boundary effects)
+        # For a sine wave, amplitude should be ~constant (canonical
+        # Hilbert returns peak amplitude). Default mask is hard-step,
+        # matching scipy.signal.hilbert.
         center_amp = amplitude[100:-100]
-        assert np.std(center_amp) / np.mean(center_amp) < 0.1
+        assert np.std(center_amp) / np.mean(center_amp) < 0.01
 
     def test_constant_signal(self):
         """Test hilbert transform on constant signal."""

@@ -11,9 +11,9 @@ import pandas as pd
 from scipy.signal import find_peaks
 from scitex_gen._norm import to_z
 
-from ._demo_sig import demo_sig
-from ._hilbert import hilbert
 from ._resample import resample
+from ._spectral._hilbert import hilbert
+from ._synthesis._demo_sig import demo_sig
 from .filt import bandpass, gauss
 
 

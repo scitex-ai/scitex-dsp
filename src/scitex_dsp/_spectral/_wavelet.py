@@ -5,10 +5,6 @@
 
 """scitex.dsp.wavelet function"""
 
-try:
-    import scitex  # type: ignore
-except ImportError:  # umbrella optional
-    scitex = None  # type: ignore
 from scitex_decorators import batch_fn, signal_fn
 from scitex_nn._Wavelet import Wavelet
 
@@ -126,6 +122,7 @@ if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
     import numpy as np
+    import scitex  # demo-only umbrella usage
 
     # Start
     CONFIG, sys.stdout, sys.stderr, plt, CC = scitex.session.start(sys, plt, agg=True)
