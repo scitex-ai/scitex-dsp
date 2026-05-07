@@ -1,0 +1,302 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scitex_dsp.utils.pac &mdash; scitex-dsp 0.1.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=ca7ad2ea"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            scitex-dsp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/scitex_dsp.html">scitex_dsp</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">scitex-dsp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scitex_dsp.utils.pac</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scitex_dsp.utils.pac</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># Timestamp: &quot;2025-05-26 06:26:29 (ywatanabe)&quot;</span>
+<span class="c1"># File: /ssh:ywatanabe@sp:/home/ywatanabe/proj/scitex_repo/src/scitex/dsp/utils/pac.py</span>
+<span class="c1"># ----------------------------------------</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="n">__FILE__</span> <span class="o">=</span> <span class="s2">&quot;./src/scitex/dsp/utils/pac.py&quot;</span>
+<span class="n">__DIR__</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__FILE__</span><span class="p">)</span>
+<span class="c1"># ----------------------------------------</span>
+
+<span class="c1">#! ./env/bin/python3</span>
+<span class="c1"># Time-stamp: &quot;2024-04-16 17:07:27&quot;</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This script does XYZ.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># Imports</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+
+<span class="c1"># Functions</span>
+<div class="viewcode-block" id="calc_pac_with_tensorpac">
+<a class="viewcode-back" href="../../../api/scitex_dsp.utils.pac.html#scitex_dsp.utils.pac.calc_pac_with_tensorpac">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calc_pac_with_tensorpac</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">t_sec</span><span class="p">,</span> <span class="n">i_batch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_ch</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="c1"># Lazy import — tensorpac is an optional dep (`scitex-dsp[pac]`).</span>
+    <span class="c1"># Importing at module top would break `scitex_dsp.utils` for users</span>
+    <span class="c1"># who don&#39;t need this cross-check helper.</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">tensorpac</span>
+
+    <span class="c1"># Morlet&#39;s Wavelet Transfrmation</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">tensorpac</span><span class="o">.</span><span class="n">Pac</span><span class="p">(</span><span class="n">f_pha</span><span class="o">=</span><span class="s2">&quot;hres&quot;</span><span class="p">,</span> <span class="n">f_amp</span><span class="o">=</span><span class="s2">&quot;mres&quot;</span><span class="p">,</span> <span class="n">dcomplex</span><span class="o">=</span><span class="s2">&quot;wavelet&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Bandpass Filtering and Hilbert Transformation</span>
+    <span class="n">phases</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">xx</span><span class="p">[</span><span class="n">i_batch</span><span class="p">,</span> <span class="n">i_ch</span><span class="p">],</span> <span class="n">ftype</span><span class="o">=</span><span class="s2">&quot;phase&quot;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (50, 20, 2048)</span>
+    <span class="n">amplitudes</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+        <span class="n">fs</span><span class="p">,</span> <span class="n">xx</span><span class="p">[</span><span class="n">i_batch</span><span class="p">,</span> <span class="n">i_ch</span><span class="p">],</span> <span class="n">ftype</span><span class="o">=</span><span class="s2">&quot;amplitude&quot;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>  <span class="c1"># (50, 20, 2048)</span>
+
+    <span class="c1"># Calculates xpac</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">idpac</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">xpac</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">phases</span><span class="p">,</span> <span class="n">amplitudes</span><span class="p">)</span>  <span class="c1"># (50, 50, 20)</span>
+    <span class="n">pac</span> <span class="o">=</span> <span class="n">xpac</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (50, 50)</span>
+
+    <span class="n">freqs_amp</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">f_amp</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">freqs_pha</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">f_pha</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">pac</span> <span class="o">=</span> <span class="n">pac</span><span class="o">.</span><span class="n">T</span>  <span class="c1"># (amp, pha) -&gt; (pha, amp)</span>
+
+    <span class="k">return</span> <span class="n">phases</span><span class="p">,</span> <span class="n">amplitudes</span><span class="p">,</span> <span class="n">freqs_pha</span><span class="p">,</span> <span class="n">freqs_amp</span><span class="p">,</span> <span class="n">pac</span></div>
+
+
+
+<span class="c1"># Public underscore-prefixed alias — advertised through `scitex_dsp.utils`</span>
+<span class="c1"># so callers can write `from scitex_dsp.utils import _calc_pac_with_tensorpac`</span>
+<span class="c1"># without reaching into the submodule.</span>
+<span class="n">_calc_pac_with_tensorpac</span> <span class="o">=</span> <span class="n">calc_pac_with_tensorpac</span>
+
+
+<div class="viewcode-block" id="plot_PAC_scitex_vs_tensorpac">
+<a class="viewcode-back" href="../../../api/scitex_dsp.utils.pac.html#scitex_dsp.utils.pac.plot_PAC_scitex_vs_tensorpac">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_PAC_scitex_vs_tensorpac</span><span class="p">(</span><span class="n">pac_scitex</span><span class="p">,</span> <span class="n">pac_tp</span><span class="p">,</span> <span class="n">freqs_pha</span><span class="p">,</span> <span class="n">freqs_amp</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scitex</span>  <span class="c1"># function-scoped: PA304 exempt</span>
+
+    <span class="k">assert</span> <span class="n">pac_scitex</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">pac_tp</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="c1"># Plots</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">scitex</span><span class="o">.</span><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">ncols</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># , sharex=True, sharey=True</span>
+
+    <span class="c1"># To align scalebars</span>
+    <span class="n">vmin</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">pac_scitex</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">pac_tp</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">pac_scitex</span> <span class="o">-</span> <span class="n">pac_tp</span><span class="p">))</span>
+    <span class="n">vmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">pac_scitex</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">pac_tp</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">pac_scitex</span> <span class="o">-</span> <span class="n">pac_tp</span><span class="p">))</span>
+
+    <span class="c1"># scitex version</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow2d</span><span class="p">(</span>
+        <span class="n">pac_scitex</span><span class="p">,</span>
+        <span class="n">cbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span>
+        <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;scitex&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Tensorpac</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow2d</span><span class="p">(</span>
+        <span class="n">pac_tp</span><span class="p">,</span>
+        <span class="n">cbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span>
+        <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Tensorpac&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Diff.</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow2d</span><span class="p">(</span>
+        <span class="n">pac_scitex</span> <span class="o">-</span> <span class="n">pac_tp</span><span class="p">,</span>
+        <span class="n">cbar_label</span><span class="o">=</span><span class="s2">&quot;PAC values&quot;</span><span class="p">,</span>
+        <span class="n">cbar_shrink</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span>
+        <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Difference</span><span class="se">\n</span><span class="s2">(scitex - Tensorpac)&quot;</span><span class="p">)</span>
+
+    <span class="c1"># for ax in axes:</span>
+    <span class="c1">#     ax.set_ticks(</span>
+    <span class="c1">#         x_vals=freqs_pha,</span>
+    <span class="c1">#         # y_vals=freqs_amp,</span>
+    <span class="c1">#     )</span>
+    <span class="c1">#     # ax.set_n_ticks()</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;PAC (MI) values&quot;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">supxlabel</span><span class="p">(</span><span class="s2">&quot;Frequency for phase [Hz]&quot;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">supylabel</span><span class="p">(</span><span class="s2">&quot;Frequency for amplitude [Hz]&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+
+<span class="c1"># Snake_case alias for consistency</span>
+<div class="viewcode-block" id="plot_pac_scitex_vs_tensorpac">
+<a class="viewcode-back" href="../../../api/scitex_dsp.utils.pac.html#scitex_dsp.utils.pac.plot_pac_scitex_vs_tensorpac">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_pac_scitex_vs_tensorpac</span><span class="p">(</span><span class="n">pac_scitex</span><span class="p">,</span> <span class="n">pac_tp</span><span class="p">,</span> <span class="n">freqs_pha</span><span class="p">,</span> <span class="n">freqs_amp</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot comparison between SciTeX and Tensorpac phase-amplitude coupling results.</span>
+
+<span class="sd">    This is an alias for plot_PAC_scitex_vs_tensorpac with snake_case naming.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pac_scitex : array-like</span>
+<span class="sd">        PAC values from SciTeX</span>
+<span class="sd">    pac_tp : array-like</span>
+<span class="sd">        PAC values from Tensorpac</span>
+<span class="sd">    freqs_pha : array-like</span>
+<span class="sd">        Phase frequencies</span>
+<span class="sd">    freqs_amp : array-like</span>
+<span class="sd">        Amplitude frequencies</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : matplotlib.figure.Figure</span>
+<span class="sd">        The generated figure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">plot_PAC_scitex_vs_tensorpac</span><span class="p">(</span><span class="n">pac_scitex</span><span class="p">,</span> <span class="n">pac_tp</span><span class="p">,</span> <span class="n">freqs_pha</span><span class="p">,</span> <span class="n">freqs_amp</span><span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Start</span>
+    <span class="n">CONFIG</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">plt</span><span class="p">,</span> <span class="n">CC</span> <span class="o">=</span> <span class="n">scitex</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="n">plt</span><span class="p">)</span>
+
+    <span class="c1"># Parameters</span>
+    <span class="n">FS</span> <span class="o">=</span> <span class="mi">512</span>
+    <span class="n">T_SEC</span> <span class="o">=</span> <span class="mi">4</span>
+
+    <span class="n">xx</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">scitex</span><span class="o">.</span><span class="n">dsp</span><span class="o">.</span><span class="n">demo_sig</span><span class="p">(</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">n_chs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">n_segments</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">fs</span><span class="o">=</span><span class="n">FS</span><span class="p">,</span>
+        <span class="n">t_sec</span><span class="o">=</span><span class="n">T_SEC</span><span class="p">,</span>
+        <span class="n">sig_type</span><span class="o">=</span><span class="s2">&quot;tensorpac&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># scitex</span>
+    <span class="n">pac_scitex</span><span class="p">,</span> <span class="n">freqs_pha</span><span class="p">,</span> <span class="n">freqs_amp</span> <span class="o">=</span> <span class="n">scitex</span><span class="o">.</span><span class="n">dsp</span><span class="o">.</span><span class="n">pac</span><span class="p">(</span>
+        <span class="n">xx</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">pha_n_bands</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">amp_n_bands</span><span class="o">=</span><span class="mi">30</span>
+    <span class="p">)</span>
+    <span class="n">i_batch</span><span class="p">,</span> <span class="n">i_epoch</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="n">pac_scitex</span> <span class="o">=</span> <span class="n">pac_scitex</span><span class="p">[</span><span class="n">i_batch</span><span class="p">,</span> <span class="n">i_epoch</span><span class="p">]</span>
+
+    <span class="c1"># Tensorpac</span>
+    <span class="n">phases</span><span class="p">,</span> <span class="n">amplitudes</span><span class="p">,</span> <span class="n">freqs_pha</span><span class="p">,</span> <span class="n">freqs_amp</span><span class="p">,</span> <span class="n">pac_tp</span> <span class="o">=</span> <span class="n">calc_pac_with_tensorpac</span><span class="p">(</span>
+        <span class="n">xx</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">T_SEC</span><span class="p">,</span> <span class="n">i_batch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">i_ch</span><span class="o">=</span><span class="mi">0</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Plots</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_PAC_scitex_vs_tensorpac</span><span class="p">(</span><span class="n">pac_scitex</span><span class="p">,</span> <span class="n">pac_tp</span><span class="p">,</span> <span class="n">freqs_pha</span><span class="p">,</span> <span class="n">freqs_amp</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="c1"># Close</span>
+    <span class="n">scitex</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">CONFIG</span><span class="p">)</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">/home/ywatanabe/proj/entrance/scitex/dsp/utils/pac.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># EOF</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Yusuke Watanabe.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
