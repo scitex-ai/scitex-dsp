@@ -26,8 +26,17 @@ import warnings
 # Submodules: example/params/norm/reference/filt at root,
 # add_noise re-exported from _synthesis for backwards compatibility.
 from . import example, filt, norm, params, reference
-from ._audio_io import _listen as _bc_listen
-from ._audio_io import _mne as _bc_mne
+
+# Optional audio submodules — wrapped because _listen imports
+# sounddevice (needs PortAudio) and _mne imports mne.
+try:
+    from ._audio_io import _listen as _bc_listen
+except (ImportError, OSError):
+    _bc_listen = None
+try:
+    from ._audio_io import _mne as _bc_mne
+except Exception:  # mne import path may raise misc runtime errors
+    _bc_mne = None
 
 # Core imports that should always work
 from ._crop import crop
