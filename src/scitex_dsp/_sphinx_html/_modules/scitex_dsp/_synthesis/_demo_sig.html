@@ -1,0 +1,498 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scitex_dsp._synthesis._demo_sig &mdash; scitex-dsp 0.1.6 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=6e0256f3"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            scitex-dsp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/scitex_dsp.html">scitex_dsp</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">scitex-dsp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scitex_dsp._synthesis._demo_sig</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scitex_dsp._synthesis._demo_sig</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># Time-stamp: &quot;2024-11-06 01:45:32 (ywatanabe)&quot;</span>
+<span class="c1"># File: ./scitex_repo/src/scitex/dsp/_demo_sig.py</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">chirp</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">mne</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">mne.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">sample</span>
+
+    <span class="n">MNE_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">MNE_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">mne</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">sample</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">ripple_detection.simulate</span><span class="w"> </span><span class="kn">import</span> <span class="n">simulate_LFP</span><span class="p">,</span> <span class="n">simulate_time</span>
+
+    <span class="n">RIPPLE_DETECTION_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">RIPPLE_DETECTION_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">simulate_LFP</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">simulate_time</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">tensorpac.signals</span><span class="w"> </span><span class="kn">import</span> <span class="n">pac_signals_wavelet</span>
+
+    <span class="n">TENSORPAC_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">TENSORPAC_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">pac_signals_wavelet</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scitex_io</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_configs</span>
+
+    <span class="n">CONFIG</span> <span class="o">=</span> <span class="n">load_configs</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">CONFIG</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_mne</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">MNE_AVAILABLE</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;MNE-Python is not installed. Please install with: pip install mne&quot;</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_ripple_detection</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">RIPPLE_DETECTION_AVAILABLE</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;ripple_detection is not installed. Please install with: pip install ripple_detection&quot;</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_tensorpac</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">TENSORPAC_AVAILABLE</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;tensorpac is not installed. Please install with: pip install tensorpac&quot;</span>
+        <span class="p">)</span>
+
+
+<span class="c1"># Functions</span>
+<div class="viewcode-block" id="demo_sig">
+<a class="viewcode-back" href="../../../api/scitex_dsp.html#scitex_dsp.demo_sig">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">demo_sig</span><span class="p">(</span>
+    <span class="n">sig_type</span><span class="o">=</span><span class="s2">&quot;periodic&quot;</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">n_chs</span><span class="o">=</span><span class="mi">19</span><span class="p">,</span>
+    <span class="n">n_segments</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">t_sec</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">fs</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="n">freqs_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate demo signals for various signal types.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sig_type : str, optional</span>
+<span class="sd">        Type of signal to generate. Options are &quot;uniform&quot;, &quot;gauss&quot;, &quot;periodic&quot;, &quot;chirp&quot;, &quot;ripple&quot;, &quot;meg&quot;, &quot;tensorpac&quot;, &quot;pac&quot;.</span>
+<span class="sd">        Default is &quot;periodic&quot;.</span>
+<span class="sd">    batch_size : int, optional</span>
+<span class="sd">        Number of batches to generate. Default is 8.</span>
+<span class="sd">    n_chs : int, optional</span>
+<span class="sd">        Number of channels. Default is 19.</span>
+<span class="sd">    n_segments : int, optional</span>
+<span class="sd">        Number of segments for tensorpac and pac signals. Default is 20.</span>
+<span class="sd">    t_sec : float, optional</span>
+<span class="sd">        Duration of the signal in seconds. Default is 4.</span>
+<span class="sd">    fs : int, optional</span>
+<span class="sd">        Sampling frequency in Hz. Default is 512.</span>
+<span class="sd">    freqs_hz : list or None, optional</span>
+<span class="sd">        List of frequencies in Hz for periodic signals. If None, random frequencies will be used.</span>
+<span class="sd">    verbose : bool, optional</span>
+<span class="sd">        If True, print additional information. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        A tuple containing:</span>
+<span class="sd">        - np.ndarray: Generated signal(s) with shape (batch_size, n_chs, time_samples) or (batch_size, n_chs, n_segments, time_samples) for tensorpac and pac signals.</span>
+<span class="sd">        - np.ndarray: Time array.</span>
+<span class="sd">        - int: Sampling frequency.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">sig_type</span> <span class="ow">in</span> <span class="p">[</span>
+        <span class="s2">&quot;uniform&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;gauss&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;periodic&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;chirp&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ripple&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;meg&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tensorpac&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pac&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">tt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t_sec</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_sec</span> <span class="o">*</span> <span class="n">fs</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">sig_type</span> <span class="o">==</span> <span class="s2">&quot;uniform&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+                <span class="n">low</span><span class="o">=-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">n_chs</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tt</span><span class="p">))</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="n">tt</span><span class="p">,</span>
+            <span class="n">fs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">sig_type</span> <span class="o">==</span> <span class="s2">&quot;gauss&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">n_chs</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tt</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="n">tt</span><span class="p">,</span>
+            <span class="n">fs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">sig_type</span> <span class="o">==</span> <span class="s2">&quot;meg&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">_demo_sig_meg</span><span class="p">(</span>
+                <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                <span class="n">n_chs</span><span class="o">=</span><span class="n">n_chs</span><span class="p">,</span>
+                <span class="n">t_sec</span><span class="o">=</span><span class="n">t_sec</span><span class="p">,</span>
+                <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">tt</span><span class="p">)],</span>
+            <span class="n">tt</span><span class="p">,</span>
+            <span class="n">fs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">sig_type</span> <span class="o">==</span> <span class="s2">&quot;tensorpac&quot;</span><span class="p">:</span>
+        <span class="n">xx</span><span class="p">,</span> <span class="n">tt</span> <span class="o">=</span> <span class="n">_demo_sig_tensorpac</span><span class="p">(</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">n_chs</span><span class="o">=</span><span class="n">n_chs</span><span class="p">,</span>
+            <span class="n">n_segments</span><span class="o">=</span><span class="n">n_segments</span><span class="p">,</span>
+            <span class="n">t_sec</span><span class="o">=</span><span class="n">t_sec</span><span class="p">,</span>
+            <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">xx</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">tt</span><span class="p">)],</span> <span class="n">tt</span><span class="p">,</span> <span class="n">fs</span>
+
+    <span class="k">elif</span> <span class="n">sig_type</span> <span class="o">==</span> <span class="s2">&quot;pac&quot;</span><span class="p">:</span>
+        <span class="n">xx</span> <span class="o">=</span> <span class="n">_demo_sig_pac</span><span class="p">(</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">n_chs</span><span class="o">=</span><span class="n">n_chs</span><span class="p">,</span>
+            <span class="n">n_segments</span><span class="o">=</span><span class="n">n_segments</span><span class="p">,</span>
+            <span class="n">t_sec</span><span class="o">=</span><span class="n">t_sec</span><span class="p">,</span>
+            <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">xx</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">tt</span><span class="p">)],</span> <span class="n">tt</span><span class="p">,</span> <span class="n">fs</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fn_1d</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;periodic&quot;</span><span class="p">:</span> <span class="n">_demo_sig_periodic_1d</span><span class="p">,</span>
+            <span class="s2">&quot;chirp&quot;</span><span class="p">:</span> <span class="n">_demo_sig_chirp_1d</span><span class="p">,</span>
+            <span class="s2">&quot;ripple&quot;</span><span class="p">:</span> <span class="n">_demo_sig_ripple_1d</span><span class="p">,</span>
+        <span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sig_type</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="n">fn_1d</span><span class="p">(</span>
+                            <span class="n">t_sec</span><span class="o">=</span><span class="n">t_sec</span><span class="p">,</span>
+                            <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span>
+                            <span class="n">freqs_hz</span><span class="o">=</span><span class="n">freqs_hz</span><span class="p">,</span>
+                            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">batch_size</span> <span class="o">*</span> <span class="n">n_chs</span><span class="p">))</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">n_chs</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">tt</span><span class="p">)]</span>
+            <span class="p">),</span>
+            <span class="n">tt</span><span class="p">,</span>
+            <span class="n">fs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_demo_sig_pac</span><span class="p">(</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">n_chs</span><span class="o">=</span><span class="mi">19</span><span class="p">,</span>
+    <span class="n">t_sec</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">fs</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="n">f_pha</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">f_amp</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">noise</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+    <span class="n">n_segments</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a demo signal with phase-amplitude coupling.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">        batch_size (int): Number of batches.</span>
+<span class="sd">        n_chs (int): Number of channels.</span>
+<span class="sd">        t_sec (int): Duration of the signal in seconds.</span>
+<span class="sd">        fs (int): Sampling frequency.</span>
+<span class="sd">        f_pha (float): Frequency of the phase-modulating signal.</span>
+<span class="sd">        f_amp (float): Frequency of the amplitude-modulated signal.</span>
+<span class="sd">        noise (float): Noise level added to the signal.</span>
+<span class="sd">        n_segments (int): Number of segments.</span>
+<span class="sd">        verbose (bool): If True, print additional information.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        np.array: Generated signals with shape (batch_size, n_chs, n_segments, seq_len).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">seq_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_sec</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">seq_len</span><span class="p">)</span> <span class="o">/</span> <span class="n">fs</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generating signal with length: </span><span class="si">{</span><span class="n">seq_len</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Create empty array to store the signals</span>
+    <span class="n">signals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">n_chs</span><span class="p">,</span> <span class="n">n_segments</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_chs</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_segments</span><span class="p">):</span>
+                <span class="c1"># Phase signal</span>
+                <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">f_pha</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
+                <span class="c1"># Amplitude envelope</span>
+                <span class="n">amplitude_env</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">f_amp</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
+                <span class="c1"># Combine phase and amplitude modulation</span>
+                <span class="n">signal</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">amplitude_env</span>
+                <span class="c1"># Add Gaussian noise</span>
+                <span class="n">signal</span> <span class="o">+=</span> <span class="n">noise</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">seq_len</span><span class="p">)</span>
+                <span class="n">signals</span><span class="p">[</span><span class="n">b</span><span class="p">,</span> <span class="n">ch</span><span class="p">,</span> <span class="n">seg</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">signal</span>
+
+    <span class="k">return</span> <span class="n">signals</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_demo_sig_tensorpac</span><span class="p">(</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">n_chs</span><span class="o">=</span><span class="mi">19</span><span class="p">,</span>
+    <span class="n">t_sec</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">fs</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="n">f_pha</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">f_amp</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">noise</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+    <span class="n">n_segments</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">_check_tensorpac</span><span class="p">()</span>
+    <span class="n">n_times</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_sec</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)</span>
+    <span class="n">x_2d</span><span class="p">,</span> <span class="n">tt</span> <span class="o">=</span> <span class="n">pac_signals_wavelet</span><span class="p">(</span>
+        <span class="n">sf</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span>
+        <span class="n">f_pha</span><span class="o">=</span><span class="n">f_pha</span><span class="p">,</span>
+        <span class="n">f_amp</span><span class="o">=</span><span class="n">f_amp</span><span class="p">,</span>
+        <span class="n">noise</span><span class="o">=</span><span class="n">noise</span><span class="p">,</span>
+        <span class="n">n_epochs</span><span class="o">=</span><span class="n">n_segments</span><span class="p">,</span>
+        <span class="n">n_times</span><span class="o">=</span><span class="n">n_times</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">x_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">x_2d</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">x_4d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">x_3d</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_chs</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x_4d</span><span class="p">,</span> <span class="n">tt</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_demo_sig_meg</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">n_chs</span><span class="o">=</span><span class="mi">19</span><span class="p">,</span> <span class="n">t_sec</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">_check_mne</span><span class="p">()</span>
+    <span class="n">data_path</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">data_path</span><span class="p">()</span>
+    <span class="n">meg_path</span> <span class="o">=</span> <span class="n">data_path</span> <span class="o">/</span> <span class="s2">&quot;MEG&quot;</span> <span class="o">/</span> <span class="s2">&quot;sample&quot;</span>
+    <span class="n">raw_fname</span> <span class="o">=</span> <span class="n">meg_path</span> <span class="o">/</span> <span class="s2">&quot;sample_audvis_raw.fif&quot;</span>
+    <span class="n">fwd_fname</span> <span class="o">=</span> <span class="n">meg_path</span> <span class="o">/</span> <span class="s2">&quot;sample_audvis-meg-eeg-oct-6-fwd.fif&quot;</span>
+
+    <span class="c1"># Load real data as the template</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">mne</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_raw_fif</span><span class="p">(</span><span class="n">raw_fname</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">tmax</span><span class="o">=</span><span class="n">t_sec</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="n">raw</span><span class="o">.</span><span class="n">set_eeg_reference</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">raw</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span>
+        <span class="n">picks</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">ch_names</span><span class="p">[:</span> <span class="n">batch_size</span> <span class="o">*</span> <span class="n">n_chs</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">n_chs</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_demo_sig_periodic_1d</span><span class="p">(</span><span class="n">t_sec</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">freqs_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a demo signal with the shape (t_sec*fs,).&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">freqs_hz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">n_freqs</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="n">freqs_hz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">fs</span><span class="p">))[:</span><span class="n">n_freqs</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;freqs_hz was randomly determined as </span><span class="si">{</span><span class="n">freqs_hz</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_sec</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t_sec</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">summed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">((</span><span class="n">f_hz</span> <span class="o">*</span> <span class="n">t</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">())</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">f_hz</span> <span class="ow">in</span> <span class="n">freqs_hz</span>
+        <span class="p">]</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">summed</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_demo_sig_chirp_1d</span><span class="p">(</span>
+    <span class="n">t_sec</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">low_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">high_hz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="k">if</span> <span class="n">low_hz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">low_hz</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;low_hz was randomly determined as </span><span class="si">{</span><span class="n">low_hz</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">high_hz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">high_hz</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;high_hz was randomly determined as </span><span class="si">{</span><span class="n">high_hz</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_sec</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t_sec</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">chirp</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">low_hz</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">high_hz</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">*=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_demo_sig_ripple_1d</span><span class="p">(</span><span class="n">t_sec</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">_check_ripple_detection</span><span class="p">()</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">t_sec</span> <span class="o">*</span> <span class="n">fs</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">simulate_time</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">fs</span><span class="p">)</span>
+    <span class="n">n_ripples</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="n">mid_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">t</span><span class="p">)[:</span><span class="n">n_ripples</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">simulate_LFP</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">mid_time</span><span class="p">,</span> <span class="n">noise_amplitude</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">ripple_amplitude</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scitex</span>
+
+    <span class="c1"># Start</span>
+    <span class="n">CONFIG</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">plt</span><span class="p">,</span> <span class="n">CC</span> <span class="o">=</span> <span class="n">scitex</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="n">plt</span><span class="p">)</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scitex</span>
+
+    <span class="n">SIG_TYPES</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;uniform&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;gauss&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;periodic&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;chirp&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;meg&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ripple&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tensorpac&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pac&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">i_batch</span><span class="p">,</span> <span class="n">i_ch</span><span class="p">,</span> <span class="n">i_segment</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">scitex</span><span class="o">.</span><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">SIG_TYPES</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="p">(</span><span class="n">i_sig_type</span><span class="p">,</span> <span class="n">sig_type</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">SIG_TYPES</span><span class="p">)):</span>
+        <span class="n">xx</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">demo_sig</span><span class="p">(</span><span class="n">sig_type</span><span class="o">=</span><span class="n">sig_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sig_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;tensorpac&quot;</span><span class="p">,</span> <span class="s2">&quot;pac&quot;</span><span class="p">]:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tt</span><span class="p">,</span> <span class="n">xx</span><span class="p">[</span><span class="n">i_batch</span><span class="p">,</span> <span class="n">i_ch</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="n">sig_type</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tt</span><span class="p">,</span> <span class="n">xx</span><span class="p">[</span><span class="n">i_batch</span><span class="p">,</span> <span class="n">i_ch</span><span class="p">,</span> <span class="n">i_segment</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="n">sig_type</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper left&quot;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Demo signals&quot;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">supxlabel</span><span class="p">(</span><span class="s2">&quot;Time [s]&quot;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">supylabel</span><span class="p">(</span><span class="s2">&quot;Amplitude [?V]&quot;</span><span class="p">)</span>
+    <span class="n">scitex</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="s2">&quot;traces.png&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Close</span>
+    <span class="n">scitex</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">CONFIG</span><span class="p">)</span>
+
+<span class="c1"># EOF</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">/home/ywatanabe/proj/entrance/scitex/dsp/_demo_sig.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># EOF</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Yusuke Watanabe.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+scitex\_dsp.utils
+=================
+
+.. automodule:: scitex_dsp.utils
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   filter
+   pac
