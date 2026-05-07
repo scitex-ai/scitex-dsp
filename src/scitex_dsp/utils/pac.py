@@ -24,11 +24,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorpac
 
-try:
-    import scitex  # type: ignore
-except ImportError:  # umbrella optional
-    scitex = None  # type: ignore
-
 
 # Functions
 def calc_pac_with_tensorpac(xx, fs, t_sec, i_batch=0, i_ch=0):
@@ -55,7 +50,15 @@ def calc_pac_with_tensorpac(xx, fs, t_sec, i_batch=0, i_ch=0):
     return phases, amplitudes, freqs_pha, freqs_amp, pac
 
 
+# Public underscore-prefixed alias — advertised through `scitex_dsp.utils`
+# so callers can write `from scitex_dsp.utils import _calc_pac_with_tensorpac`
+# without reaching into the submodule.
+_calc_pac_with_tensorpac = calc_pac_with_tensorpac
+
+
 def plot_PAC_scitex_vs_tensorpac(pac_scitex, pac_tp, freqs_pha, freqs_amp):
+    import scitex  # function-scoped: PA304 exempt
+
     assert pac_scitex.shape == pac_tp.shape
 
     # Plots
@@ -94,7 +97,7 @@ def plot_PAC_scitex_vs_tensorpac(pac_scitex, pac_tp, freqs_pha, freqs_amp):
         vmin=vmin,
         vmax=vmax,
     )
-    ax.set_title(f"Difference\n(scitex - Tensorpac)")
+    ax.set_title("Difference\n(scitex - Tensorpac)")
 
     # for ax in axes:
     #     ax.set_ticks(
@@ -137,8 +140,6 @@ def plot_pac_scitex_vs_tensorpac(pac_scitex, pac_tp, freqs_pha, freqs_amp):
 
 
 if __name__ == "__main__":
-    import torch
-
     # Start
     CONFIG, sys.stdout, sys.stderr, plt, CC = scitex.session.start(sys, plt)
 
