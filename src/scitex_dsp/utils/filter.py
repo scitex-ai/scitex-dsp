@@ -83,9 +83,21 @@ def design_filter(sig_len, fs, low_hz=None, high_hz=None, cycle=3, is_bandstop=F
 
     # fs may arrive as a 0-d torch tensor (from @signal_fn-decorated callers
     # or numpy-array wrappers); int(tensor) needs .item() on 0-d.
-    fs = int(fs.item()) if hasattr(fs, "item") else int(fs)
-    low_hz = float(low_hz) if low_hz is not None else low_hz
-    high_hz = float(high_hz) if high_hz is not None else high_hz
+    def _to_scalar(value, cast):
+        # Accept 0-d / 1-d / single-element arrays/tensors. NumPy 2+
+        # rejects float(np.array([x])) — funnel through .item().
+        if value is None:
+            return None
+        if hasattr(value, "item"):
+            try:
+                return cast(value.item())
+            except (ValueError, TypeError):
+                pass
+        return cast(value)
+
+    fs = _to_scalar(fs, int)
+    low_hz = _to_scalar(low_hz, float)
+    high_hz = _to_scalar(high_hz, float)
     filter_mode = estimate_filter_type(low_hz, high_hz, is_bandstop)
     cutoff = determine_cutoff_frequencies(filter_mode, low_hz, high_hz)
     low_freq = determine_low_freq(filter_mode, low_hz, high_hz)
