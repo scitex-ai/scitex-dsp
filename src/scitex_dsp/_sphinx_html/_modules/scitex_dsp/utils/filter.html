@@ -162,9 +162,21 @@
 
     <span class="c1"># fs may arrive as a 0-d torch tensor (from @signal_fn-decorated callers</span>
     <span class="c1"># or numpy-array wrappers); int(tensor) needs .item() on 0-d.</span>
-    <span class="n">fs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fs</span><span class="o">.</span><span class="n">item</span><span class="p">())</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="s2">&quot;item&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">fs</span><span class="p">)</span>
-    <span class="n">low_hz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">low_hz</span><span class="p">)</span> <span class="k">if</span> <span class="n">low_hz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">low_hz</span>
-    <span class="n">high_hz</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">high_hz</span><span class="p">)</span> <span class="k">if</span> <span class="n">high_hz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">high_hz</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_to_scalar</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">cast</span><span class="p">):</span>
+        <span class="c1"># Accept 0-d / 1-d / single-element arrays/tensors. NumPy 2+</span>
+        <span class="c1"># rejects float(np.array([x])) — funnel through .item().</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;item&quot;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+                <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="n">fs</span> <span class="o">=</span> <span class="n">_to_scalar</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+    <span class="n">low_hz</span> <span class="o">=</span> <span class="n">_to_scalar</span><span class="p">(</span><span class="n">low_hz</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+    <span class="n">high_hz</span> <span class="o">=</span> <span class="n">_to_scalar</span><span class="p">(</span><span class="n">high_hz</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
     <span class="n">filter_mode</span> <span class="o">=</span> <span class="n">estimate_filter_type</span><span class="p">(</span><span class="n">low_hz</span><span class="p">,</span> <span class="n">high_hz</span><span class="p">,</span> <span class="n">is_bandstop</span><span class="p">)</span>
     <span class="n">cutoff</span> <span class="o">=</span> <span class="n">determine_cutoff_frequencies</span><span class="p">(</span><span class="n">filter_mode</span><span class="p">,</span> <span class="n">low_hz</span><span class="p">,</span> <span class="n">high_hz</span><span class="p">)</span>
     <span class="n">low_freq</span> <span class="o">=</span> <span class="n">determine_low_freq</span><span class="p">(</span><span class="n">filter_mode</span><span class="p">,</span> <span class="n">low_hz</span><span class="p">,</span> <span class="n">high_hz</span><span class="p">)</span>
