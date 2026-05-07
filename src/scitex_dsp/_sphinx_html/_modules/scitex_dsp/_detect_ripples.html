@@ -1,0 +1,364 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scitex_dsp._detect_ripples &mdash; scitex-dsp 0.1.6 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            scitex-dsp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/scitex_dsp.html">scitex_dsp</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">scitex-dsp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scitex_dsp._detect_ripples</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scitex_dsp._detect_ripples</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># Time-stamp: &quot;2024-11-05 00:24:54 (ywatanabe)&quot;</span>
+<span class="c1"># File: ./scitex_repo/src/scitex/dsp/_detect_ripples.py</span>
+
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_peaks</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scitex_gen._norm</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_z</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._resample</span><span class="w"> </span><span class="kn">import</span> <span class="n">resample</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._spectral._hilbert</span><span class="w"> </span><span class="kn">import</span> <span class="n">hilbert</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._synthesis._demo_sig</span><span class="w"> </span><span class="kn">import</span> <span class="n">demo_sig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.filt</span><span class="w"> </span><span class="kn">import</span> <span class="n">bandpass</span><span class="p">,</span> <span class="n">gauss</span>
+
+
+<div class="viewcode-block" id="detect_ripples">
+<a class="viewcode-back" href="../../api/scitex_dsp.html#scitex_dsp.detect_ripples">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">detect_ripples</span><span class="p">(</span>
+    <span class="n">xx</span><span class="p">,</span>
+    <span class="n">fs</span><span class="p">,</span>
+    <span class="n">low_hz</span><span class="p">,</span>
+    <span class="n">high_hz</span><span class="p">,</span>
+    <span class="n">sd</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+    <span class="n">smoothing_sigma_ms</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">min_duration_ms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">return_preprocessed_signal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    xx: 2-dimensional (n_chs, seq_len) or 3-dimensional (batch_size, n_chs, seq_len) wide-band signal.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">xx_r</span><span class="p">,</span> <span class="n">fs_r</span> <span class="o">=</span> <span class="n">_preprocess</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">low_hz</span><span class="p">,</span> <span class="n">high_hz</span><span class="p">,</span> <span class="n">smoothing_sigma_ms</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">_find_events</span><span class="p">(</span><span class="n">xx_r</span><span class="p">,</span> <span class="n">fs_r</span><span class="p">,</span> <span class="n">sd</span><span class="p">,</span> <span class="n">min_duration_ms</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">_drop_ripples_at_edges</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">low_hz</span><span class="p">,</span> <span class="n">xx_r</span><span class="p">,</span> <span class="n">fs_r</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">_calc_relative_peak_position</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="c1"># df = _calc_incidence(df, xx_r, fs_r)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">_sort_columns</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">return_preprocessed_signal</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">df</span>
+
+        <span class="k">elif</span> <span class="n">return_preprocessed_signal</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">xx_r</span><span class="p">,</span> <span class="n">fs_r</span>
+
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Caught an error:&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_preprocess</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">low_hz</span><span class="p">,</span> <span class="n">high_hz</span><span class="p">,</span> <span class="n">smoothing_sigma_ms</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+    <span class="c1"># Ensures three dimensional</span>
+    <span class="k">if</span> <span class="n">xx</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">xx</span> <span class="o">=</span> <span class="n">xx</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">xx</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span>
+
+    <span class="c1"># For readability</span>
+    <span class="n">RIPPLE_BANDS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([[</span><span class="n">low_hz</span><span class="p">,</span> <span class="n">high_hz</span><span class="p">]])</span>
+
+    <span class="c1"># Downsampling: keep Nyquist safely above high_hz so the bandpass</span>
+    <span class="c1"># upper edge is well within range. Without this, bandpass returns</span>
+    <span class="c1"># ~0 and no ripples are detected.</span>
+    <span class="n">fs_tgt_default</span> <span class="o">=</span> <span class="n">low_hz</span> <span class="o">*</span> <span class="mi">3</span>
+    <span class="n">fs_tgt_safe</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">high_hz</span> <span class="o">*</span> <span class="mf">2.5</span><span class="p">))</span>
+    <span class="n">fs_tgt</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">fs_tgt_default</span><span class="p">,</span> <span class="n">fs_tgt_safe</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fs_tgt</span> <span class="o">&gt;</span> <span class="n">fs_tgt_default</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;detect_ripples: target fs raised from </span><span class="si">{</span><span class="n">fs_tgt_default</span><span class="si">}</span><span class="s2"> to &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">fs_tgt</span><span class="si">}</span><span class="s2"> Hz so Nyquist stays above high_hz=</span><span class="si">{</span><span class="n">high_hz</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Helper: scitex_decorators.signal_fn squeezes 1-size dims off the input</span>
+    <span class="c1"># of every decorated signal call. Restore 3D before each per-channel op.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_3d</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">arr</span>
+
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">_ensure_3d</span><span class="p">(</span><span class="n">resample</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">fs</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">fs_tgt</span><span class="p">)))</span>
+    <span class="n">fs</span> <span class="o">=</span> <span class="n">fs_tgt</span>
+
+    <span class="c1"># Subtracts the cross-channel mean to reduce EMG-driven false</span>
+    <span class="c1"># positives (CAR-style). Skip for single-channel input — there</span>
+    <span class="c1"># the mean equals the signal itself, which would zero everything.</span>
+    <span class="k">if</span> <span class="n">xx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">xx</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;detect_ripples: single-channel input — skipping the &quot;</span>
+            <span class="s2">&quot;cross-channel mean subtraction (would zero the signal).&quot;</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Bandpass Filtering</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">_ensure_3d</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+            <span class="n">bandpass</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">xx</span><span class="p">),</span>
+                <span class="n">fs_tgt</span><span class="p">,</span>
+                <span class="n">RIPPLE_BANDS</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Calculate RMS</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">xx</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">xx_h</span> <span class="o">=</span> <span class="n">hilbert</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">_ensure_3d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xx_h</span><span class="p">))</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">_ensure_3d</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">gauss</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">smoothing_sigma_ms</span> <span class="o">*</span> <span class="mf">1e-3</span> <span class="o">*</span> <span class="n">fs_tgt</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span>
+
+    <span class="c1"># Scales across channels</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">xx</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">to_z</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">xx</span><span class="p">,</span> <span class="n">fs_tgt</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_events</span><span class="p">(</span><span class="n">xx_r</span><span class="p">,</span> <span class="n">fs_r</span><span class="p">,</span> <span class="n">sd</span><span class="p">,</span> <span class="n">min_duration_ms</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_find_events_1d</span><span class="p">(</span><span class="n">xx_ri</span><span class="p">,</span> <span class="n">fs_r</span><span class="p">,</span> <span class="n">sd</span><span class="p">,</span> <span class="n">min_duration_ms</span><span class="p">):</span>
+        <span class="c1"># Finds peaks over the designated standard deviation</span>
+        <span class="n">peaks</span><span class="p">,</span> <span class="n">properties</span> <span class="o">=</span> <span class="n">find_peaks</span><span class="p">(</span><span class="n">xx_ri</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">sd</span><span class="p">)</span>
+
+        <span class="c1"># Determines the range around each peak (customize as needed)</span>
+        <span class="n">peaks_all</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">peak_ranges</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">peak_amplitudes_sd</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Boundary threshold: half the detection threshold. Walking</span>
+        <span class="c1"># out to envelope &lt; 0 (the original behaviour) yields very</span>
+        <span class="c1"># wide ranges because the z-scored envelope stays slightly</span>
+        <span class="c1"># positive long after a burst.</span>
+        <span class="n">bound_thr</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">sd</span>
+
+        <span class="k">for</span> <span class="n">peak</span> <span class="ow">in</span> <span class="n">peaks</span><span class="p">:</span>
+            <span class="n">left_bound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">xx_ri</span><span class="p">[:</span><span class="n">peak</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">bound_thr</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">right_bound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">xx_ri</span><span class="p">[</span><span class="n">peak</span><span class="p">:]</span> <span class="o">&lt;</span> <span class="n">bound_thr</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">left_ips</span> <span class="o">=</span> <span class="n">left_bound</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="k">if</span> <span class="n">left_bound</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">peak</span>
+            <span class="n">right_ips</span> <span class="o">=</span> <span class="n">peak</span> <span class="o">+</span> <span class="n">right_bound</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="k">if</span> <span class="n">right_bound</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">peak</span>
+
+            <span class="c1"># Avoid duplicates: Check if the current peak range is already listed</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">left_ips</span> <span class="o">==</span> <span class="n">start</span> <span class="ow">and</span> <span class="n">right_ips</span> <span class="o">==</span> <span class="n">end</span><span class="p">)</span> <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">peak_ranges</span>
+            <span class="p">):</span>
+                <span class="n">peaks_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">peak</span><span class="p">)</span>
+                <span class="n">peak_ranges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">left_ips</span><span class="p">,</span> <span class="n">right_ips</span><span class="p">))</span>
+                <span class="n">peak_amplitudes_sd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xx_ri</span><span class="p">[</span><span class="n">peak</span><span class="p">])</span>
+
+        <span class="c1"># Converts to DataFrame</span>
+        <span class="k">if</span> <span class="n">peak_ranges</span><span class="p">:</span>
+            <span class="n">starts</span><span class="p">,</span> <span class="n">ends</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">peak_ranges</span><span class="p">)</span> <span class="k">if</span> <span class="n">peak_ranges</span> <span class="k">else</span> <span class="p">([],</span> <span class="p">[])</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;start_s&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">starts</span><span class="p">)</span> <span class="o">/</span> <span class="n">fs_r</span><span class="p">,</span>
+                    <span class="s2">&quot;peak_s&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">peaks_all</span><span class="p">)</span> <span class="o">/</span> <span class="n">fs_r</span><span class="p">,</span>
+                    <span class="s2">&quot;end_s&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">ends</span><span class="p">)</span> <span class="o">/</span> <span class="n">fs_r</span><span class="p">,</span>
+                    <span class="s2">&quot;peak_amp_sd&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">peak_amplitudes_sd</span><span class="p">),</span>
+                <span class="p">}</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;start_s&quot;</span><span class="p">,</span> <span class="s2">&quot;peak_s&quot;</span><span class="p">,</span> <span class="s2">&quot;end_s&quot;</span><span class="p">,</span> <span class="s2">&quot;peak_amp_sd&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Duration</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;duration_s&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">end_s</span> <span class="o">-</span> <span class="n">df</span><span class="o">.</span><span class="n">start_s</span>
+
+        <span class="c1"># Filters events with short duration</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">duration_s</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">min_duration_ms</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">if</span> <span class="n">xx_r</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">xx_r</span> <span class="o">=</span> <span class="n">xx_r</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">assert</span> <span class="n">xx_r</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span>
+
+    <span class="n">dfs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i_ch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xx_r</span><span class="p">)):</span>
+        <span class="n">xx_ri</span> <span class="o">=</span> <span class="n">xx_r</span><span class="p">[</span><span class="n">i_ch</span><span class="p">]</span>
+        <span class="n">df_i</span> <span class="o">=</span> <span class="n">_find_events_1d</span><span class="p">(</span><span class="n">xx_ri</span><span class="p">,</span> <span class="n">fs_r</span><span class="p">,</span> <span class="n">sd</span><span class="p">,</span> <span class="n">min_duration_ms</span><span class="p">)</span>
+        <span class="n">df_i</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="n">i_ch</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df_i</span><span class="p">))]</span>
+        <span class="n">dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df_i</span><span class="p">)</span>
+    <span class="n">dfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dfs</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_drop_ripples_at_edges</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">low_hz</span><span class="p">,</span> <span class="n">xx_r</span><span class="p">,</span> <span class="n">fs_r</span><span class="p">):</span>
+    <span class="n">edge_s</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">low_hz</span> <span class="o">*</span> <span class="mi">3</span>
+    <span class="n">indi_drop</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">start_s</span> <span class="o">&lt;</span> <span class="n">edge_s</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">xx_r</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">fs_r</span> <span class="o">-</span> <span class="n">edge_s</span> <span class="o">&lt;</span> <span class="n">df</span><span class="o">.</span><span class="n">end_s</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="o">~</span><span class="n">indi_drop</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">df</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_calc_relative_peak_position</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="n">delta_s</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">peak_s</span> <span class="o">-</span> <span class="n">df</span><span class="o">.</span><span class="n">start_s</span>
+    <span class="n">rel_peak</span> <span class="o">=</span> <span class="n">delta_s</span> <span class="o">/</span> <span class="n">df</span><span class="o">.</span><span class="n">duration_s</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;rel_peak_pos&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">rel_peak</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span>
+
+
+<span class="c1"># def _calc_incidence(df, xx_r, fs_r):</span>
+<span class="c1">#     n_ripples = len(df)</span>
+<span class="c1">#     rec_s = xx_r.shape[-1] / fs_r</span>
+<span class="c1">#     df[&quot;incidence_hz&quot;] = n_ripples / rec_s</span>
+<span class="c1">#     return df</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sort_columns</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="n">sorted_columns</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;start_s&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;end_s&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;duration_s&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;peak_s&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rel_peak_pos&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;peak_amp_sd&quot;</span><span class="p">,</span>
+        <span class="c1"># &quot;incidence_hz&quot;,</span>
+    <span class="p">]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">sorted_columns</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">df</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">xx</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">demo_sig</span><span class="p">(</span><span class="n">sig_type</span><span class="o">=</span><span class="s2">&quot;ripple&quot;</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">detect_ripples</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">140</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scitex</span>
+
+    <span class="c1"># # Argument Parser</span>
+    <span class="c1"># import argparse</span>
+    <span class="c1"># parser = argparse.ArgumentParser(description=&#39;&#39;)</span>
+    <span class="c1"># parser.add_argument(&#39;--var&#39;, &#39;-v&#39;, type=int, default=1, help=&#39;&#39;)</span>
+    <span class="c1"># parser.add_argument(&#39;--flag&#39;, &#39;-f&#39;, action=&#39;store_true&#39;, default=False, help=&#39;&#39;)</span>
+    <span class="c1"># args = parser.parse_args()</span>
+    <span class="c1"># Main</span>
+    <span class="n">CONFIG</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">plt</span><span class="p">,</span> <span class="n">CC</span> <span class="o">=</span> <span class="n">scitex</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">start</span><span class="p">(</span>
+        <span class="n">sys</span><span class="p">,</span> <span class="n">plt</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="n">main</span><span class="p">()</span>
+    <span class="n">scitex</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">CONFIG</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">notify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># EOF</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Yusuke Watanabe.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

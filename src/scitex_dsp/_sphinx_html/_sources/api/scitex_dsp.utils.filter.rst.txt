@@ -1,0 +1,13 @@
+scitex\_dsp.utils.filter
+========================
+
+.. automodule:: scitex_dsp.utils.filter
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      design_filter
+      plot_filter_responses
+   
