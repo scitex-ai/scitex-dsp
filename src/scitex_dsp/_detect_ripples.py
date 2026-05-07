@@ -3,6 +3,9 @@
 # Time-stamp: "2024-11-05 00:24:54 (ywatanabe)"
 # File: ./scitex_repo/src/scitex/dsp/_detect_ripples.py
 
+
+import warnings
+
 import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
@@ -55,8 +58,18 @@ def _preprocess(xx, fs, low_hz, high_hz, smoothing_sigma_ms=4):
     # For readability
     RIPPLE_BANDS = np.vstack([[low_hz, high_hz]])
 
-    # Downsampling
-    fs_tgt = low_hz * 3
+    # Downsampling: keep Nyquist safely above high_hz so the bandpass
+    # upper edge is well within range. Without this, bandpass returns
+    # ~0 and no ripples are detected.
+    fs_tgt_default = low_hz * 3
+    fs_tgt_safe = int(np.ceil(high_hz * 2.5))
+    fs_tgt = max(fs_tgt_default, fs_tgt_safe)
+    if fs_tgt > fs_tgt_default:
+        warnings.warn(
+            f"detect_ripples: target fs raised from {fs_tgt_default} to "
+            f"{fs_tgt} Hz so Nyquist stays above high_hz={high_hz}.",
+            stacklevel=2,
+        )
 
     # Helper: scitex_decorators.signal_fn squeezes 1-size dims off the input
     # of every decorated signal call. Restore 3D before each per-channel op.
@@ -69,8 +82,17 @@ def _preprocess(xx, fs, low_hz, high_hz, smoothing_sigma_ms=4):
     xx = _ensure_3d(resample(xx, float(fs), float(fs_tgt)))
     fs = fs_tgt
 
-    # Subtracts the global mean to reduce false detection due to EMG signal
-    xx -= np.nanmean(xx, axis=1, keepdims=True)
+    # Subtracts the cross-channel mean to reduce EMG-driven false
+    # positives (CAR-style). Skip for single-channel input — there
+    # the mean equals the signal itself, which would zero everything.
+    if xx.shape[1] > 1:
+        xx -= np.nanmean(xx, axis=1, keepdims=True)
+    else:
+        warnings.warn(
+            "detect_ripples: single-channel input — skipping the "
+            "cross-channel mean subtraction (would zero the signal).",
+            stacklevel=2,
+        )
 
     # Bandpass Filtering
     xx = _ensure_3d(
@@ -111,9 +133,15 @@ def _find_events(xx_r, fs_r, sd, min_duration_ms):
         peak_ranges = []
         peak_amplitudes_sd = []
 
+        # Boundary threshold: half the detection threshold. Walking
+        # out to envelope < 0 (the original behaviour) yields very
+        # wide ranges because the z-scored envelope stays slightly
+        # positive long after a burst.
+        bound_thr = 0.5 * sd
+
         for peak in peaks:
-            left_bound = np.where(xx_ri[:peak] < 0)[0]
-            right_bound = np.where(xx_ri[peak:] < 0)[0]
+            left_bound = np.where(xx_ri[:peak] < bound_thr)[0]
+            right_bound = np.where(xx_ri[peak:] < bound_thr)[0]
 
             left_ips = left_bound.max() if left_bound.size > 0 else peak
             right_ips = peak + right_bound.min() if right_bound.size > 0 else peak
