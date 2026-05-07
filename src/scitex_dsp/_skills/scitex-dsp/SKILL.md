@@ -36,7 +36,19 @@ band_p = dsp.band_powers(x, fs=1000,
 ```python
 mi = dsp.modulation_index(x, lo=(4, 8), hi=(30, 80), fs=1000)
 pac_score = dsp.pac(x, lo=(4, 8), hi=(30, 80), fs=1000)
+
+# Cross-check against tensorpac (verification helper, not main use):
+from scitex_dsp.utils import _calc_pac_with_tensorpac      # direct callable
+from scitex_dsp.utils import pac as _pac_compare           # full submodule
 ```
+
+Three pac surfaces are public:
+
+| Path | Purpose |
+| --- | --- |
+| `dsp.pac(x, fs, ...)` | main heatmap function (core science) |
+| `dsp.utils.pac` | cross-check submodule (calc + plot vs `tensorpac.Pac`) |
+| `dsp.utils._calc_pac_with_tensorpac` | underscore alias — direct callable |
 
 ## Ripple detection
 

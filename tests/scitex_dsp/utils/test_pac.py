@@ -7,10 +7,29 @@
 
 import pytest
 
+
+def test_three_pac_public_surfaces_resolve():
+    """The three documented pac surfaces all resolve and refer to
+    consistent objects:
+
+      - scitex_dsp.pac                            (main heatmap fn)
+      - scitex_dsp.utils.pac                      (cross-check submodule)
+      - scitex_dsp.utils._calc_pac_with_tensorpac (direct alias)
+    """
+    pytest.importorskip("tensorpac")
+    import scitex_dsp
+    from scitex_dsp.utils import _calc_pac_with_tensorpac, pac
+
+    assert callable(scitex_dsp.pac)
+    assert hasattr(pac, "calc_pac_with_tensorpac")
+    assert _calc_pac_with_tensorpac is pac.calc_pac_with_tensorpac
+    assert "pac" in scitex_dsp.utils.__all__
+    assert "_calc_pac_with_tensorpac" in scitex_dsp.utils.__all__
+
+
 pytest.importorskip("mne")
 from unittest.mock import MagicMock, Mock, patch
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 try:
@@ -20,7 +39,6 @@ try:
 except ImportError:
     TENSORPAC_AVAILABLE = False
 
-import scitex
 from scitex.dsp.utils.pac import calc_pac_with_tensorpac, plot_PAC_scitex_vs_tensorpac
 
 
