@@ -147,7 +147,7 @@ class TestCalcPacWithTensorpac:
         mock_pac_instance.f_pha = np.random.randn(50, 2)
         mock_pac_instance.f_amp = np.random.randn(30, 2)
 
-        with patch("scitex.dsp.utils.pac.tensorpac.Pac") as mock_pac_class:
+        with patch("tensorpac.Pac") as mock_pac_class:
             mock_pac_class.return_value = mock_pac_instance
 
             # Test data
@@ -184,7 +184,7 @@ class TestCalcPacWithTensorpac:
         mock_pac_instance.f_pha = np.random.randn(50, 2)
         mock_pac_instance.f_amp = np.random.randn(30, 2)
 
-        with patch("scitex.dsp.utils.pac.tensorpac.Pac") as mock_pac_class:
+        with patch("tensorpac.Pac") as mock_pac_class:
             mock_pac_class.return_value = mock_pac_instance
 
             # Multi-batch, multi-channel data
@@ -350,7 +350,7 @@ class TestPacIntegration:
         mock_pac_instance.f_pha = np.random.randn(50, 2)
         mock_pac_instance.f_amp = np.random.randn(30, 2)
 
-        with patch("scitex.dsp.utils.pac.tensorpac.Pac") as mock_pac_class:
+        with patch("tensorpac.Pac") as mock_pac_class:
             mock_pac_class.return_value = mock_pac_instance
 
             # Calculate PAC
