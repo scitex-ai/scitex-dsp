@@ -6,6 +6,8 @@
 Test module for scitex.dsp.demo_sig function.
 """
 
+import os
+
 import numpy as np
 import pytest
 
@@ -215,7 +217,21 @@ class TestDemoSig:
         with pytest.raises(AssertionError):
             demo_sig(sig_type="invalid_type")
 
-    @pytest.mark.parametrize("sig_type", ["ripple", "meg", "tensorpac", "pac"])
+    @pytest.mark.parametrize(
+        "sig_type",
+        [
+            "ripple",
+            pytest.param(
+                "meg",
+                marks=pytest.mark.skipif(
+                    os.environ.get("CI") == "true",
+                    reason="MEG sample-data download is slow + flaky on CI",
+                ),
+            ),
+            "tensorpac",
+            "pac",
+        ],
+    )
     def test_complex_signal_types(self, sig_type):
         """Test complex signal types that may require special dependencies."""
         from scitex_dsp import demo_sig
