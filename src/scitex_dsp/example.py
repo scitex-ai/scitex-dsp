@@ -7,11 +7,6 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 
-try:
-    import scitex  # type: ignore
-except ImportError:  # umbrella optional
-    scitex = None  # type: ignore
-
 # Module-level constants (defaults for example functions)
 TGT_FS = 512
 LOW_HZ = 20
@@ -24,6 +19,8 @@ CC = {"blue": "#1f77b4", "red": "#d62728", "green": "#2ca02c"}
 
 # Functions
 def calc_norm_resample_filt_hilbert(xx, tt, fs, sig_type, verbose=True):
+    import scitex  # function-scoped: PA304 exempt
+
     sigs = {"index": ("signal", "time", "fs")}  # Collector
 
     if sig_type == "tensorpac":
@@ -83,6 +80,8 @@ def calc_norm_resample_filt_hilbert(xx, tt, fs, sig_type, verbose=True):
 
 
 def plot_signals(plt, sigs, sig_type):
+    import scitex  # function-scoped: PA304 exempt
+
     fig, axes = plt.subplots(nrows=len(sigs.columns), sharex=True)
 
     i_batch = 0
@@ -129,6 +128,8 @@ def plot_signals(plt, sigs, sig_type):
 
 
 def plot_wavelet(plt, sigs, sig_col, sig_type):
+    import scitex  # function-scoped: PA304 exempt
+
     xx, tt, fs = sigs[sig_col]
     # if sig_type == "tensorpac":
     #     xx = xx[:, :, 0]
@@ -173,6 +174,8 @@ def plot_wavelet(plt, sigs, sig_col, sig_type):
 
 
 def plot_psd(plt, sigs, sig_col, sig_type):
+    import scitex  # function-scoped: PA304 exempt
+
     xx, tt, fs = sigs[sig_col]
 
     # if sig_type == "tensorpac":
@@ -212,6 +215,8 @@ def plot_psd(plt, sigs, sig_col, sig_type):
 
 
 if __name__ == "__main__":
+    import scitex  # __main__-scoped: PA304 exempt
+
     # Parameters
     T_SEC = 4
     SIG_TYPES = [
