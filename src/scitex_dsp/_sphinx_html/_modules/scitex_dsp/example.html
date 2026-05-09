@@ -84,11 +84,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">scitex</span>  <span class="c1"># type: ignore</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># umbrella optional</span>
-    <span class="n">scitex</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># type: ignore</span>
-
 <span class="c1"># Module-level constants (defaults for example functions)</span>
 <span class="n">TGT_FS</span> <span class="o">=</span> <span class="mi">512</span>
 <span class="n">LOW_HZ</span> <span class="o">=</span> <span class="mi">20</span>
@@ -103,6 +98,8 @@
 <div class="viewcode-block" id="calc_norm_resample_filt_hilbert">
 <a class="viewcode-back" href="../../api/scitex_dsp.example.html#scitex_dsp.example.calc_norm_resample_filt_hilbert">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calc_norm_resample_filt_hilbert</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">sig_type</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scitex</span>  <span class="c1"># function-scoped: PA304 exempt</span>
+
     <span class="n">sigs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;signal&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;fs&quot;</span><span class="p">)}</span>  <span class="c1"># Collector</span>
 
     <span class="k">if</span> <span class="n">sig_type</span> <span class="o">==</span> <span class="s2">&quot;tensorpac&quot;</span><span class="p">:</span>
@@ -165,6 +162,8 @@
 <div class="viewcode-block" id="plot_signals">
 <a class="viewcode-back" href="../../api/scitex_dsp.example.html#scitex_dsp.example.plot_signals">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_signals</span><span class="p">(</span><span class="n">plt</span><span class="p">,</span> <span class="n">sigs</span><span class="p">,</span> <span class="n">sig_type</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scitex</span>  <span class="c1"># function-scoped: PA304 exempt</span>
+
     <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sigs</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="n">i_batch</span> <span class="o">=</span> <span class="mi">0</span>
@@ -214,6 +213,8 @@
 <div class="viewcode-block" id="plot_wavelet">
 <a class="viewcode-back" href="../../api/scitex_dsp.example.html#scitex_dsp.example.plot_wavelet">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_wavelet</span><span class="p">(</span><span class="n">plt</span><span class="p">,</span> <span class="n">sigs</span><span class="p">,</span> <span class="n">sig_col</span><span class="p">,</span> <span class="n">sig_type</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scitex</span>  <span class="c1"># function-scoped: PA304 exempt</span>
+
     <span class="n">xx</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">sigs</span><span class="p">[</span><span class="n">sig_col</span><span class="p">]</span>
     <span class="c1"># if sig_type == &quot;tensorpac&quot;:</span>
     <span class="c1">#     xx = xx[:, :, 0]</span>
@@ -261,6 +262,8 @@
 <div class="viewcode-block" id="plot_psd">
 <a class="viewcode-back" href="../../api/scitex_dsp.example.html#scitex_dsp.example.plot_psd">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_psd</span><span class="p">(</span><span class="n">plt</span><span class="p">,</span> <span class="n">sigs</span><span class="p">,</span> <span class="n">sig_col</span><span class="p">,</span> <span class="n">sig_type</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scitex</span>  <span class="c1"># function-scoped: PA304 exempt</span>
+
     <span class="n">xx</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">sigs</span><span class="p">[</span><span class="n">sig_col</span><span class="p">]</span>
 
     <span class="c1"># if sig_type == &quot;tensorpac&quot;:</span>
@@ -301,6 +304,8 @@
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scitex</span>  <span class="c1"># __main__-scoped: PA304 exempt</span>
+
     <span class="c1"># Parameters</span>
     <span class="n">T_SEC</span> <span class="o">=</span> <span class="mi">4</span>
     <span class="n">SIG_TYPES</span> <span class="o">=</span> <span class="p">[</span>
