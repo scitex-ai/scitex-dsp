@@ -9,7 +9,7 @@
 <p align="center"><b>Digital signal processing for scientific Python — PAC, Hilbert, wavelet, filters, resampling, demo signals.</b></p>
 
 <p align="center">
-  <a href="https://scitex-dsp.readthedocs.io/">Full Documentation</a> · <code>pip install scitex-dsp</code>
+  <a href="https://scitex-dsp.readthedocs.io/">Full Documentation</a> · <code>uv pip install scitex-dsp[all]</code>
 </p>
 
 <!-- scitex-badges:start -->
