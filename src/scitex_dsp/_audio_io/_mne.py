@@ -2,17 +2,13 @@
 # Time-stamp: "2024-11-04 02:07:36 (ywatanabe)"
 # File: ./scitex_repo/src/scitex/dsp/_mne.py
 
-try:
-    import mne
-
-    MNE_AVAILABLE = True
-except ImportError:
-    MNE_AVAILABLE = False
-    mne = None
-
 import pandas as pd
+from scitex_dev import try_import_optional
 
 from ..params import EEG_MONTAGE_1020
+
+mne = try_import_optional("mne", pkg="scitex-dsp")
+MNE_AVAILABLE = mne is not None
 
 
 def get_eeg_pos(channel_names=EEG_MONTAGE_1020):

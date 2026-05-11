@@ -9,40 +9,27 @@ import warnings
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import chirp
+from scitex_dev import try_import_optional
 
-try:
-    import mne
-    from mne.datasets import sample
+mne = try_import_optional("mne", pkg="scitex-dsp")
+MNE_AVAILABLE = mne is not None
+sample = try_import_optional("mne.datasets", attr="sample", pkg="scitex-dsp")
 
-    MNE_AVAILABLE = True
-except ImportError:
-    MNE_AVAILABLE = False
-    mne = None
-    sample = None
+simulate_LFP = try_import_optional(
+    "ripple_detection.simulate", attr="simulate_LFP", pkg="scitex-dsp"
+)
+simulate_time = try_import_optional(
+    "ripple_detection.simulate", attr="simulate_time", pkg="scitex-dsp"
+)
+RIPPLE_DETECTION_AVAILABLE = simulate_LFP is not None
 
-try:
-    from ripple_detection.simulate import simulate_LFP, simulate_time
+pac_signals_wavelet = try_import_optional(
+    "tensorpac.signals", attr="pac_signals_wavelet", extra="pac", pkg="scitex-dsp"
+)
+TENSORPAC_AVAILABLE = pac_signals_wavelet is not None
 
-    RIPPLE_DETECTION_AVAILABLE = True
-except ImportError:
-    RIPPLE_DETECTION_AVAILABLE = False
-    simulate_LFP = None
-    simulate_time = None
-
-try:
-    from tensorpac.signals import pac_signals_wavelet
-
-    TENSORPAC_AVAILABLE = True
-except ImportError:
-    TENSORPAC_AVAILABLE = False
-    pac_signals_wavelet = None
-
-try:
-    from scitex_io import load_configs
-
-    CONFIG = load_configs(verbose=False)
-except ImportError:
-    CONFIG = {}
+_load_configs = try_import_optional("scitex_io", attr="load_configs")
+CONFIG = _load_configs(verbose=False) if _load_configs is not None else {}
 
 
 def _check_mne():

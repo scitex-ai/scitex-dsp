@@ -9,13 +9,10 @@ except ImportError:
     TORCH_AVAILABLE = False
     torch = None
 
-try:
-    import torchaudio.transforms as T
+from scitex_dev import try_import_optional
 
-    TORCHAUDIO_AVAILABLE = True
-except ImportError:
-    TORCHAUDIO_AVAILABLE = False
-    T = None
+T = try_import_optional("torchaudio.transforms", pkg="scitex-dsp")
+TORCHAUDIO_AVAILABLE = T is not None
 
 from scitex_decorators import signal_fn
 
@@ -41,9 +38,8 @@ def resample(x, src_fs, tgt_fs, t=None):
 if __name__ == "__main__":
     import sys
 
-    import scitex  # noqa: E402  — script-only
-
     import matplotlib.pyplot as plt
+    import scitex  # noqa: E402  — script-only
 
     # Start
     CONFIG, sys.stdout, sys.stderr, plt, CC = scitex.session.start(sys, plt)

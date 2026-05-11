@@ -20,16 +20,14 @@ except ImportError:
     nn = None
 
 from scitex_decorators import torch_fn
+from scitex_dev import try_import_optional
 from scitex_gen._to_even import to_even
 from scitex_gen._to_odd import to_odd
 
-try:
-    from torchaudio.prototype.functional import sinc_impulse_response
-
-    TORCHAUDIO_AVAILABLE = True
-except ImportError:
-    TORCHAUDIO_AVAILABLE = False
-    sinc_impulse_response = None
+sinc_impulse_response = try_import_optional(
+    "torchaudio.prototype.functional", attr="sinc_impulse_response", pkg="scitex-dsp"
+)
+TORCHAUDIO_AVAILABLE = sinc_impulse_response is not None
 
 
 def _check_torch():

@@ -32,12 +32,8 @@ from unittest.mock import MagicMock, Mock, patch
 
 import numpy as np
 
-try:
-    import tensorpac
-
-    TENSORPAC_AVAILABLE = True
-except ImportError:
-    TENSORPAC_AVAILABLE = False
+tensorpac = pytest.importorskip("tensorpac")
+TENSORPAC_AVAILABLE = True
 
 from scitex.dsp.utils.pac import calc_pac_with_tensorpac, plot_PAC_scitex_vs_tensorpac
 
