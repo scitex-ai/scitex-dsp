@@ -1,0 +1,17 @@
+# scitex-dev project-type config
+# Drives which rule families the auditor applies.
+# See: scitex-dev ecosystem audit-project --help
+
+project-type:
+  - pip
+
+audit:
+  root-whitelist:
+    files:
+      # Pre-0.11.15 scitex-dev versions don't ship `codecov.yml` in
+      # SPEC_DEFAULT_FILES; spell it out so the audit gate passes even
+      # against installed scitex-dev releases that haven't been bumped.
+      - codecov.yml
+# audit:
+#   skip:
+#     - PS-108

@@ -21,10 +21,10 @@ import pytest
 CROSS_PACKAGE_IMPORTS = [
     'scitex',
     'scitex_decorators',
+    'scitex_dev',
     'scitex_gen._norm',
     'scitex_gen._to_even',
     'scitex_gen._to_odd',
-    'scitex_io',
     'scitex_nn._Filters',
     'scitex_nn._Hilbert',
     'scitex_nn._ModulationIndex',

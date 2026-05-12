@@ -1,19 +1,61 @@
 #!/usr/bin/env python3
 """Pytest conftest for scitex-dsp.
 
-Ensures that ``scitex.dsp`` (the umbrella alias used in tests) resolves to
-the standalone ``scitex_dsp`` package being developed in this repo, rather
-than to whatever ``scitex/dsp`` happens to ship inside the umbrella
-``scitex`` distribution on PyPI.
+Two responsibilities:
 
-The standalone package is the source of truth here; the umbrella merely
-re-exports it.  Pinning the alias at conftest load-time keeps test imports
-like ``from scitex.dsp import wavelet`` pointing at the code under test.
+1. Module-import-time coverage wiring (parallel + subprocess support).
+   ``os.environ.setdefault`` would be a no-op here because pytest-cov has
+   already set ``COVERAGE_FILE`` to a tmp dir by the time conftest is
+   loaded.  See
+   ``scitex_dev/_skills/general/05_development_06_subprocess-coverage.md``.
+
+2. Alias ``scitex.dsp`` (umbrella) to the standalone ``scitex_dsp`` so
+   tests like ``from scitex.dsp import wavelet`` resolve to the code
+   under test rather than to whatever the umbrella distribution shipped.
 """
 
 from __future__ import annotations
 
+import os
 import sys
+import sysconfig
+from pathlib import Path
+
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# --- 1. Subprocess coverage wiring -----------------------------------------
+
+# Pin coverage's data file at the repo root and point process_startup at our
+# pyproject so child interpreters configure themselves correctly.
+os.environ["COVERAGE_PROCESS_START"] = str(_PROJECT_ROOT / "pyproject.toml")
+os.environ["COVERAGE_FILE"] = str(_PROJECT_ROOT / ".coverage")
+
+
+def _ensure_subprocess_coverage_shim() -> None:
+    """Drop an idempotent ``.pth`` file in site-packages that auto-starts
+    coverage in every child Python interpreter via
+    ``coverage.process_startup()``.
+    """
+    purelib = Path(sysconfig.get_paths()["purelib"])
+    pth = purelib / "_scitex_dsp_subprocess_coverage.pth"
+    shim = (
+        "import os, coverage\n"
+        "if os.environ.get('COVERAGE_PROCESS_START'):\n"
+        "    coverage.process_startup()\n"
+    )
+    try:
+        if not pth.exists() or pth.read_text() != shim:
+            pth.write_text(shim)
+    except OSError:
+        # site-packages may be read-only (e.g. system Python); silently
+        # skip — local dev venvs are writable and that's where this matters.
+        pass
+
+
+_ensure_subprocess_coverage_shim()
+
+
+# --- 2. Alias scitex.dsp -> scitex_dsp -------------------------------------
 
 
 def _alias_scitex_dsp_to_standalone() -> None:

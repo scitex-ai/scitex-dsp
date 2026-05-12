@@ -43,6 +43,10 @@ dev = [
     "tensorpac",
     "sounddevice",
     "ripple_detection",
+    # tests/scitex_dsp/_audio_io/test__mne.py,
+    # tests/scitex_dsp/utils/test_filter.py,
+    # tests/scitex_dsp/test__time.py — all importorskip("mne")
+    "mne",
     "pytest",
     "pytest-cov",
     "ruff",
@@ -81,6 +85,11 @@ scitex-dsp = "scitex_dsp"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = ["--disable-warnings"]
+
+[tool.coverage.run]
+parallel = true
+source = ["scitex_dsp"]
+concurrency = ["multiprocessing", "thread"]
 
 [tool.ruff]
 target-version = "py39"
