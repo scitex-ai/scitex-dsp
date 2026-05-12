@@ -79,17 +79,13 @@
 <span class="c1"># Time-stamp: &quot;2024-11-04 02:07:36 (ywatanabe)&quot;</span>
 <span class="c1"># File: ./scitex_repo/src/scitex/dsp/_mne.py</span>
 
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">mne</span>
-
-    <span class="n">MNE_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="n">MNE_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">mne</span> <span class="o">=</span> <span class="kc">None</span>
-
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scitex_dev</span><span class="w"> </span><span class="kn">import</span> <span class="n">try_import_optional</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">..params</span><span class="w"> </span><span class="kn">import</span> <span class="n">EEG_MONTAGE_1020</span>
+
+<span class="n">mne</span> <span class="o">=</span> <span class="n">try_import_optional</span><span class="p">(</span><span class="s2">&quot;mne&quot;</span><span class="p">,</span> <span class="n">pkg</span><span class="o">=</span><span class="s2">&quot;scitex-dsp&quot;</span><span class="p">)</span>
+<span class="n">MNE_AVAILABLE</span> <span class="o">=</span> <span class="n">mne</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
 
 <div class="viewcode-block" id="get_eeg_pos">
