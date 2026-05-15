@@ -334,12 +334,8 @@ def _demo_sig_ripple_1d(t_sec=10, fs=512, **kwargs):
 if __name__ == "__main__":
     import scitex
 
-    # Start (modern scitex.session.start returns 6 values; absorb the last
-    # one — RandomStateManager — defensively so the demo keeps running if a
-    # future scitex bump tacks on more)
-    CONFIG, sys.stdout, sys.stderr, plt, CC, *_rest = scitex.session.start(
-        sys, plt
-    )
+    # Start
+    CONFIG, sys.stdout, sys.stderr, plt, CC = scitex.session.start(sys, plt)
     import scitex
 
     SIG_TYPES = [
@@ -356,24 +352,7 @@ if __name__ == "__main__":
     i_batch, i_ch, i_segment = 0, 0, 0
     fig, axes = scitex.plt.subplots(nrows=len(SIG_TYPES))
     for ax, (i_sig_type, sig_type) in zip(axes, enumerate(SIG_TYPES)):
-        # Some sig_types (e.g. "meg") need external/optional resources
-        # (mne sample dataset, network access).  Skip individual failures
-        # so the demo still produces a useful figure for the remaining
-        # types — this keeps the demo runnable in offline / CI environments
-        # without giving up the showcase of every reachable signal type.
-        try:
-            xx, tt, fs = demo_sig(sig_type=sig_type)
-        except Exception as exc:  # noqa: BLE001 — demo-level robustness
-            ax.text(
-                0.5,
-                0.5,
-                f"{sig_type}: skipped ({type(exc).__name__})",
-                transform=ax.transAxes,
-                ha="center",
-                va="center",
-            )
-            ax.legend(loc="upper left")
-            continue
+        xx, tt, fs = demo_sig(sig_type=sig_type)
         if sig_type not in ["tensorpac", "pac"]:
             ax.plot(tt, xx[i_batch, i_ch], label=sig_type)
         else:
