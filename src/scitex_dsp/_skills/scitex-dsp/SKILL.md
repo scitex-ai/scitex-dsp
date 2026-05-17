@@ -13,8 +13,6 @@ canonical-location: scitex-dsp/src/scitex_dsp/_skills/scitex-dsp/SKILL.md
 tags: [scitex-dsp, scitex-package, signal-processing, neuroscience, ripples]
 ---
 
-> **Interfaces:** Python ⭐⭐⭐ (primary) · CLI — · MCP — · Skills ⭐⭐ · Hook — · HTTP —
-
 # scitex-dsp
 
 Digital signal-processing helpers for neuroscience-shaped data
