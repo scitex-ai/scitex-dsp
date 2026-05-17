@@ -51,6 +51,9 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">scitex_dsp</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#functionalities">Functionalities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#io">IO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.band_powers"><code class="docutils literal notranslate"><span class="pre">band_powers()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.crop"><code class="docutils literal notranslate"><span class="pre">crop()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.demo_sig"><code class="docutils literal notranslate"><span class="pre">demo_sig()</span></code></a></li>
@@ -103,7 +106,53 @@
              
   <section id="module-scitex_dsp">
 <span id="scitex-dsp"></span><h1>scitex_dsp<a class="headerlink" href="#module-scitex_dsp" title="Link to this heading"></a></h1>
-<p>Scitex dsp module.</p>
+<p>scitex-dsp — Digital signal-processing primitives for neuroscience.</p>
+<section id="functionalities">
+<h2>Functionalities<a class="headerlink" href="#functionalities" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><cite>hilbert(x)</cite> — analytic signal (phase + envelope).</p></li>
+<li><p><cite>psd(x, fs, …)</cite> / <cite>band_powers(x, fs, bands)</cite> — power spectral
+density and per-band integrated power.</p></li>
+<li><p><cite>pac(x, lo, hi, …)</cite> / <cite>modulation_index(x, …)</cite> — phase-amplitude
+coupling and the canonical MI estimator.</p></li>
+<li><p><cite>wavelet(…)</cite> — continuous wavelet transform.</p></li>
+<li><p><cite>detect_ripples(x, fs, …)</cite> — Buzsaki-style ripple detector with
+edge handling, find-events, and column sorting.</p></li>
+<li><p><cite>demo_sig(sig_type=…)</cite> — deterministic chirp / periodic / ripple
+/ noise test signals.</p></li>
+<li><p><cite>crop</cite>, <cite>ensure_3d</cite>, <cite>resample</cite>, <cite>time</cite>, <cite>add_noise</cite>,
+<cite>to_segments</cite>, <cite>to_sktime_df</cite> — pre-/post-processing utilities.</p></li>
+<li><p>Submodules: <cite>filt</cite> (Butterworth bandpass/bandstop), <cite>norm</cite>
+(z-score / min-max / robust), <cite>reference</cite> (CAR / bipolar /
+Laplacian), <cite>params</cite> (canonical band definitions), <cite>example</cite>
+(worked examples).</p></li>
+</ul>
+</section>
+<section id="io">
+<h2>IO<a class="headerlink" href="#io" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Reads: numeric arrays (<cite>numpy.ndarray</cite>, <cite>torch.Tensor</cite>,
+<cite>pandas.DataFrame</cite>) in <cite>(channels, samples)</cite> or
+<cite>(batch, channels, samples)</cite> shape; optional audio devices via
+PortAudio; optional EEG positions via MNE.</p></li>
+<li><p>Writes: nothing by default — pure functions returning new arrays.
+Audio playback via <cite>_audio_io._listen</cite> when PortAudio is present.</p></li>
+</ul>
+</section>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Hard: <cite>numpy</cite>, <cite>scipy</cite>, <cite>torch</cite>, <cite>pandas</cite>, <cite>mne</cite>.</p></li>
+<li><p>Optional: <cite>sounddevice</cite> + PortAudio (audio I/O), <cite>tensorpac</cite>
+(cross-check for PAC).</p></li>
+</ul>
+<p>Standalone import:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">scitex_dsp</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dsp</span>
+<span class="n">xx</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">dsp</span><span class="o">.</span><span class="n">demo_sig</span><span class="p">(</span><span class="n">sig_type</span><span class="o">=</span><span class="s2">&quot;chirp&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+<span class="n">ana</span> <span class="o">=</span> <span class="n">dsp</span><span class="o">.</span><span class="n">hilbert</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py" id="scitex_dsp.band_powers">
 <span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">band_powers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/scitex_dsp/_spectral/_psd.html#band_powers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.band_powers" title="Link to this definition"></a></dt>
