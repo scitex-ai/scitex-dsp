@@ -1,5 +1,46 @@
 #!/usr/bin/env python3
-"""Scitex dsp module."""
+"""scitex-dsp — Digital signal-processing primitives for neuroscience.
+
+Functionalities
+---------------
+- `hilbert(x)` — analytic signal (phase + envelope).
+- `psd(x, fs, ...)` / `band_powers(x, fs, bands)` — power spectral
+  density and per-band integrated power.
+- `pac(x, lo, hi, ...)` / `modulation_index(x, ...)` — phase-amplitude
+  coupling and the canonical MI estimator.
+- `wavelet(...)` — continuous wavelet transform.
+- `detect_ripples(x, fs, ...)` — Buzsaki-style ripple detector with
+  edge handling, find-events, and column sorting.
+- `demo_sig(sig_type=...)` — deterministic chirp / periodic / ripple
+  / noise test signals.
+- `crop`, `ensure_3d`, `resample`, `time`, `add_noise`,
+  `to_segments`, `to_sktime_df` — pre-/post-processing utilities.
+- Submodules: `filt` (Butterworth bandpass/bandstop), `norm`
+  (z-score / min-max / robust), `reference` (CAR / bipolar /
+  Laplacian), `params` (canonical band definitions), `example`
+  (worked examples).
+
+IO
+--
+- Reads: numeric arrays (`numpy.ndarray`, `torch.Tensor`,
+  `pandas.DataFrame`) in `(channels, samples)` or
+  `(batch, channels, samples)` shape; optional audio devices via
+  PortAudio; optional EEG positions via MNE.
+- Writes: nothing by default — pure functions returning new arrays.
+  Audio playback via `_audio_io._listen` when PortAudio is present.
+
+Dependencies
+------------
+- Hard: `numpy`, `scipy`, `torch`, `pandas`, `mne`.
+- Optional: `sounddevice` + PortAudio (audio I/O), `tensorpac`
+  (cross-check for PAC).
+
+Standalone import::
+
+    import scitex_dsp as dsp
+    xx, tt, fs = dsp.demo_sig(sig_type="chirp", fs=1024)
+    ana = dsp.hilbert(xx)
+"""
 
 from __future__ import annotations
 

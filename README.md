@@ -14,12 +14,14 @@
 
 <!-- scitex-badges:start -->
 <p align="center">
-  <a href="https://pypi.org/project/scitex-dsp/"><img src="https://img.shields.io/pypi/v/scitex-dsp.svg" alt="PyPI"></a>
-  <a href="https://pypi.org/project/scitex-dsp/"><img src="https://img.shields.io/pypi/pyversions/scitex-dsp.svg" alt="Python"></a>
-  <a href="https://github.com/ywatanabe1989/scitex-dsp/actions/workflows/test.yml"><img src="https://github.com/ywatanabe1989/scitex-dsp/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
-  <a href="https://codecov.io/gh/ywatanabe1989/scitex-dsp"><img src="https://codecov.io/gh/ywatanabe1989/scitex-dsp/graph/badge.svg" alt="Coverage"></a>
-  <a href="https://scitex-dsp.readthedocs.io/en/latest/"><img src="https://readthedocs.org/projects/scitex-dsp/badge/?version=latest" alt="Docs"></a>
-  <a href="https://www.gnu.org/licenses/agpl-3.0"><img src="https://img.shields.io/badge/license-AGPL_v3-blue.svg" alt="License: AGPL v3"></a>
+  <a href="https://pypi.org/project/scitex-dsp/"><img src="https://img.shields.io/pypi/v/scitex-dsp?label=pypi" alt="pypi"></a>
+  <a href="https://pypi.org/project/scitex-dsp/"><img src="https://img.shields.io/pypi/pyversions/scitex-dsp?label=python" alt="python"></a>
+  <a href="https://scitex-dsp.readthedocs.io/en/latest/"><img src="https://img.shields.io/readthedocs/scitex-dsp?label=docs" alt="docs"></a>
+</p>
+<p align="center">
+  <a href="https://github.com/ywatanabe1989/scitex-dsp/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/ywatanabe1989/scitex-dsp/test.yml?branch=develop&label=tests" alt="tests"></a>
+  <a href="https://github.com/ywatanabe1989/scitex-dsp/actions/workflows/scitex-quality.yml"><img src="https://img.shields.io/github/actions/workflow/status/ywatanabe1989/scitex-dsp/scitex-quality.yml?branch=develop&label=quality" alt="quality"></a>
+  <a href="https://codecov.io/gh/ywatanabe1989/scitex-dsp"><img src="https://img.shields.io/codecov/c/github/ywatanabe1989/scitex-dsp/develop?label=cov" alt="cov"></a>
 </p>
 <!-- scitex-badges:end -->
 
