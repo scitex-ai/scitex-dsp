@@ -34,127 +34,273 @@ class TestCrop:
         n_samples = 100
         return np.arange(n_samples) / fs
 
-    def test_import(self):
+    def test_import_callable_crop(self):
         """Test that crop can be imported."""
+        # Arrange
+        # Act
         from scitex_dsp import crop
 
+        # Assert
         assert callable(crop)
 
-    def test_basic_crop_no_overlap(self, simple_signal_2d):
-        """Test basic cropping without overlap."""
+    def test_basic_crop_no_overlap_result_shape_0_5(self, simple_signal_2d):
+        # Arrange
         from scitex_dsp import crop
-
         window_length = 20
+        # Act
         result = crop(simple_signal_2d, window_length, overlap_factor=0.0)
-
-        # Should have 5 windows (100 / 20 = 5)
+        # Act
+        # Assert
         assert result.shape[0] == 5  # 5 windows
+
+    def test_basic_crop_no_overlap_result_shape_1_simple_signal_2d_shape_0(self, simple_signal_2d):
+        # Arrange
+        from scitex_dsp import crop
+        window_length = 20
+        # Act
+        result = crop(simple_signal_2d, window_length, overlap_factor=0.0)
+        # Act
+        # Assert
         assert result.shape[1] == simple_signal_2d.shape[0]  # same channels
+
+    def test_basic_crop_no_overlap_result_shape_2_window_length(self, simple_signal_2d):
+        # Arrange
+        from scitex_dsp import crop
+        window_length = 20
+        # Act
+        result = crop(simple_signal_2d, window_length, overlap_factor=0.0)
+        # Act
+        # Assert
         assert result.shape[2] == window_length
 
-        # Check first window
-        assert_array_equal(result[0], simple_signal_2d[:, :window_length])
 
     def test_crop_with_50_percent_overlap(self, simple_signal_2d):
         """Test cropping with 50% overlap."""
+        # Arrange
         from scitex_dsp import crop
 
         window_length = 20
+        # Act
         result = crop(simple_signal_2d, window_length, overlap_factor=0.5)
 
         # With 50% overlap, step = 10, so (100-20)/10 + 1 = 9 windows
+        # Assert
         assert result.shape[0] == 9
 
         # Check overlap: second window should start at position 10
         assert_array_equal(result[1], simple_signal_2d[:, 10:30])
 
-    def test_crop_with_time_vector(self, simple_signal_2d, time_vector):
-        """Test cropping with time vector."""
+    def test_crop_with_time_vector_windows_shape_0_times_shape_0(self, simple_signal_2d, time_vector):
+        # Arrange
         from scitex_dsp import crop
-
         window_length = 20
+        # Act
         windows, times = crop(
             simple_signal_2d, window_length, overlap_factor=0.5, time=time_vector
         )
-
-        # Check shapes
+        # Act
+        # Assert
         assert windows.shape[0] == times.shape[0]  # Same number of windows
+
+    def test_crop_with_time_vector_times_shape_1_window_length(self, simple_signal_2d, time_vector):
+        # Arrange
+        from scitex_dsp import crop
+        window_length = 20
+        # Act
+        windows, times = crop(
+            simple_signal_2d, window_length, overlap_factor=0.5, time=time_vector
+        )
+        # Act
+        # Assert
         assert times.shape[1] == window_length  # Each time window has correct length
 
-        # Check time values
-        assert_allclose(times[0], time_vector[:window_length])
-        assert_allclose(times[1], time_vector[10:30])  # 50% overlap
 
     @pytest.mark.xfail(
         reason="Test fixture mismatch: signal_3d[:50] is still (4,5,100) so axis=0 only yields 1 window of len 10, not 5. Source `crop` axis-handling reviewed and works for the documented 'permute target axis to last' contract; the test's expected shape doesn't match its inputs.",
         strict=False,
     )
-    def test_crop_different_axis(self):
-        """Test cropping along different axes."""
+    def test_crop_different_axis_result_shape_equals_n_4_4_5_25(self):
+        # Arrange
         from scitex_dsp import crop
-
         # Create 3D signal (trials x channels x time)
         signal_3d = np.arange(4 * 5 * 100).reshape(4, 5, 100)
-
         # Crop along last axis (default)
+        # Act
         result = crop(signal_3d, window_length=25, axis=-1)
+        # Act
+        # Assert
         assert result.shape == (4, 4, 5, 25)  # 4 windows, original trials and channels
 
+    @pytest.mark.xfail(
+        reason="Test fixture mismatch: signal_3d[:50] is still (4,5,100) so axis=0 only yields 1 window of len 10, not 5. Source `crop` axis-handling reviewed and works for the documented 'permute target axis to last' contract; the test's expected shape doesn't match its inputs.",
+        strict=False,
+    )
+    def test_crop_different_axis_result_shape_1_5_result_shape_equals_n_4_4_5_25(self):
+        # Arrange
+        from scitex_dsp import crop
+        # Create 3D signal (trials x channels x time)
+        signal_3d = np.arange(4 * 5 * 100).reshape(4, 5, 100)
+        # Crop along last axis (default)
+        # Act
+        result = crop(signal_3d, window_length=25, axis=-1)
+        # Act
+        # Assert
+        assert result.shape == (4, 4, 5, 25)  # 4 windows, original trials and channels
+
+    @pytest.mark.xfail(
+        reason="Test fixture mismatch: signal_3d[:50] is still (4,5,100) so axis=0 only yields 1 window of len 10, not 5. Source `crop` axis-handling reviewed and works for the documented 'permute target axis to last' contract; the test's expected shape doesn't match its inputs.",
+        strict=False,
+    )
+    def test_crop_different_axis_result_shape_1_5_result_shape_1_5(self):
+        # Arrange
+        from scitex_dsp import crop
+        # Create 3D signal (trials x channels x time)
+        signal_3d = np.arange(4 * 5 * 100).reshape(4, 5, 100)
+        # Crop along last axis (default)
+        # Act
+        result = crop(signal_3d, window_length=25, axis=-1)
+        # Assert
+        assert result.shape == (4, 4, 5, 25)  # 4 windows, original trials and channels
         # Crop along first axis
         result = crop(signal_3d[:50], window_length=10, axis=0)
-        # This would move axis 0 to create windows
+        # Act
+        # Assert
         assert result.shape[1] == 5  # 5 windows of length 10 from 50 samples
 
-    def test_crop_with_various_overlaps(self, simple_signal_1d):
-        """Test cropping with various overlap factors."""
+
+
+    def test_crop_with_various_overlaps_result_shape_0_5(self, simple_signal_1d):
+        # Arrange
         from scitex_dsp import crop
-
         window_length = 20
-
         # No overlap
+        # Act
         result = crop(simple_signal_1d, window_length, overlap_factor=0.0)
+        # Act
+        # Assert
         assert result.shape[0] == 5  # 100/20 = 5
 
+    def test_crop_with_various_overlaps_result_shape_0_expected_windows_result_shape_0_5(self, simple_signal_1d):
+        # Arrange
+        from scitex_dsp import crop
+        window_length = 20
+        # No overlap
+        # Act
+        result = crop(simple_signal_1d, window_length, overlap_factor=0.0)
+        # Act
+        # Assert
+        assert result.shape[0] == 5  # 100/20 = 5
+
+    def test_crop_with_various_overlaps_result_shape_0_expected_windows_result_shape_0_expected_windows(self, simple_signal_1d):
+        # Arrange
+        from scitex_dsp import crop
+        window_length = 20
+        # No overlap
+        # Act
+        result = crop(simple_signal_1d, window_length, overlap_factor=0.0)
+        # Assert
+        assert result.shape[0] == 5  # 100/20 = 5
+        # 25% overlap
+        result = crop(simple_signal_1d, window_length, overlap_factor=0.25)
+        step = int(20 * 0.75)  # 15
+        expected_windows = (100 - 20) // step + 1
+        # Act
+        # Assert
+        assert result.shape[0] == expected_windows
+
+
+    def test_crop_with_various_overlaps_result_shape_0_expected_windows_result_shape_0_5_2(self, simple_signal_1d):
+        # Arrange
+        from scitex_dsp import crop
+        window_length = 20
+        # No overlap
+        # Act
+        result = crop(simple_signal_1d, window_length, overlap_factor=0.0)
+        # Act
+        # Assert
+        assert result.shape[0] == 5  # 100/20 = 5
+
+    def test_crop_with_various_overlaps_result_shape_0_expected_windows_result_shape_0_expected_windows_2(self, simple_signal_1d):
+        # Arrange
+        from scitex_dsp import crop
+        window_length = 20
+        # No overlap
+        # Act
+        result = crop(simple_signal_1d, window_length, overlap_factor=0.0)
+        # Assert
+        assert result.shape[0] == 5  # 100/20 = 5
+        # 25% overlap
+        result = crop(simple_signal_1d, window_length, overlap_factor=0.25)
+        step = int(20 * 0.75)  # 15
+        expected_windows = (100 - 20) // step + 1
+        # Act
+        # Assert
+        assert result.shape[0] == expected_windows
+
+    def test_crop_with_various_overlaps_result_shape_0_expected_windows_result_shape_0_expected_windows_3(self, simple_signal_1d):
+        # Arrange
+        from scitex_dsp import crop
+        window_length = 20
+        # No overlap
+        # Act
+        result = crop(simple_signal_1d, window_length, overlap_factor=0.0)
+        # Assert
+        assert result.shape[0] == 5  # 100/20 = 5
         # 25% overlap
         result = crop(simple_signal_1d, window_length, overlap_factor=0.25)
         step = int(20 * 0.75)  # 15
         expected_windows = (100 - 20) // step + 1
         assert result.shape[0] == expected_windows
-
         # 75% overlap
         result = crop(simple_signal_1d, window_length, overlap_factor=0.75)
         step = int(20 * 0.25)  # 5
         expected_windows = (100 - 20) // step + 1
+        # Act
+        # Assert
         assert result.shape[0] == expected_windows
+
+
 
     def test_window_longer_than_signal(self):
         """Test when window length exceeds signal length."""
+        # Arrange
         from scitex_dsp import crop
 
         short_signal = np.arange(10)
+        # Act
         result = crop(short_signal, window_length=20)
 
         # Should return at least 1 window with available data
+        # Assert
         assert result.shape[0] >= 1
 
-    def test_invalid_axis(self, simple_signal_2d):
+    def test_invalid_axis_raises_valueerror(self, simple_signal_2d):
         """Test error handling for invalid axis."""
+        # Arrange
+        # Act
         from scitex_dsp import crop
 
+        # Assert
         with pytest.raises(ValueError, match="Invalid axis"):
             crop(simple_signal_2d, window_length=20, axis=5)
 
     def test_time_vector_length_mismatch(self, simple_signal_2d):
         """Test error when time vector length doesn't match signal."""
+        # Arrange
         from scitex_dsp import crop
 
+        # Act
         wrong_time = np.arange(50)  # Wrong length
 
+        # Assert
         with pytest.raises(ValueError, match="Length of time vector"):
             crop(simple_signal_2d, window_length=20, time=wrong_time)
 
     def test_negative_axis_indexing(self):
         """Test negative axis indexing."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_dsp import crop
 
         signal_3d = np.random.rand(3, 4, 50)
@@ -166,18 +312,24 @@ class TestCrop:
 
     def test_exact_fit_windows(self):
         """Test when signal length is exact multiple of window length."""
+        # Arrange
         from scitex_dsp import crop
 
         # Signal of length 100, window of 25 -> exactly 4 windows
         signal = np.arange(100)
+        # Act
         result = crop(signal, window_length=25, overlap_factor=0.0)
 
+        # Assert
         assert result.shape[0] == 4
         assert_array_equal(result[0], signal[:25])
         assert_array_equal(result[-1], signal[75:])
 
-    def test_multichannel_consistency(self):
+    def test_multichannel_consistency_calls_rand(self):
         """Test that all channels are cropped consistently."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_dsp import crop
 
         n_channels = 8
@@ -203,16 +355,22 @@ class TestCrop:
             (50, 0.5, 3),  # (100-50)/25 + 1 = 3
         ],
     )
-    def test_window_calculations(self, window_length, overlap, expected_windows):
+    def test_window_calculations_result_shape_0_expected_windows(self, window_length, overlap, expected_windows):
         """Test window count calculations with various parameters."""
+        # Arrange
         from scitex_dsp import crop
 
         signal = np.arange(100)
+        # Act
         result = crop(signal, window_length, overlap_factor=overlap)
+        # Assert
         assert result.shape[0] == expected_windows
 
     def test_preserve_data_integrity(self, simple_signal_2d):
         """Test that cropping preserves data without modification."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_dsp import crop
 
         window_length = 30

@@ -21,61 +21,160 @@ from scitex.dsp.utils.filter import design_filter, plot_filter_responses
 class TestDesignFilter:
     """Test design_filter function."""
 
-    def test_design_filter_lowpass(self):
-        """Test lowpass filter design."""
+    def test_design_filter_lowpass_filter_coeffs_is_np_ndarray(self):
+        # Arrange
         sig_len = 1000
         fs = 250
         low_hz = 30.0
-
+        # Act
         filter_coeffs = design_filter(sig_len, fs, low_hz=low_hz)
-
+        # Act
+        # Assert
         assert isinstance(filter_coeffs, np.ndarray)
+
+    def test_design_filter_lowpass_len_filter_coeffs_0(self):
+        # Arrange
+        sig_len = 1000
+        fs = 250
+        low_hz = 30.0
+        # Act
+        filter_coeffs = design_filter(sig_len, fs, low_hz=low_hz)
+        # Act
+        # Assert
         assert len(filter_coeffs) > 0
+
+    def test_design_filter_lowpass_filter_coeffs_dtype_in_np_float32_np_float64(self):
+        # Arrange
+        sig_len = 1000
+        fs = 250
+        low_hz = 30.0
+        # Act
+        filter_coeffs = design_filter(sig_len, fs, low_hz=low_hz)
+        # Act
+        # Assert
         assert filter_coeffs.dtype in [np.float32, np.float64]
 
-    def test_design_filter_highpass(self):
-        """Test highpass filter design."""
+
+    def test_design_filter_highpass_filter_coeffs_is_np_ndarray(self):
+        # Arrange
         sig_len = 1000
         fs = 250
         high_hz = 70.0
-
+        # Act
         filter_coeffs = design_filter(sig_len, fs, high_hz=high_hz)
-
+        # Act
+        # Assert
         assert isinstance(filter_coeffs, np.ndarray)
+
+    def test_design_filter_highpass_len_filter_coeffs_0(self):
+        # Arrange
+        sig_len = 1000
+        fs = 250
+        high_hz = 70.0
+        # Act
+        filter_coeffs = design_filter(sig_len, fs, high_hz=high_hz)
+        # Act
+        # Assert
         assert len(filter_coeffs) > 0
+
+    def test_design_filter_highpass_filter_coeffs_dtype_in_np_float32_np_float64(self):
+        # Arrange
+        sig_len = 1000
+        fs = 250
+        high_hz = 70.0
+        # Act
+        filter_coeffs = design_filter(sig_len, fs, high_hz=high_hz)
+        # Act
+        # Assert
         assert filter_coeffs.dtype in [np.float32, np.float64]
 
-    def test_design_filter_bandpass(self):
-        """Test bandpass filter design."""
+
+    def test_design_filter_bandpass_filter_coeffs_is_np_ndarray(self):
+        # Arrange
         sig_len = 1000
         fs = 250
         low_hz = 8.0
         high_hz = 30.0
-
+        # Act
         filter_coeffs = design_filter(sig_len, fs, low_hz=low_hz, high_hz=high_hz)
-
+        # Act
+        # Assert
         assert isinstance(filter_coeffs, np.ndarray)
+
+    def test_design_filter_bandpass_len_filter_coeffs_0(self):
+        # Arrange
+        sig_len = 1000
+        fs = 250
+        low_hz = 8.0
+        high_hz = 30.0
+        # Act
+        filter_coeffs = design_filter(sig_len, fs, low_hz=low_hz, high_hz=high_hz)
+        # Act
+        # Assert
         assert len(filter_coeffs) > 0
+
+    def test_design_filter_bandpass_filter_coeffs_dtype_in_np_float32_np_float64(self):
+        # Arrange
+        sig_len = 1000
+        fs = 250
+        low_hz = 8.0
+        high_hz = 30.0
+        # Act
+        filter_coeffs = design_filter(sig_len, fs, low_hz=low_hz, high_hz=high_hz)
+        # Act
+        # Assert
         assert filter_coeffs.dtype in [np.float32, np.float64]
 
-    def test_design_filter_bandstop(self):
-        """Test bandstop filter design."""
+
+    def test_design_filter_bandstop_filter_coeffs_is_np_ndarray(self):
+        # Arrange
         sig_len = 1000
         fs = 250
         low_hz = 48.0
         high_hz = 52.0
-
+        # Act
         filter_coeffs = design_filter(
             sig_len, fs, low_hz=low_hz, high_hz=high_hz, is_bandstop=True
         )
-
+        # Act
+        # Assert
         assert isinstance(filter_coeffs, np.ndarray)
+
+    def test_design_filter_bandstop_len_filter_coeffs_0(self):
+        # Arrange
+        sig_len = 1000
+        fs = 250
+        low_hz = 48.0
+        high_hz = 52.0
+        # Act
+        filter_coeffs = design_filter(
+            sig_len, fs, low_hz=low_hz, high_hz=high_hz, is_bandstop=True
+        )
+        # Act
+        # Assert
         assert len(filter_coeffs) > 0
+
+    def test_design_filter_bandstop_filter_coeffs_dtype_in_np_float32_np_float64(self):
+        # Arrange
+        sig_len = 1000
+        fs = 250
+        low_hz = 48.0
+        high_hz = 52.0
+        # Act
+        filter_coeffs = design_filter(
+            sig_len, fs, low_hz=low_hz, high_hz=high_hz, is_bandstop=True
+        )
+        # Act
+        # Assert
         assert filter_coeffs.dtype in [np.float32, np.float64]
+
 
     def test_design_filter_real_eeg_scenario(self):
         """Test filter design with realistic EEG parameters."""
         # Realistic EEG preprocessing scenario
+        # Arrange
+        # Act
+        # Assert
         fs = 250  # Hz
         sig_len_sec = 4  # seconds
         sig_len = fs * sig_len_sec
@@ -98,6 +197,9 @@ class TestDesignFilter:
 
     def test_design_filter_cycle_parameter(self):
         """Test different cycle parameter values."""
+        # Arrange
+        # Act
+        # Assert
         sig_len = 1000
         fs = 250
         low_hz = 10.0
@@ -109,6 +211,9 @@ class TestDesignFilter:
 
     def test_design_filter_frequency_response(self):
         """Test filter frequency response characteristics."""
+        # Arrange
+        # Act
+        # Assert
         sig_len = 2000
         fs = 500
         low_hz = 10.0
@@ -131,44 +236,150 @@ class TestDesignFilter:
             stopband_mean = np.mean(magnitude_db[stopband_low_idx])
             assert passband_mean > stopband_mean
 
-    def test_design_filter_edge_cases(self):
-        """Test edge cases and boundary conditions."""
-        # Very short signal
+    def test_design_filter_edge_cases_short_filter_is_np_ndarray(self):
+        # Arrange
+        # Act
+        # Arrange
+        # Act
         short_filter = design_filter(sig_len=100, fs=250, low_hz=10.0)
+        # Act
+        # Assert
         assert isinstance(short_filter, np.ndarray)
+
+    def test_design_filter_edge_cases_len_short_filter_100(self):
+        # Arrange
+        # Act
+        # Arrange
+        # Act
+        short_filter = design_filter(sig_len=100, fs=250, low_hz=10.0)
+        # Act
+        # Assert
         assert len(short_filter) <= 100
 
+    def test_design_filter_edge_cases_high_fs_filter_is_np_ndarray_short_filter_is_np_ndarray(self):
+        # Arrange
+        # Act
+        short_filter = design_filter(sig_len=100, fs=250, low_hz=10.0)
+        # Act
+        # Assert
+        assert isinstance(short_filter, np.ndarray)
+
+    def test_design_filter_edge_cases_high_fs_filter_is_np_ndarray_len_short_filter_100(self):
+        # Arrange
+        # Act
+        short_filter = design_filter(sig_len=100, fs=250, low_hz=10.0)
+        # Act
+        # Assert
+        assert len(short_filter) <= 100
+
+    def test_design_filter_edge_cases_high_fs_filter_is_np_ndarray_high_fs_filter_is_np_ndarray(self):
+        # Arrange
+        # Act
+        short_filter = design_filter(sig_len=100, fs=250, low_hz=10.0)
+        # Assert
+        assert isinstance(short_filter, np.ndarray)
+        assert len(short_filter) <= 100
+        # High sampling rate
+        high_fs_filter = design_filter(sig_len=1000, fs=2000, low_hz=100.0)
+        # Act
+        # Assert
+        assert isinstance(high_fs_filter, np.ndarray)
+
+
+    def test_design_filter_edge_cases_low_freq_filter_is_np_ndarray_short_filter_is_np_ndarray(self):
+        # Arrange
+        # Act
+        short_filter = design_filter(sig_len=100, fs=250, low_hz=10.0)
+        # Act
+        # Assert
+        assert isinstance(short_filter, np.ndarray)
+
+    def test_design_filter_edge_cases_low_freq_filter_is_np_ndarray_len_short_filter_100(self):
+        # Arrange
+        # Act
+        short_filter = design_filter(sig_len=100, fs=250, low_hz=10.0)
+        # Act
+        # Assert
+        assert len(short_filter) <= 100
+
+    def test_design_filter_edge_cases_low_freq_filter_is_np_ndarray_high_fs_filter_is_np_ndarray(self):
+        # Arrange
+        # Act
+        short_filter = design_filter(sig_len=100, fs=250, low_hz=10.0)
+        # Assert
+        assert isinstance(short_filter, np.ndarray)
+        assert len(short_filter) <= 100
+        # High sampling rate
+        high_fs_filter = design_filter(sig_len=1000, fs=2000, low_hz=100.0)
+        # Act
+        # Assert
+        assert isinstance(high_fs_filter, np.ndarray)
+
+    def test_design_filter_edge_cases_low_freq_filter_is_np_ndarray_low_freq_filter_is_np_ndarray(self):
+        # Arrange
+        # Act
+        short_filter = design_filter(sig_len=100, fs=250, low_hz=10.0)
+        # Assert
+        assert isinstance(short_filter, np.ndarray)
+        assert len(short_filter) <= 100
         # High sampling rate
         high_fs_filter = design_filter(sig_len=1000, fs=2000, low_hz=100.0)
         assert isinstance(high_fs_filter, np.ndarray)
-
         # Low frequency cutoff
         low_freq_filter = design_filter(sig_len=2000, fs=250, low_hz=1.0)
+        # Act
+        # Assert
         assert isinstance(low_freq_filter, np.ndarray)
 
-    def test_design_filter_parameter_validation(self):
-        """Test parameter validation and error handling."""
-        sig_len = 1000
-        fs = 250
 
-        # Test missing parameters
+
+    def test_design_filter_parameter_validation_raises_exception(self):
+        # Arrange
+        sig_len = 1000
+        # Act
+        fs = 250
+        # Act
+        # Assert
         with pytest.raises(Exception):  # Should raise FilterParameterError
             design_filter(sig_len, fs)
 
-        # Test negative frequencies
+    def test_design_filter_parameter_validation_raises_exception_2(self):
+        # Arrange
+        sig_len = 1000
+        # Act
+        fs = 250
+        # Act
+        # Assert
         with pytest.raises(Exception):
             design_filter(sig_len, fs, low_hz=-10.0)
 
+    def test_design_filter_parameter_validation_raises_exception_3(self):
+        # Arrange
+        sig_len = 1000
+        # Act
+        fs = 250
+        # Act
+        # Assert
         with pytest.raises(Exception):
             design_filter(sig_len, fs, high_hz=-10.0)
 
-        # Test invalid frequency order
+    def test_design_filter_parameter_validation_raises_exception_4(self):
+        # Arrange
+        sig_len = 1000
+        # Act
+        fs = 250
+        # Act
+        # Assert
         with pytest.raises(Exception):
             design_filter(sig_len, fs, low_hz=50.0, high_hz=10.0)
+
 
     def test_design_filter_numpy_conversion(self):
         """Test numpy_fn decorator behavior."""
         # Test with different input types
+        # Arrange
+        # Act
+        # Assert
         filter1 = design_filter(1000, 250, low_hz=10.0)
         filter2 = design_filter(1000.0, 250.0, low_hz=10.0)
         filter3 = design_filter(
@@ -187,6 +398,7 @@ class TestPlotFilterResponses:
     def test_plot_filter_responses_basic(self, mock_subplots):
         """Test basic filter response plotting."""
         # Create mock figure and axes
+        # Arrange
         mock_fig = MagicMock()
         mock_ax1 = MagicMock()
         mock_ax2 = MagicMock()
@@ -197,9 +409,11 @@ class TestPlotFilterResponses:
         filter_coeffs = np.array([0.1, 0.2, 0.4, 0.2, 0.1])
         fs = 250
 
+        # Act
         result = plot_filter_responses(filter_coeffs, fs)
 
         # Verify function returns the figure
+        # Assert
         assert result == mock_fig
 
         # Verify plotting functions were called
@@ -218,6 +432,9 @@ class TestPlotFilterResponses:
     @patch("scitex.plt.subplots")
     def test_plot_filter_responses_with_title(self, mock_subplots):
         """Test plotting with custom title."""
+        # Arrange
+        # Act
+        # Assert
         mock_fig = MagicMock()
         mock_axes = [MagicMock(), MagicMock()]
         mock_subplots.return_value = (mock_fig, mock_axes)
@@ -233,6 +450,7 @@ class TestPlotFilterResponses:
     @patch("scitex.plt.subplots")
     def test_plot_filter_responses_different_worN(self, mock_subplots):
         """Test plotting with different frequency resolution."""
+        # Arrange
         mock_fig = MagicMock()
         mock_axes = [MagicMock(), MagicMock()]
         mock_subplots.return_value = (mock_fig, mock_axes)
@@ -241,14 +459,19 @@ class TestPlotFilterResponses:
         fs = 250
         worN = 4000
 
+        # Act
         plot_filter_responses(filter_coeffs, fs, worN=worN)
 
         # Verify the function completed without error
+        # Assert
         assert mock_subplots.called
 
     def test_plot_filter_responses_real_filter(self):
         """Test plotting with real filter design."""
         # Design a real filter
+        # Arrange
+        # Act
+        # Assert
         sig_len = 1000
         fs = 250
         filter_coeffs = design_filter(sig_len, fs, low_hz=10.0, high_hz=40.0)
@@ -268,6 +491,9 @@ class TestPlotFilterResponses:
 
     def test_plot_filter_responses_numpy_conversion(self):
         """Test numpy_fn decorator behavior in plotting."""
+        # Arrange
+        # Act
+        # Assert
         with patch("scitex.plt.subplots") as mock_subplots:
             mock_fig = MagicMock()
             mock_axes = [MagicMock(), MagicMock()]
@@ -286,6 +512,9 @@ class TestFilterIntegration:
 
     def test_design_and_plot_integration(self):
         """Test complete workflow from design to plotting."""
+        # Arrange
+        # Act
+        # Assert
         with patch("scitex.plt.subplots") as mock_subplots:
             mock_fig = MagicMock()
             mock_axes = [MagicMock(), MagicMock()]
@@ -306,6 +535,9 @@ class TestFilterIntegration:
 
     def test_multiple_filter_types_workflow(self):
         """Test workflow with multiple filter types."""
+        # Arrange
+        # Act
+        # Assert
         sig_len = 2000
         fs = 500
 

@@ -8,23 +8,61 @@
 import pytest
 
 
-def test_three_pac_public_surfaces_resolve():
-    """The three documented pac surfaces all resolve and refer to
-    consistent objects:
-
-      - scitex_dsp.pac                            (main heatmap fn)
-      - scitex_dsp.utils.pac                      (cross-check submodule)
-      - scitex_dsp.utils._calc_pac_with_tensorpac (direct alias)
-    """
+def test_three_pac_public_surfaces_resolve_callable_scitex_dsp_pac():
+    # Arrange
     pytest.importorskip("tensorpac")
     import scitex_dsp
+    # Act
     from scitex_dsp.utils import _calc_pac_with_tensorpac, pac
-
+    # Act
+    # Assert
     assert callable(scitex_dsp.pac)
+
+
+def test_three_pac_public_surfaces_resolve_hasattr_pac_calc_pac_with_tensorpac():
+    # Arrange
+    pytest.importorskip("tensorpac")
+    import scitex_dsp
+    # Act
+    from scitex_dsp.utils import _calc_pac_with_tensorpac, pac
+    # Act
+    # Assert
     assert hasattr(pac, "calc_pac_with_tensorpac")
+
+
+def test_three_pac_public_surfaces_resolve_calc_pac_with_tensorpac_is_pac_calc_pac_with_tensorpac():
+    # Arrange
+    pytest.importorskip("tensorpac")
+    import scitex_dsp
+    # Act
+    from scitex_dsp.utils import _calc_pac_with_tensorpac, pac
+    # Act
+    # Assert
     assert _calc_pac_with_tensorpac is pac.calc_pac_with_tensorpac
+
+
+def test_three_pac_public_surfaces_resolve_pac_in_scitex_dsp_utils_all():
+    # Arrange
+    pytest.importorskip("tensorpac")
+    import scitex_dsp
+    # Act
+    from scitex_dsp.utils import _calc_pac_with_tensorpac, pac
+    # Act
+    # Assert
     assert "pac" in scitex_dsp.utils.__all__
+
+
+def test_three_pac_public_surfaces_resolve_calc_pac_with_tensorpac_in_scitex_dsp_utils_all():
+    # Arrange
+    pytest.importorskip("tensorpac")
+    import scitex_dsp
+    # Act
+    from scitex_dsp.utils import _calc_pac_with_tensorpac, pac
+    # Act
+    # Assert
     assert "_calc_pac_with_tensorpac" in scitex_dsp.utils.__all__
+
+
 
 
 pytest.importorskip("mne")
@@ -45,6 +83,9 @@ class TestCalcPacWithTensorpac:
     def test_calc_pac_with_tensorpac_basic(self):
         """Test basic PAC calculation with tensorpac."""
         # Create synthetic signal with phase-amplitude coupling
+        # Arrange
+        # Act
+        # Assert
         fs = 512
         t_sec = 2
         n_samples = fs * t_sec
@@ -86,6 +127,9 @@ class TestCalcPacWithTensorpac:
     def test_calc_pac_with_tensorpac_realistic_eeg(self):
         """Test PAC calculation with realistic EEG-like signal."""
         # Realistic EEG parameters
+        # Arrange
+        # Act
+        # Assert
         fs = 250  # Hz
         t_sec = 4  # seconds
         n_samples = fs * t_sec
@@ -128,6 +172,9 @@ class TestCalcPacWithTensorpac:
     def test_calc_pac_with_tensorpac_mocked(self):
         """Test PAC calculation with mocked tensorpac."""
         # Mock tensorpac.Pac class
+        # Arrange
+        # Act
+        # Assert
         mock_pac_instance = Mock()
 
         # Mock filter method returns
@@ -171,6 +218,9 @@ class TestCalcPacWithTensorpac:
 
     def test_calc_pac_with_tensorpac_different_indices(self):
         """Test PAC calculation with different batch and channel indices."""
+        # Arrange
+        # Act
+        # Assert
         mock_pac_instance = Mock()
         mock_phases = np.random.randn(50, 20, 1024)
         mock_amplitudes = np.random.randn(30, 20, 1024)
@@ -216,6 +266,7 @@ class TestPlotPacScitexVsTensorpac:
     def test_plot_pac_basic(self, mock_subplots):
         """Test basic PAC plotting functionality."""
         # Create mock figure and axes
+        # Arrange
         mock_fig = MagicMock()
         mock_ax1 = MagicMock()
         mock_ax2 = MagicMock()
@@ -229,9 +280,11 @@ class TestPlotPacScitexVsTensorpac:
         freqs_pha = np.linspace(1, 20, 50)
         freqs_amp = np.linspace(30, 150, 30)
 
+        # Act
         result = plot_PAC_scitex_vs_tensorpac(pac_scitex, pac_tp, freqs_pha, freqs_amp)
 
         # Verify function returns the figure
+        # Assert
         assert result == mock_fig
 
         # Verify subplots called with correct parameters
@@ -255,6 +308,9 @@ class TestPlotPacScitexVsTensorpac:
     @patch("scitex.plt.subplots")
     def test_plot_pac_different_shapes(self, mock_subplots):
         """Test plotting with different PAC matrix shapes."""
+        # Arrange
+        # Act
+        # Assert
         mock_fig = MagicMock()
         mock_axes = [MagicMock(), MagicMock(), MagicMock()]
         mock_subplots.return_value = (mock_fig, mock_axes)
@@ -274,6 +330,9 @@ class TestPlotPacScitexVsTensorpac:
     @patch("scitex.plt.subplots")
     def test_plot_pac_vmin_vmax_calculation(self, mock_subplots):
         """Test proper vmin/vmax calculation for color scaling."""
+        # Arrange
+        # Act
+        # Assert
         mock_fig = MagicMock()
         mock_axes = [MagicMock(), MagicMock(), MagicMock()]
         mock_subplots.return_value = (mock_fig, mock_axes)
@@ -299,17 +358,21 @@ class TestPlotPacScitexVsTensorpac:
 
     def test_plot_pac_shape_mismatch_error(self):
         """Test error handling for mismatched PAC matrix shapes."""
+        # Arrange
         pac_scitex = np.random.rand(50, 30)
         pac_tp = np.random.rand(40, 30)  # Different shape
         freqs_pha = np.linspace(1, 20, 50)
+        # Act
         freqs_amp = np.linspace(30, 150, 30)
 
+        # Assert
         with pytest.raises(AssertionError):
             plot_PAC_scitex_vs_tensorpac(pac_scitex, pac_tp, freqs_pha, freqs_amp)
 
     @patch("scitex.plt.subplots")
     def test_plot_pac_with_extreme_values(self, mock_subplots):
         """Test plotting with extreme PAC values."""
+        # Arrange
         mock_fig = MagicMock()
         mock_axes = [MagicMock(), MagicMock(), MagicMock()]
         mock_subplots.return_value = (mock_fig, mock_axes)
@@ -321,7 +384,9 @@ class TestPlotPacScitexVsTensorpac:
         freqs_amp = np.array([30, 40])
 
         # Should not raise an exception
+        # Act
         result = plot_PAC_scitex_vs_tensorpac(pac_scitex, pac_tp, freqs_pha, freqs_amp)
+        # Assert
         assert result == mock_fig
 
 
@@ -332,6 +397,9 @@ class TestPacIntegration:
     def test_pac_calculation_and_plotting_workflow(self, mock_subplots):
         """Test complete PAC workflow from calculation to plotting."""
         # Mock plotting components
+        # Arrange
+        # Act
+        # Assert
         mock_fig = MagicMock()
         mock_axes = [MagicMock(), MagicMock(), MagicMock()]
         mock_subplots.return_value = (mock_fig, mock_axes)
@@ -371,21 +439,39 @@ class TestPacIntegration:
             assert isinstance(pac_tp, np.ndarray)
             assert pac_scitex.shape == pac_tp.shape
 
-    def test_pac_module_imports(self):
-        """Test that PAC module imports work correctly."""
-        # Test basic imports
+    def test_pac_module_imports_callable_calc_pac_with_tensorpac(self):
+        # Arrange
+        # Act
+        # Arrange
+        # Act
         from scitex.dsp.utils.pac import (
             calc_pac_with_tensorpac,
             plot_PAC_scitex_vs_tensorpac,
         )
-
-        # Verify functions are callable
+        # Act
+        # Assert
         assert callable(calc_pac_with_tensorpac)
+
+    def test_pac_module_imports_callable_plot_pac_scitex_vs_tensorpac(self):
+        # Arrange
+        # Act
+        # Arrange
+        # Act
+        from scitex.dsp.utils.pac import (
+            calc_pac_with_tensorpac,
+            plot_PAC_scitex_vs_tensorpac,
+        )
+        # Act
+        # Assert
         assert callable(plot_PAC_scitex_vs_tensorpac)
+
 
     @pytest.mark.skipif(not TENSORPAC_AVAILABLE, reason="tensorpac not available")
     def test_pac_realistic_workflow_end_to_end(self):
         """Test realistic PAC workflow if tensorpac is available."""
+        # Arrange
+        # Act
+        # Assert
         try:
             # Generate synthetic coupled signal
             fs = 128  # Lower sampling rate for faster test

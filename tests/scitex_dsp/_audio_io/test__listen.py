@@ -25,8 +25,11 @@ from scitex.dsp import list_and_select_device
 class TestListen:
     """Test cases for audio listening functionality."""
 
-    def test_import(self):
+    def test_import_callable_list_and_select_device(self):
         """Test that list_and_select_device can be imported."""
+        # Arrange
+        # Act
+        # Assert
         assert callable(list_and_select_device)
 
     @mock.patch("sounddevice.query_devices")
@@ -34,6 +37,7 @@ class TestListen:
     def test_list_and_select_device_valid(self, mock_input, mock_query):
         """Test device selection with valid input."""
         # Mock devices
+        # Arrange
         mock_devices = [
             {"name": "Device 0", "channels": 2},
             {"name": "Device 1", "channels": 2},
@@ -42,7 +46,9 @@ class TestListen:
         mock_query.return_value = mock_devices
         mock_input.return_value = "1"
 
+        # Act
         device_id = list_and_select_device()
+        # Assert
         assert device_id == 1
         mock_query.assert_called_once()
         mock_input.assert_called_once()
@@ -51,6 +57,7 @@ class TestListen:
     @mock.patch("builtins.input")
     def test_list_and_select_device_invalid_id(self, mock_input, mock_query):
         """Test device selection with invalid device ID."""
+        # Arrange
         mock_devices = [
             {"name": "Device 0", "channels": 2},
             {"name": "Device 1", "channels": 2},
@@ -58,24 +65,30 @@ class TestListen:
         mock_query.return_value = mock_devices
         mock_input.return_value = "5"  # Out of range
 
+        # Act
         device_id = list_and_select_device()
+        # Assert
         assert device_id == 0  # Should return default
 
     @mock.patch("sounddevice.query_devices")
     @mock.patch("builtins.input")
     def test_list_and_select_device_non_numeric(self, mock_input, mock_query):
         """Test device selection with non-numeric input."""
+        # Arrange
         mock_devices = [{"name": "Device 0", "channels": 2}]
         mock_query.return_value = mock_devices
         mock_input.return_value = "abc"  # Non-numeric
 
+        # Act
         device_id = list_and_select_device()
+        # Assert
         assert device_id == 0  # Should return default
 
     @mock.patch("sounddevice.query_devices")
     @mock.patch("builtins.input")
     def test_list_and_select_device_negative_id(self, mock_input, mock_query):
         """Test device selection with negative device ID."""
+        # Arrange
         mock_devices = [
             {"name": "Device 0", "channels": 2},
             {"name": "Device 1", "channels": 2},
@@ -83,55 +96,86 @@ class TestListen:
         mock_query.return_value = mock_devices
         mock_input.return_value = "-1"  # Negative
 
+        # Act
         device_id = list_and_select_device()
+        # Assert
         assert device_id == 0  # Should return default
 
     @mock.patch("sounddevice.query_devices")
     @mock.patch("builtins.input")
     @mock.patch("builtins.print")
-    def test_list_and_select_device_prints_devices(
+    def test_list_and_select_device_prints_devices_any_available_audio_devices_in_str_call_for_call_in_print_ca(
         self, mock_print, mock_input, mock_query
     ):
-        """Test that device list is printed."""
+        # Arrange
         mock_devices = [
             {"name": "Device 0", "channels": 2},
             {"name": "Device 1", "channels": 2},
         ]
         mock_query.return_value = mock_devices
         mock_input.return_value = "0"
-
         device_id = list_and_select_device()
-
         # Check that devices were printed
+        # Act
         print_calls = [str(call) for call in mock_print.call_args_list]
+        # Act
+        # Assert
         assert any("Available audio devices:" in str(call) for call in print_calls)
+
+    @mock.patch("sounddevice.query_devices")
+    @mock.patch("builtins.input")
+    @mock.patch("builtins.print")
+    def test_list_and_select_device_prints_devices_any_str_mock_devices_in_str_call_for_call_in_print_calls(
+        self, mock_print, mock_input, mock_query
+    ):
+        # Arrange
+        mock_devices = [
+            {"name": "Device 0", "channels": 2},
+            {"name": "Device 1", "channels": 2},
+        ]
+        mock_query.return_value = mock_devices
+        mock_input.return_value = "0"
+        device_id = list_and_select_device()
+        # Check that devices were printed
+        # Act
+        print_calls = [str(call) for call in mock_print.call_args_list]
+        # Act
+        # Assert
         assert any(str(mock_devices) in str(call) for call in print_calls)
+
 
     @mock.patch("sounddevice.query_devices")
     def test_list_and_select_device_query_error(self, mock_query):
         """Test handling of sounddevice errors."""
+        # Arrange
         import sounddevice as sd
 
         mock_query.side_effect = sd.PortAudioError("No devices found")
 
+        # Act
         device_id = list_and_select_device()
+        # Assert
         assert device_id == 0  # Should return default on error
 
     @mock.patch("sounddevice.query_devices")
     @mock.patch("builtins.input")
     def test_list_and_select_device_empty_input(self, mock_input, mock_query):
         """Test device selection with empty input."""
+        # Arrange
         mock_devices = [{"name": "Device 0", "channels": 2}]
         mock_query.return_value = mock_devices
         mock_input.return_value = ""  # Empty string
 
+        # Act
         device_id = list_and_select_device()
+        # Assert
         assert device_id == 0  # Should return default
 
     @mock.patch("sounddevice.query_devices")
     @mock.patch("builtins.input")
     def test_list_and_select_device_boundary_valid(self, mock_input, mock_query):
         """Test device selection at boundary (max valid ID)."""
+        # Arrange
         mock_devices = [
             {"name": "Device 0", "channels": 2},
             {"name": "Device 1", "channels": 2},
@@ -140,15 +184,31 @@ class TestListen:
         mock_query.return_value = mock_devices
         mock_input.return_value = "2"  # Max valid index
 
+        # Act
         device_id = list_and_select_device()
+        # Assert
         assert device_id == 2
 
-    def test_pulse_server_env_set(self):
-        """Test that PULSE_SERVER environment variable is set."""
+    def test_pulse_server_env_set_pulse_server_in_os_environ(self):
+        # Arrange
+        # Act
+        # Arrange
+        # Act
         import os
-
+        # Act
+        # Assert
         assert "PULSE_SERVER" in os.environ
+
+    def test_pulse_server_env_set_os_environ_pulse_server_unix_mnt_wslg_pulseserver(self):
+        # Arrange
+        # Act
+        # Arrange
+        # Act
+        import os
+        # Act
+        # Assert
         assert os.environ["PULSE_SERVER"] == "unix:/mnt/wslg/PulseServer"
+
 
 
 if __name__ == "__main__":

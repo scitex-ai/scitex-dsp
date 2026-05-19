@@ -18,190 +18,440 @@ class TestZeroPadAvailableFlags:
 
     def test_torch_available_flag_exists(self):
         """Test that TORCH_AVAILABLE flag is exported."""
+        # Arrange
+        # Act
         from scitex.dsp.utils._zero_pad import TORCH_AVAILABLE
 
+        # Assert
         assert isinstance(TORCH_AVAILABLE, bool)
 
     def test_check_torch_function_exists(self):
         """Test that _check_torch function is exported."""
+        # Arrange
+        # Act
         from scitex.dsp.utils._zero_pad import _check_torch
 
+        # Assert
         assert callable(_check_torch)
 
     def test_torch_available_is_true_when_torch_installed(self):
         """Test that TORCH_AVAILABLE is True when torch is installed."""
+        # Arrange
+        # Act
         from scitex.dsp.utils._zero_pad import TORCH_AVAILABLE
 
+        # Assert
         assert TORCH_AVAILABLE is True
 
     def test_check_torch_does_not_raise_when_available(self):
         """Test that _check_torch doesn't raise when torch is available."""
+        # Arrange
+        # Act
+        # Assert
         from scitex.dsp.utils._zero_pad import _check_torch
 
         _check_torch()
 
 
-def test_zero_pad_1d_basic():
-    """Test basic 1D zero padding."""
+def test_zero_pad_1d_basic_len_result_is_7():
+    # Arrange
     from scitex.dsp.utils import _zero_pad_1d
-
     x = torch.tensor([1, 2, 3])
+    # Act
     result = _zero_pad_1d(x, 7)
-
-    # Should be padded to length 7
+    # Act
+    # Assert
     assert len(result) == 7
-    # Original values should be preserved in the center
+
+
+def test_zero_pad_1d_basic_torch_equal_result_2_5_x():
+    # Arrange
+    from scitex.dsp.utils import _zero_pad_1d
+    x = torch.tensor([1, 2, 3])
+    # Act
+    result = _zero_pad_1d(x, 7)
+    # Act
+    # Assert
     assert torch.equal(result[2:5], x)
-    # Padding should be zeros
+
+
+def test_zero_pad_1d_basic_torch_equal_result_2_torch_zeros_2():
+    # Arrange
+    from scitex.dsp.utils import _zero_pad_1d
+    x = torch.tensor([1, 2, 3])
+    # Act
+    result = _zero_pad_1d(x, 7)
+    # Act
+    # Assert
     assert torch.equal(result[:2], torch.zeros(2))
+
+
+def test_zero_pad_1d_basic_torch_equal_result_5_torch_zeros_2():
+    # Arrange
+    from scitex.dsp.utils import _zero_pad_1d
+    x = torch.tensor([1, 2, 3])
+    # Act
+    result = _zero_pad_1d(x, 7)
+    # Act
+    # Assert
     assert torch.equal(result[5:], torch.zeros(2))
 
 
-def test_zero_pad_1d_even_padding():
-    """Test 1D zero padding with even padding."""
+
+
+def test_zero_pad_1d_even_padding_len_result_is_6():
+    # Arrange
     from scitex.dsp.utils import _zero_pad_1d
-
     x = torch.tensor([1, 2])
+    # Act
     result = _zero_pad_1d(x, 6)
-
-    # Should be padded to length 6
+    # Act
+    # Assert
     assert len(result) == 6
-    # 4 zeros to add, 2 on each side
+
+
+def test_zero_pad_1d_even_padding_torch_equal_result_2_4_x():
+    # Arrange
+    from scitex.dsp.utils import _zero_pad_1d
+    x = torch.tensor([1, 2])
+    # Act
+    result = _zero_pad_1d(x, 6)
+    # Act
+    # Assert
     assert torch.equal(result[2:4], x)
+
+
+def test_zero_pad_1d_even_padding_torch_equal_result_2_torch_zeros_2():
+    # Arrange
+    from scitex.dsp.utils import _zero_pad_1d
+    x = torch.tensor([1, 2])
+    # Act
+    result = _zero_pad_1d(x, 6)
+    # Act
+    # Assert
     assert torch.equal(result[:2], torch.zeros(2))
+
+
+def test_zero_pad_1d_even_padding_torch_equal_result_4_torch_zeros_2():
+    # Arrange
+    from scitex.dsp.utils import _zero_pad_1d
+    x = torch.tensor([1, 2])
+    # Act
+    result = _zero_pad_1d(x, 6)
+    # Act
+    # Assert
     assert torch.equal(result[4:], torch.zeros(2))
 
 
-def test_zero_pad_1d_odd_padding():
-    """Test 1D zero padding with odd padding."""
+
+
+def test_zero_pad_1d_odd_padding_len_result_is_5():
+    # Arrange
     from scitex.dsp.utils import _zero_pad_1d
-
     x = torch.tensor([1, 2])
+    # Act
     result = _zero_pad_1d(x, 5)
-
-    # Should be padded to length 5
+    # Act
+    # Assert
     assert len(result) == 5
-    # 3 zeros to add, 1 left, 2 right (left gets less)
+
+
+def test_zero_pad_1d_odd_padding_torch_equal_result_1_3_x():
+    # Arrange
+    from scitex.dsp.utils import _zero_pad_1d
+    x = torch.tensor([1, 2])
+    # Act
+    result = _zero_pad_1d(x, 5)
+    # Act
+    # Assert
     assert torch.equal(result[1:3], x)
+
+
+def test_zero_pad_1d_odd_padding_torch_equal_result_1_torch_zeros_1():
+    # Arrange
+    from scitex.dsp.utils import _zero_pad_1d
+    x = torch.tensor([1, 2])
+    # Act
+    result = _zero_pad_1d(x, 5)
+    # Act
+    # Assert
     assert torch.equal(result[:1], torch.zeros(1))
+
+
+def test_zero_pad_1d_odd_padding_torch_equal_result_3_torch_zeros_2():
+    # Arrange
+    from scitex.dsp.utils import _zero_pad_1d
+    x = torch.tensor([1, 2])
+    # Act
+    result = _zero_pad_1d(x, 5)
+    # Act
+    # Assert
     assert torch.equal(result[3:], torch.zeros(2))
+
+
 
 
 def test_zero_pad_1d_no_padding_needed():
     """Test 1D zero padding when no padding is needed."""
+    # Arrange
     from scitex.dsp.utils import _zero_pad_1d
 
     x = torch.tensor([1, 2, 3, 4, 5])
+    # Act
     result = _zero_pad_1d(x, 5)
 
     # Should be unchanged
+    # Assert
     assert torch.equal(result, x)
 
 
-def test_zero_pad_1d_numpy_input():
-    """Test 1D zero padding with numpy input."""
+def test_zero_pad_1d_numpy_input_result_is_torch_tensor():
+    # Arrange
     from scitex.dsp.utils import _zero_pad_1d
-
     x = np.array([1, 2, 3])
+    # Act
     result = _zero_pad_1d(x, 7)
-
-    # Should be a torch tensor
+    # Act
+    # Assert
     assert isinstance(result, torch.Tensor)
+
+
+def test_zero_pad_1d_numpy_input_len_result_is_7():
+    # Arrange
+    from scitex.dsp.utils import _zero_pad_1d
+    x = np.array([1, 2, 3])
+    # Act
+    result = _zero_pad_1d(x, 7)
+    # Act
+    # Assert
     assert len(result) == 7
-    # Original values should be preserved
+
+
+def test_zero_pad_1d_numpy_input_torch_equal_result_2_5_torch_tensor_1_2_3():
+    # Arrange
+    from scitex.dsp.utils import _zero_pad_1d
+    x = np.array([1, 2, 3])
+    # Act
+    result = _zero_pad_1d(x, 7)
+    # Act
+    # Assert
     assert torch.equal(result[2:5], torch.tensor([1, 2, 3]))
 
 
-def test_zero_pad_basic():
-    """Test basic zero padding of multiple tensors.
 
-    Implementation uses centered padding: padding_left = needed // 2,
-    padding_right = needed - padding_left. So odd-padding biases right.
-    """
+
+def test_zero_pad_basic_result_shape_equals_n_3_4():
+    # Arrange
     from scitex.dsp.utils import zero_pad
-
     x1 = torch.tensor([1, 2, 3])
     x2 = torch.tensor([4, 5])
     x3 = torch.tensor([6, 7, 8, 9])
-
+    # Act
     result = zero_pad([x1, x2, x3])
-
-    # Should stack into a tensor of shape (3, 4)
+    # Act
+    # Assert
     assert result.shape == (3, 4)
 
-    # x1 (len=3 → 4): needed=1, left=0, right=1 → [1,2,3,0]
+
+def test_zero_pad_basic_torch_equal_result_0_torch_tensor_1_2_3_0():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.tensor([1, 2, 3])
+    x2 = torch.tensor([4, 5])
+    x3 = torch.tensor([6, 7, 8, 9])
+    # Act
+    result = zero_pad([x1, x2, x3])
+    # Act
+    # Assert
     assert torch.equal(result[0], torch.tensor([1, 2, 3, 0]))
 
-    # x2 (len=2 → 4): needed=2, left=1, right=1 → [0,4,5,0]
+
+def test_zero_pad_basic_torch_equal_result_1_torch_tensor_0_4_5_0():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.tensor([1, 2, 3])
+    x2 = torch.tensor([4, 5])
+    x3 = torch.tensor([6, 7, 8, 9])
+    # Act
+    result = zero_pad([x1, x2, x3])
+    # Act
+    # Assert
     assert torch.equal(result[1], torch.tensor([0, 4, 5, 0]))
 
-    # x3 (len=4 → 4): no padding
+
+def test_zero_pad_basic_torch_equal_result_2_torch_tensor_6_7_8_9():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.tensor([1, 2, 3])
+    x2 = torch.tensor([4, 5])
+    x3 = torch.tensor([6, 7, 8, 9])
+    # Act
+    result = zero_pad([x1, x2, x3])
+    # Act
+    # Assert
     assert torch.equal(result[2], torch.tensor([6, 7, 8, 9]))
 
 
-def test_zero_pad_mixed_inputs():
-    """Test zero padding with mixed input types."""
-    from scitex.dsp.utils import zero_pad
 
+
+def test_zero_pad_mixed_inputs_result_shape_equals_n_3_5():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
     x1 = torch.tensor([1, 2, 3])  # torch tensor
     x2 = np.array([4, 5])  # numpy array
     x3 = [6, 7, 8, 9, 10]  # list
-
+    # Act
     result = zero_pad([x1, x2, x3])
-
-    # Should stack into a tensor of shape (3, 5)
+    # Act
+    # Assert
     assert result.shape == (3, 5)
+
+
+def test_zero_pad_mixed_inputs_result_is_torch_tensor():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.tensor([1, 2, 3])  # torch tensor
+    x2 = np.array([4, 5])  # numpy array
+    x3 = [6, 7, 8, 9, 10]  # list
+    # Act
+    result = zero_pad([x1, x2, x3])
+    # Act
+    # Assert
     assert isinstance(result, torch.Tensor)
 
-    # Check that all data is preserved correctly. Centered padding:
-    #   x1=[1,2,3] len=3 → 5: needed=2, left=1, right=1 → [0,1,2,3,0]
-    #   x2=[4,5]   len=2 → 5: needed=3, left=1, right=2 → [0,4,5,0,0]
-    #   x3=[6..10] len=5 → 5: no padding
+
+def test_zero_pad_mixed_inputs_torch_equal_result_0_torch_tensor_0_1_2_3_0():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.tensor([1, 2, 3])  # torch tensor
+    x2 = np.array([4, 5])  # numpy array
+    x3 = [6, 7, 8, 9, 10]  # list
+    # Act
+    result = zero_pad([x1, x2, x3])
+    # Act
+    # Assert
     assert torch.equal(result[0], torch.tensor([0, 1, 2, 3, 0]))
+
+
+def test_zero_pad_mixed_inputs_torch_equal_result_1_torch_tensor_0_4_5_0_0():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.tensor([1, 2, 3])  # torch tensor
+    x2 = np.array([4, 5])  # numpy array
+    x3 = [6, 7, 8, 9, 10]  # list
+    # Act
+    result = zero_pad([x1, x2, x3])
+    # Act
+    # Assert
     assert torch.equal(result[1], torch.tensor([0, 4, 5, 0, 0]))
+
+
+def test_zero_pad_mixed_inputs_torch_equal_result_2_torch_tensor_6_7_8_9_10():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.tensor([1, 2, 3])  # torch tensor
+    x2 = np.array([4, 5])  # numpy array
+    x3 = [6, 7, 8, 9, 10]  # list
+    # Act
+    result = zero_pad([x1, x2, x3])
+    # Act
+    # Assert
     assert torch.equal(result[2], torch.tensor([6, 7, 8, 9, 10]))
 
 
-def test_zero_pad_single_tensor():
-    """Test zero padding with single tensor."""
+
+
+def test_zero_pad_single_tensor_result_shape_equals_n_1_4():
+    # Arrange
     from scitex.dsp.utils import zero_pad
-
     x = torch.tensor([1, 2, 3, 4])
+    # Act
     result = zero_pad([x])
-
-    # Should have shape (1, 4)
+    # Act
+    # Assert
     assert result.shape == (1, 4)
+
+
+def test_zero_pad_single_tensor_torch_equal_result_0_x():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x = torch.tensor([1, 2, 3, 4])
+    # Act
+    result = zero_pad([x])
+    # Act
+    # Assert
     assert torch.equal(result[0], x)
+
+
 
 
 def test_zero_pad_empty_list():
     """Test zero padding with empty list."""
+    # Arrange
+    # Act
     from scitex.dsp.utils import zero_pad
 
+    # Assert
     with pytest.raises(ValueError):
         zero_pad([])
 
 
-def test_zero_pad_different_dimensions():
-    """Test zero padding with different stacking dimensions."""
+def test_zero_pad_different_dimensions_result_dim0_shape_equals_n_2_3():
+    # Arrange
     from scitex.dsp.utils import zero_pad
-
     x1 = torch.tensor([1, 2])
     x2 = torch.tensor([3, 4, 5])
-
     # Test dim=0 (default): two 1-D tensors stacked along new axis 0
     # → shape (n_inputs, max_len) = (2, 3)
+    # Act
     result_dim0 = zero_pad([x1, x2], dim=0)
+    # Act
+    # Assert
     assert result_dim0.shape == (2, 3)
 
+
+def test_zero_pad_different_dimensions_result_dim1_shape_equals_n_3_2_result_dim0_shape_equals_n_2_3():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.tensor([1, 2])
+    x2 = torch.tensor([3, 4, 5])
+    # Test dim=0 (default): two 1-D tensors stacked along new axis 0
+    # → shape (n_inputs, max_len) = (2, 3)
+    # Act
+    result_dim0 = zero_pad([x1, x2], dim=0)
+    # Act
+    # Assert
+    assert result_dim0.shape == (2, 3)
+
+
+def test_zero_pad_different_dimensions_result_dim1_shape_equals_n_3_2_result_dim1_shape_equals_n_3_2():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.tensor([1, 2])
+    x2 = torch.tensor([3, 4, 5])
+    # Test dim=0 (default): two 1-D tensors stacked along new axis 0
+    # → shape (n_inputs, max_len) = (2, 3)
+    # Act
+    result_dim0 = zero_pad([x1, x2], dim=0)
+    # Assert
+    assert result_dim0.shape == (2, 3)
     # Test dim=1: stacked along axis 1 → shape (max_len, n_inputs) = (3, 2).
     # torch.stack(.., dim=1) inserts the new axis AT 1, not at 0.
     result_dim1 = zero_pad([x1, x2], dim=1)
+    # Act
+    # Assert
     assert result_dim1.shape == (3, 2)
+
+
+
+
 
 
 def test_zero_pad_preserve_dtype():
     """Test that zero padding preserves data types."""
+    # Arrange
+    # Act
+    # Assert
     from scitex.dsp.utils import zero_pad
 
     # Test different dtypes
@@ -217,12 +467,15 @@ def test_zero_pad_preserve_dtype():
 
 def test_zero_pad_preserve_device():
     """Test that zero padding preserves device."""
+    # Arrange
     from scitex.dsp.utils import zero_pad
 
     x1 = torch.tensor([1, 2])
     x2 = torch.tensor([3, 4, 5])
 
+    # Act
     result = zero_pad([x1, x2])
+    # Assert
     assert result.device == x1.device
 
     # Test CUDA if available
@@ -233,25 +486,59 @@ def test_zero_pad_preserve_device():
         assert result_cuda.device == x1_cuda.device
 
 
-def test_zero_pad_large_size_difference():
-    """Test zero padding with large size differences."""
+def test_zero_pad_large_size_difference_result_shape_equals_n_2_100():
+    # Arrange
     from scitex.dsp.utils import zero_pad
-
     x1 = torch.tensor([1])  # length 1
     x2 = torch.tensor(list(range(100)))  # length 100
-
+    # Act
     result = zero_pad([x1, x2])
-
+    # Act
+    # Assert
     assert result.shape == (2, 100)
-    # x1 should be heavily padded
+
+
+def test_zero_pad_large_size_difference_result_0_49_1():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.tensor([1])  # length 1
+    x2 = torch.tensor(list(range(100)))  # length 100
+    # Act
+    result = zero_pad([x1, x2])
+    # Act
+    # Assert
     assert result[0, 49] == 1  # Should be in the middle
+
+
+def test_zero_pad_large_size_difference_torch_sum_result_0_0_99():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.tensor([1])  # length 1
+    x2 = torch.tensor(list(range(100)))  # length 100
+    # Act
+    result = zero_pad([x1, x2])
+    # Act
+    # Assert
     assert torch.sum(result[0] == 0) == 99  # 99 zeros
-    # x2 should be unchanged
+
+
+def test_zero_pad_large_size_difference_torch_equal_result_1_x2():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.tensor([1])  # length 1
+    x2 = torch.tensor(list(range(100)))  # length 100
+    # Act
+    result = zero_pad([x1, x2])
+    # Act
+    # Assert
     assert torch.equal(result[1], x2)
+
+
 
 
 def test_zero_pad_real_signal_example():
     """Test zero padding with realistic signal processing example."""
+    # Arrange
     from scitex.dsp.utils import zero_pad
 
     # Simulate different length EEG trials
@@ -263,9 +550,11 @@ def test_zero_pad_real_signal_example():
     trial3 = torch.sin(2 * np.pi * 10 * torch.linspace(0, 2, fs * 2))  # 2 seconds
 
     trials = [trial1, trial2, trial3]
+    # Act
     result = zero_pad(trials)
 
     # Should be padded to longest trial (2 seconds = 500 samples)
+    # Assert
     assert result.shape == (3, 500)
 
     # Check that original signals are preserved (centered-padding offsets)
@@ -281,98 +570,234 @@ def test_zero_pad_real_signal_example():
         assert torch.allclose(extracted, trial, atol=1e-6)
 
 
-def test_zero_pad_gradient_flow():
-    """Test that gradients flow through zero padding."""
+def test_zero_pad_gradient_flow_x1_grad_is_not_none():
+    # Arrange
     from scitex.dsp.utils import zero_pad
-
     x1 = torch.tensor([1.0, 2.0], requires_grad=True)
     x2 = torch.tensor([3.0, 4.0, 5.0], requires_grad=True)
-
     result = zero_pad([x1, x2])
     loss = result.sum()
+    # Act
     loss.backward()
-
-    # Both input tensors should have gradients
+    # Act
+    # Assert
     assert x1.grad is not None
+
+
+def test_zero_pad_gradient_flow_x2_grad_is_not_none():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.tensor([1.0, 2.0], requires_grad=True)
+    x2 = torch.tensor([3.0, 4.0, 5.0], requires_grad=True)
+    result = zero_pad([x1, x2])
+    loss = result.sum()
+    # Act
+    loss.backward()
+    # Act
+    # Assert
     assert x2.grad is not None
+
+
+def test_zero_pad_gradient_flow_torch_equal_x1_grad_torch_ones_like_x1():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.tensor([1.0, 2.0], requires_grad=True)
+    x2 = torch.tensor([3.0, 4.0, 5.0], requires_grad=True)
+    result = zero_pad([x1, x2])
+    loss = result.sum()
+    # Act
+    loss.backward()
+    # Act
+    # Assert
     assert torch.equal(x1.grad, torch.ones_like(x1))
+
+
+def test_zero_pad_gradient_flow_torch_equal_x2_grad_torch_ones_like_x2():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.tensor([1.0, 2.0], requires_grad=True)
+    x2 = torch.tensor([3.0, 4.0, 5.0], requires_grad=True)
+    result = zero_pad([x1, x2])
+    loss = result.sum()
+    # Act
+    loss.backward()
+    # Act
+    # Assert
     assert torch.equal(x2.grad, torch.ones_like(x2))
 
 
-def test_zero_pad_empty_tensors():
-    """Test zero padding with empty tensors."""
-    from scitex.dsp.utils import zero_pad
 
+
+def test_zero_pad_empty_tensors_result_shape_equals_n_2_3():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
     x1 = torch.empty(0)
     x2 = torch.tensor([1, 2, 3])
-
+    # Act
     result = zero_pad([x1, x2])
-
-    # Should be padded to length 3
+    # Act
+    # Assert
     assert result.shape == (2, 3)
-    # First row should be all zeros
+
+
+def test_zero_pad_empty_tensors_torch_equal_result_0_torch_zeros_3():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.empty(0)
+    x2 = torch.tensor([1, 2, 3])
+    # Act
+    result = zero_pad([x1, x2])
+    # Act
+    # Assert
     assert torch.equal(result[0], torch.zeros(3))
-    # Second row should be original
+
+
+def test_zero_pad_empty_tensors_torch_equal_result_1_x2():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    x1 = torch.empty(0)
+    x2 = torch.tensor([1, 2, 3])
+    # Act
+    result = zero_pad([x1, x2])
+    # Act
+    # Assert
     assert torch.equal(result[1], x2)
+
+
 
 
 def test_zero_pad_consistency():
     """Test that zero padding is consistent across calls."""
+    # Arrange
     from scitex.dsp.utils import zero_pad
 
     x1 = torch.tensor([1, 2])
     x2 = torch.tensor([3, 4, 5])
 
     result1 = zero_pad([x1, x2])
+    # Act
     result2 = zero_pad([x1, x2])
 
+    # Assert
     assert torch.equal(result1, result2)
 
 
-def test_zero_pad_different_numeric_types():
-    """Test zero padding with different numeric types."""
+def test_zero_pad_different_numeric_types_result_int_dtype_in_torch_int64_torch_long():
+    # Arrange
     from scitex.dsp.utils import zero_pad
-
     # Test with integers
     x1 = [1, 2]
     x2 = [3, 4, 5]
+    # Act
     result_int = zero_pad([x1, x2])
+    # Act
+    # Assert
     assert result_int.dtype in [torch.int64, torch.long]  # Default int type
 
+
+def test_zero_pad_different_numeric_types_result_float_dtype_in_torch_float32_torch_float_result_int_dtype_in_torch_int64_torch_long():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    # Test with integers
+    x1 = [1, 2]
+    x2 = [3, 4, 5]
+    # Act
+    result_int = zero_pad([x1, x2])
+    # Act
+    # Assert
+    assert result_int.dtype in [torch.int64, torch.long]  # Default int type
+
+
+def test_zero_pad_different_numeric_types_result_float_dtype_in_torch_float32_torch_float_result_float_dtype_in_torch_float32_torch_float():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    # Test with integers
+    x1 = [1, 2]
+    x2 = [3, 4, 5]
+    # Act
+    result_int = zero_pad([x1, x2])
+    # Assert
+    assert result_int.dtype in [torch.int64, torch.long]  # Default int type
     # Test with floats
     x1 = [1.0, 2.0]
     x2 = [3.0, 4.0, 5.0]
     result_float = zero_pad([x1, x2])
+    # Act
+    # Assert
     assert result_float.dtype in [torch.float32, torch.float64]  # Default float type
 
 
-def test_zero_pad_edge_cases():
-    """Test zero padding edge cases."""
-    from scitex.dsp.utils import zero_pad
 
+
+
+
+def test_zero_pad_edge_cases_result_shape_equals_n_2_1():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
     # Test with single element tensors
     x1 = torch.tensor([42])
     x2 = torch.tensor([99])
+    # Act
     result = zero_pad([x1, x2])
-
+    # Act
+    # Assert
     assert result.shape == (2, 1)
+
+
+def test_zero_pad_edge_cases_torch_equal_result_torch_tensor_42_99():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    # Test with single element tensors
+    x1 = torch.tensor([42])
+    x2 = torch.tensor([99])
+    # Act
+    result = zero_pad([x1, x2])
+    # Act
+    # Assert
     assert torch.equal(result, torch.tensor([[42], [99]]))
 
 
-def test_zero_pad_memory_efficiency():
-    """Test zero padding memory efficiency."""
-    from scitex.dsp.utils import zero_pad
 
+
+def test_zero_pad_memory_efficiency_result_shape_equals_n_2_1000():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
     # Create large tensors
     x1 = torch.randn(1000)
     x2 = torch.randn(1000)  # Same length, no padding needed
-
+    # Act
     result = zero_pad([x1, x2])
-
-    # Should stack without unnecessary copying
+    # Act
+    # Assert
     assert result.shape == (2, 1000)
+
+
+def test_zero_pad_memory_efficiency_torch_equal_result_0_x1():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    # Create large tensors
+    x1 = torch.randn(1000)
+    x2 = torch.randn(1000)  # Same length, no padding needed
+    # Act
+    result = zero_pad([x1, x2])
+    # Act
+    # Assert
     assert torch.equal(result[0], x1)
+
+
+def test_zero_pad_memory_efficiency_torch_equal_result_1_x2():
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+    # Create large tensors
+    x1 = torch.randn(1000)
+    x2 = torch.randn(1000)  # Same length, no padding needed
+    # Act
+    result = zero_pad([x1, x2])
+    # Act
+    # Assert
     assert torch.equal(result[1], x2)
+
+
 
 
 if __name__ == "__main__":
