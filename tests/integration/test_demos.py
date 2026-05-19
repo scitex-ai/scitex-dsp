@@ -33,10 +33,13 @@ DEMOS = SIBLING_DEMOS + EMBEDDED_DEMOS
 
 
 @pytest.mark.parametrize("module", DEMOS, ids=lambda m: m.rsplit(".", 1)[-1])
-def test_demo_runs(module, tmp_path):
+def test_demo_runs_calls_importorskip(module, tmp_path):
     """Execute the demo end-to-end in an isolated working directory."""
     # The umbrella ``scitex`` package is required by some demos
     # (``scitex.session.start`` etc.). Skip cleanly if absent.
+    # Arrange
+    # Act
+    # Assert
     pytest.importorskip("scitex")
 
     result = subprocess.run(

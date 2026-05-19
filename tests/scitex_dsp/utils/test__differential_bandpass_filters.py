@@ -20,38 +20,56 @@ class TestDifferentialBandpassFiltersAvailableFlags:
 
     def test_torch_available_flag_exists(self):
         """Test that TORCH_AVAILABLE flag is exported."""
+        # Arrange
+        # Act
         from scitex.dsp.utils._differential_bandpass_filters import TORCH_AVAILABLE
 
+        # Assert
         assert isinstance(TORCH_AVAILABLE, bool)
 
     def test_torchaudio_available_flag_exists(self):
         """Test that TORCHAUDIO_AVAILABLE flag is exported."""
+        # Arrange
+        # Act
         from scitex.dsp.utils._differential_bandpass_filters import TORCHAUDIO_AVAILABLE
 
+        # Assert
         assert isinstance(TORCHAUDIO_AVAILABLE, bool)
 
     def test_check_torch_function_exists(self):
         """Test that _check_torch function is exported."""
+        # Arrange
+        # Act
         from scitex.dsp.utils._differential_bandpass_filters import _check_torch
 
+        # Assert
         assert callable(_check_torch)
 
     def test_check_sinc_available_function_exists(self):
         """Test that _check_sinc_available function is exported."""
+        # Arrange
+        # Act
         from scitex.dsp.utils._differential_bandpass_filters import (
             _check_sinc_available,
         )
 
+        # Assert
         assert callable(_check_sinc_available)
 
     def test_torch_available_is_true_when_torch_installed(self):
         """Test that TORCH_AVAILABLE is True when torch is installed."""
+        # Arrange
+        # Act
         from scitex.dsp.utils._differential_bandpass_filters import TORCH_AVAILABLE
 
+        # Assert
         assert TORCH_AVAILABLE is True
 
     def test_check_torch_does_not_raise_when_available(self):
         """Test that _check_torch doesn't raise when torch is available."""
+        # Arrange
+        # Act
+        # Assert
         from scitex.dsp.utils._differential_bandpass_filters import _check_torch
 
         _check_torch()
@@ -59,6 +77,9 @@ class TestDifferentialBandpassFiltersAvailableFlags:
 
 def test_init_bandpass_filters_basic():
     """Test basic initialization of bandpass filters."""
+    # Arrange
+    # Act
+    # Assert
     from scitex.dsp.utils import init_bandpass_filters
 
     sig_len = 1000
@@ -86,6 +107,9 @@ def test_init_bandpass_filters_basic():
 
 def test_init_bandpass_filters_custom_params():
     """Test bandpass filter initialization with custom parameters."""
+    # Arrange
+    # Act
+    # Assert
     from scitex.dsp.utils import init_bandpass_filters
 
     sig_len = 2000
@@ -131,6 +155,9 @@ def test_init_bandpass_filters_custom_params():
 
 def test_build_bandpass_filters_basic():
     """Test basic bandpass filter building."""
+    # Arrange
+    # Act
+    # Assert
     from scitex.dsp.utils import build_bandpass_filters
 
     sig_len = 1000
@@ -156,6 +183,9 @@ def test_build_bandpass_filters_basic():
 
 def test_build_bandpass_filters_gradients():
     """Test that gradients flow through bandpass filter building."""
+    # Arrange
+    # Act
+    # Assert
     from scitex.dsp.utils import build_bandpass_filters
 
     sig_len = 500
@@ -183,6 +213,9 @@ def test_build_bandpass_filters_gradients():
 
 def test_build_bandpass_filters_torch_fn_decorator():
     """Test that torch_fn decorator works correctly."""
+    # Arrange
+    # Act
+    # Assert
     from scitex.dsp.utils import build_bandpass_filters
 
     sig_len = 500
@@ -204,6 +237,9 @@ def test_build_bandpass_filters_torch_fn_decorator():
 
 def test_bandpass_filters_real_eeg_scenario():
     """Test bandpass filters with realistic EEG parameters."""
+    # Arrange
+    # Act
+    # Assert
     from scitex.dsp.utils import init_bandpass_filters
 
     # Realistic EEG parameters
@@ -256,6 +292,9 @@ def test_bandpass_filters_real_eeg_scenario():
 
 def test_bandpass_filters_different_signal_lengths():
     """Test bandpass filters with different signal lengths."""
+    # Arrange
+    # Act
+    # Assert
     from scitex.dsp.utils import build_bandpass_filters
 
     fs = 250
@@ -282,6 +321,9 @@ def test_bandpass_filters_different_signal_lengths():
 
 def test_bandpass_filters_edge_cases():
     """Test bandpass filters with edge cases."""
+    # Arrange
+    # Act
+    # Assert
     from scitex.dsp.utils import build_bandpass_filters
 
     try:
@@ -306,6 +348,9 @@ def test_bandpass_filters_edge_cases():
 
 def test_bandpass_filters_parameter_validation():
     """Test parameter validation in bandpass filter functions."""
+    # Arrange
+    # Act
+    # Assert
     from scitex.dsp.utils import build_bandpass_filters
 
     sig_len = 1000

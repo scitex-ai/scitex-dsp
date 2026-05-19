@@ -13,63 +13,143 @@ from scitex.dsp import time
 class TestTime:
     """Test cases for time array generation."""
 
-    def test_import(self):
+    def test_import_callable_time(self):
         """Test that time can be imported."""
+        # Arrange
+        # Act
+        # Assert
         assert callable(time)
 
-    def test_time_basic(self):
-        """Test basic time array generation."""
+    def test_time_basic_t_is_np_ndarray(self):
+        # Arrange
         start_sec = 0
         end_sec = 1
         fs = 100
-
+        # Act
         t = time(start_sec, end_sec, fs)
-
+        # Act
+        # Assert
         assert isinstance(t, np.ndarray)
+
+    def test_time_basic_len_t_end_sec_start_sec_fs(self):
+        # Arrange
+        start_sec = 0
+        end_sec = 1
+        fs = 100
+        # Act
+        t = time(start_sec, end_sec, fs)
+        # Act
+        # Assert
         assert len(t) == (end_sec - start_sec) * fs
+
+    def test_time_basic_t_0_start_sec(self):
+        # Arrange
+        start_sec = 0
+        end_sec = 1
+        fs = 100
+        # Act
+        t = time(start_sec, end_sec, fs)
+        # Act
+        # Assert
         assert t[0] == start_sec
-        # endpoint=False: last sample is end_sec - 1/fs
+
+    def test_time_basic_abs_t_1_end_sec_1_0_fs_1e_09(self):
+        # Arrange
+        start_sec = 0
+        end_sec = 1
+        fs = 100
+        # Act
+        t = time(start_sec, end_sec, fs)
+        # Act
+        # Assert
         assert abs(t[-1] - (end_sec - 1.0 / fs)) < 1e-9
 
-    def test_time_non_zero_start(self):
-        """Test time array with non-zero start."""
+
+    def test_time_non_zero_start_len_t_end_sec_start_sec_fs(self):
+        # Arrange
         start_sec = 5
         end_sec = 8
         fs = 100
-
+        # Act
         t = time(start_sec, end_sec, fs)
-
+        # Act
+        # Assert
         assert len(t) == (end_sec - start_sec) * fs
+
+    def test_time_non_zero_start_t_0_start_sec(self):
+        # Arrange
+        start_sec = 5
+        end_sec = 8
+        fs = 100
+        # Act
+        t = time(start_sec, end_sec, fs)
+        # Act
+        # Assert
         assert t[0] == start_sec
-        # endpoint=False: last sample is end_sec - 1/fs
+
+    def test_time_non_zero_start_abs_t_1_end_sec_1_0_fs_1e_09(self):
+        # Arrange
+        start_sec = 5
+        end_sec = 8
+        fs = 100
+        # Act
+        t = time(start_sec, end_sec, fs)
+        # Act
+        # Assert
         assert abs(t[-1] - (end_sec - 1.0 / fs)) < 1e-9
 
-    def test_time_high_sampling_rate(self):
-        """Test time array with high sampling rate."""
+
+    def test_time_high_sampling_rate_len_t_int_end_sec_start_sec_fs(self):
+        # Arrange
         start_sec = 0
         end_sec = 0.1  # 100ms
         fs = 10000  # 10 kHz
-
+        # Act
         t = time(start_sec, end_sec, fs)
-
+        # Act
+        # Assert
         assert len(t) == int((end_sec - start_sec) * fs)
+
+    def test_time_high_sampling_rate_abs_t_0_start_sec_1e_09(self):
+        # Arrange
+        start_sec = 0
+        end_sec = 0.1  # 100ms
+        fs = 10000  # 10 kHz
+        # Act
+        t = time(start_sec, end_sec, fs)
+        # Act
+        # Assert
         assert abs(t[0] - start_sec) < 1e-9
-        # endpoint=False: last sample is end_sec - 1/fs
+
+    def test_time_high_sampling_rate_abs_t_1_end_sec_1_0_fs_1e_09(self):
+        # Arrange
+        start_sec = 0
+        end_sec = 0.1  # 100ms
+        fs = 10000  # 10 kHz
+        # Act
+        t = time(start_sec, end_sec, fs)
+        # Act
+        # Assert
         assert abs(t[-1] - (end_sec - 1.0 / fs)) < 1e-9
+
 
     def test_time_fractional_duration(self):
         """Test time array with fractional duration."""
+        # Arrange
         start_sec = 0
         end_sec = 2.5
         fs = 100
 
         t = time(start_sec, end_sec, fs)
 
+        # Act
         expected_len = int((end_sec - start_sec) * fs)
+        # Assert
         assert len(t) == expected_len
 
     def test_time_uniform_spacing(self):
         """Test that time points are uniformly spaced."""
+        # Arrange
         start_sec = 0
         end_sec = 1
         fs = 100
@@ -78,98 +158,195 @@ class TestTime:
 
         # Check uniform spacing
         dt = np.diff(t)
+        # Act
         expected_dt = 1.0 / fs
-        np.testing.assert_allclose(dt, expected_dt, rtol=1e-9)
+        # Assert
+        assert np.allclose(dt, expected_dt, rtol=1e-9)
 
-    def test_time_negative_start(self):
-        """Test time array with negative start time."""
+    def test_time_negative_start_len_t_end_sec_start_sec_fs(self):
+        # Arrange
         start_sec = -2
         end_sec = 3
         fs = 100
-
+        # Act
         t = time(start_sec, end_sec, fs)
-
+        # Act
+        # Assert
         assert len(t) == (end_sec - start_sec) * fs
+
+    def test_time_negative_start_t_0_start_sec(self):
+        # Arrange
+        start_sec = -2
+        end_sec = 3
+        fs = 100
+        # Act
+        t = time(start_sec, end_sec, fs)
+        # Act
+        # Assert
         assert t[0] == start_sec
-        # endpoint=False: last sample is end_sec - 1/fs
+
+    def test_time_negative_start_abs_t_1_end_sec_1_0_fs_1e_09(self):
+        # Arrange
+        start_sec = -2
+        end_sec = 3
+        fs = 100
+        # Act
+        t = time(start_sec, end_sec, fs)
+        # Act
+        # Assert
         assert abs(t[-1] - (end_sec - 1.0 / fs)) < 1e-9
 
-    def test_time_low_sampling_rate(self):
-        """Test time array with low sampling rate."""
+
+    def test_time_low_sampling_rate_len_t_end_sec_start_sec_fs(self):
+        # Arrange
         start_sec = 0
         end_sec = 10
         fs = 1  # 1 Hz
-
+        # Act
         t = time(start_sec, end_sec, fs)
-
+        # Act
+        # Assert
         assert len(t) == (end_sec - start_sec) * fs
+
+    def test_time_low_sampling_rate_len_t_is_10(self):
+        # Arrange
+        start_sec = 0
+        end_sec = 10
+        fs = 1  # 1 Hz
+        # Act
+        t = time(start_sec, end_sec, fs)
+        # Act
+        # Assert
         assert len(t) == 10
 
-    def test_time_single_sample(self):
-        """Test time array with single sample."""
+
+    def test_time_single_sample_len_t_is_1(self):
+        # Arrange
         start_sec = 0
         end_sec = 1
         fs = 1
-
+        # Act
         t = time(start_sec, end_sec, fs)
-
+        # Act
+        # Assert
         assert len(t) == 1
-        # For single sample, could be either start or end
+
+    def test_time_single_sample_t_0_start_sec_and_t_0_end_sec(self):
+        # Arrange
+        start_sec = 0
+        end_sec = 1
+        fs = 1
+        # Act
+        t = time(start_sec, end_sec, fs)
+        # Act
+        # Assert
         assert t[0] >= start_sec and t[0] <= end_sec
 
-    def test_time_precision(self):
+
+    def test_time_precision_abs_t_1_t_0_0_001_1e_12(self):
         """Test precision of time array values."""
+        # Arrange
         start_sec = 0.0
         end_sec = 1.0
         fs = 1000
 
+        # Act
         t = time(start_sec, end_sec, fs)
 
         # Check that values are precise
         # Second sample should be exactly 1ms after first
+        # Assert
         assert abs(t[1] - t[0] - 0.001) < 1e-12
 
     def test_time_zero_duration(self):
         """Test time array with zero duration."""
+        # Arrange
         start_sec = 5
         end_sec = 5
         fs = 100
 
+        # Act
         t = time(start_sec, end_sec, fs)
 
         # Should return empty array or single point
+        # Assert
         assert len(t) <= 1
         if len(t) == 1:
             assert t[0] == start_sec
 
-    def test_time_very_long_duration(self):
-        """Test time array with very long duration."""
+    def test_time_very_long_duration_len_t_is_3600(self):
+        # Arrange
         start_sec = 0
         end_sec = 3600  # 1 hour
         fs = 1  # 1 Hz to keep array manageable
-
+        # Act
         t = time(start_sec, end_sec, fs)
-
+        # Act
+        # Assert
         assert len(t) == 3600
+
+    def test_time_very_long_duration_t_0_start_sec(self):
+        # Arrange
+        start_sec = 0
+        end_sec = 3600  # 1 hour
+        fs = 1  # 1 Hz to keep array manageable
+        # Act
+        t = time(start_sec, end_sec, fs)
+        # Act
+        # Assert
         assert t[0] == start_sec
-        # endpoint=False: last sample is end_sec - 1/fs
+
+    def test_time_very_long_duration_abs_t_1_end_sec_1_0_fs_1e_09(self):
+        # Arrange
+        start_sec = 0
+        end_sec = 3600  # 1 hour
+        fs = 1  # 1 Hz to keep array manageable
+        # Act
+        t = time(start_sec, end_sec, fs)
+        # Act
+        # Assert
         assert abs(t[-1] - (end_sec - 1.0 / fs)) < 1e-9
 
-    def test_time_floating_point_consistency(self):
-        """Test that floating point calculations are consistent."""
+
+    def test_time_floating_point_consistency_len_t_expected_samples(self):
+        # Arrange
         start_sec = 0.0
         end_sec = 0.1
         fs = 44100  # Audio sampling rate
-
         t = time(start_sec, end_sec, fs)
-
         # Should have exactly the expected number of samples
+        # Act
         expected_samples = int((end_sec - start_sec) * fs)
+        # Act
+        # Assert
         assert len(t) == expected_samples
 
-        # Check endpoints (endpoint=False: t[-1] = end_sec - 1/fs)
+    def test_time_floating_point_consistency_abs_t_0_start_sec_1e_09(self):
+        # Arrange
+        start_sec = 0.0
+        end_sec = 0.1
+        fs = 44100  # Audio sampling rate
+        t = time(start_sec, end_sec, fs)
+        # Should have exactly the expected number of samples
+        # Act
+        expected_samples = int((end_sec - start_sec) * fs)
+        # Act
+        # Assert
         assert abs(t[0] - start_sec) < 1e-9
+
+    def test_time_floating_point_consistency_abs_t_1_end_sec_1_0_fs_1e_09(self):
+        # Arrange
+        start_sec = 0.0
+        end_sec = 0.1
+        fs = 44100  # Audio sampling rate
+        t = time(start_sec, end_sec, fs)
+        # Should have exactly the expected number of samples
+        # Act
+        expected_samples = int((end_sec - start_sec) * fs)
+        # Act
+        # Assert
         assert abs(t[-1] - (end_sec - 1.0 / fs)) < 1e-9
+
 
 
 if __name__ == "__main__":

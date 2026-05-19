@@ -17,53 +17,77 @@ class TestDemoSigAvailableFlags:
 
     def test_mne_available_flag_exists(self):
         """Test that MNE_AVAILABLE flag is exported."""
+        # Arrange
+        # Act
         from scitex_dsp._synthesis._demo_sig import MNE_AVAILABLE
 
+        # Assert
         assert isinstance(MNE_AVAILABLE, bool)
 
     def test_ripple_detection_available_flag_exists(self):
         """Test that RIPPLE_DETECTION_AVAILABLE flag is exported."""
+        # Arrange
+        # Act
         from scitex_dsp._synthesis._demo_sig import RIPPLE_DETECTION_AVAILABLE
 
+        # Assert
         assert isinstance(RIPPLE_DETECTION_AVAILABLE, bool)
 
     def test_tensorpac_available_flag_exists(self):
         """Test that TENSORPAC_AVAILABLE flag is exported."""
+        # Arrange
+        # Act
         from scitex_dsp._synthesis._demo_sig import TENSORPAC_AVAILABLE
 
+        # Assert
         assert isinstance(TENSORPAC_AVAILABLE, bool)
 
     def test_check_mne_function_exists(self):
         """Test that _check_mne function is exported."""
+        # Arrange
+        # Act
         from scitex_dsp._synthesis._demo_sig import _check_mne
 
+        # Assert
         assert callable(_check_mne)
 
     def test_check_ripple_detection_function_exists(self):
         """Test that _check_ripple_detection function is exported."""
+        # Arrange
+        # Act
         from scitex_dsp._synthesis._demo_sig import _check_ripple_detection
 
+        # Assert
         assert callable(_check_ripple_detection)
 
     def test_check_tensorpac_function_exists(self):
         """Test that _check_tensorpac function is exported."""
+        # Arrange
+        # Act
         from scitex_dsp._synthesis._demo_sig import _check_tensorpac
 
+        # Assert
         assert callable(_check_tensorpac)
 
 
 class TestDemoSig:
     """Test class for demo_sig function."""
 
-    def test_import(self):
+    def test_import_callable_demo_sig(self):
         """Test that demo_sig can be imported."""
+        # Arrange
+        # Act
         from scitex_dsp import demo_sig
 
+        # Assert
         assert callable(demo_sig)
 
     @pytest.mark.parametrize("sig_type", ["uniform", "gauss", "periodic", "chirp"])
     def test_basic_signal_types(self, sig_type):
         """Test basic signal generation for various types."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_dsp import demo_sig
 
         batch_size = 2
@@ -94,29 +118,51 @@ class TestDemoSig:
             # Some signal types may require optional dependencies
             pytest.skip(f"Dependencies not available for {sig_type}")
 
-    def test_uniform_signal_range(self):
-        """Test that uniform signal is in expected range."""
+    def test_uniform_signal_range_sig_min_0_5(self):
+        # Arrange
         from scitex_dsp import demo_sig
-
+        # Act
         sig, _, _ = demo_sig(sig_type="uniform", batch_size=1, n_chs=1, t_sec=1)
-
-        # Uniform should be between -0.5 and 0.5
+        # Act
+        # Assert
         assert sig.min() >= -0.5
+
+    def test_uniform_signal_range_sig_max_0_5(self):
+        # Arrange
+        from scitex_dsp import demo_sig
+        # Act
+        sig, _, _ = demo_sig(sig_type="uniform", batch_size=1, n_chs=1, t_sec=1)
+        # Act
+        # Assert
         assert sig.max() <= 0.5
 
-    def test_gauss_signal_statistics(self):
-        """Test that Gaussian signal has expected statistics."""
+
+    def test_gauss_signal_statistics_abs_sig_mean_0_1(self):
+        # Arrange
         from scitex_dsp import demo_sig
-
         # Generate larger signal for better statistics
+        # Act
         sig, _, _ = demo_sig(sig_type="gauss", batch_size=10, n_chs=10, t_sec=10)
-
-        # Should have mean near 0 and std near 1
+        # Act
+        # Assert
         assert abs(sig.mean()) < 0.1  # Mean should be close to 0
+
+    def test_gauss_signal_statistics_abs_sig_std_1_0_0_1(self):
+        # Arrange
+        from scitex_dsp import demo_sig
+        # Generate larger signal for better statistics
+        # Act
+        sig, _, _ = demo_sig(sig_type="gauss", batch_size=10, n_chs=10, t_sec=10)
+        # Act
+        # Assert
         assert abs(sig.std() - 1.0) < 0.1  # Std should be close to 1
+
 
     def test_periodic_signal_with_freqs(self):
         """Test periodic signal generation with specified frequencies."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_dsp import demo_sig
 
         freqs_hz = [10, 20]  # 10 Hz and 20 Hz
@@ -139,6 +185,9 @@ class TestDemoSig:
 
     def test_different_sampling_rates(self):
         """Test signal generation with different sampling rates."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_dsp import demo_sig
 
         for fs in [100, 256, 512, 1000]:
@@ -150,8 +199,11 @@ class TestDemoSig:
             assert len(tt) == fs
             assert sig.shape[-1] == fs
 
-    def test_different_durations(self):
+    def test_different_durations_smoke_case(self):
         """Test signal generation with different durations."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_dsp import demo_sig
 
         fs = 100
@@ -166,6 +218,9 @@ class TestDemoSig:
 
     def test_batch_and_channel_dimensions(self):
         """Test various batch size and channel configurations."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_dsp import demo_sig
 
         configs = [
@@ -183,37 +238,95 @@ class TestDemoSig:
             assert sig.shape[0] == batch_size
             assert sig.shape[1] == n_chs
 
-    def test_signal_dtype(self):
-        """Test that signals have correct data type."""
+    def test_signal_dtype_sig_dtype_equals_np_float32(self):
+        # Arrange
         from scitex_dsp import demo_sig
-
+        # Act
         sig, tt, _ = demo_sig(sig_type="gauss")
-
-        # Signal should be float32
+        # Act
+        # Assert
         assert sig.dtype == np.float32
-        # Time should be float
+
+    def test_signal_dtype_tt_dtype_in_np_float32_np_float64(self):
+        # Arrange
+        from scitex_dsp import demo_sig
+        # Act
+        sig, tt, _ = demo_sig(sig_type="gauss")
+        # Act
+        # Assert
         assert tt.dtype in [np.float32, np.float64]
 
-    def test_time_vector_properties(self):
-        """Test properties of the time vector."""
-        from scitex_dsp import demo_sig
 
+    def test_time_vector_properties_tt_0_0_0(self):
+        # Arrange
+        from scitex_dsp import demo_sig
         t_sec = 2.0
         fs = 500
+        # Act
         _, tt, _ = demo_sig(t_sec=t_sec, fs=fs)
-
-        # Check start and end times
+        # Act
+        # Assert
         assert tt[0] == 0.0
+
+    def test_time_vector_properties_np_allclose_tt_1_t_sec_1_fs(self):
+        # Arrange
+        from scitex_dsp import demo_sig
+        t_sec = 2.0
+        fs = 500
+        # Act
+        _, tt, _ = demo_sig(t_sec=t_sec, fs=fs)
+        # Act
+        # Assert
         assert np.allclose(tt[-1], t_sec - 1 / fs)
 
+    def test_time_vector_properties_np_allclose_dt_1_fs_tt_0_0_0(self):
+        # Arrange
+        from scitex_dsp import demo_sig
+        t_sec = 2.0
+        fs = 500
+        # Act
+        _, tt, _ = demo_sig(t_sec=t_sec, fs=fs)
+        # Act
+        # Assert
+        assert tt[0] == 0.0
+
+    def test_time_vector_properties_np_allclose_dt_1_fs_np_allclose_tt_1_t_sec_1_fs(self):
+        # Arrange
+        from scitex_dsp import demo_sig
+        t_sec = 2.0
+        fs = 500
+        # Act
+        _, tt, _ = demo_sig(t_sec=t_sec, fs=fs)
+        # Act
+        # Assert
+        assert np.allclose(tt[-1], t_sec - 1 / fs)
+
+    def test_time_vector_properties_np_allclose_dt_1_fs_np_allclose_dt_1_fs(self):
+        # Arrange
+        from scitex_dsp import demo_sig
+        t_sec = 2.0
+        fs = 500
+        # Act
+        _, tt, _ = demo_sig(t_sec=t_sec, fs=fs)
+        # Check start and end times
+        # Assert
+        assert tt[0] == 0.0
+        assert np.allclose(tt[-1], t_sec - 1 / fs)
         # Check that time is evenly spaced
         dt = np.diff(tt)
+        # Act
+        # Assert
         assert np.allclose(dt, 1 / fs)
+
+
 
     def test_invalid_signal_type(self):
         """Test error handling for invalid signal type."""
+        # Arrange
+        # Act
         from scitex_dsp import demo_sig
 
+        # Assert
         with pytest.raises(AssertionError):
             demo_sig(sig_type="invalid_type")
 
@@ -234,6 +347,9 @@ class TestDemoSig:
     )
     def test_complex_signal_types(self, sig_type):
         """Test complex signal types that may require special dependencies."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_dsp import demo_sig
 
         try:
@@ -251,6 +367,7 @@ class TestDemoSig:
 
     def test_reproducibility_with_seed(self):
         """Test that results are reproducible with same random seed."""
+        # Arrange
         from scitex_dsp import demo_sig
 
         # Set seed and generate signal
@@ -259,13 +376,18 @@ class TestDemoSig:
 
         # Reset seed and generate again
         np.random.seed(42)
+        # Act
         sig2, _, _ = demo_sig(sig_type="gauss", batch_size=2, n_chs=3)
 
         # Should be identical
-        np.testing.assert_array_equal(sig1, sig2)
+        # Assert
+        assert np.array_equal(sig1, sig2)
 
     def test_chirp_signal_properties(self):
         """Test chirp signal has increasing frequency."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_dsp import demo_sig
 
         try:

@@ -21,32 +21,59 @@ if not hasattr(getattr(scitex, "plt", None), "ax"):
 class TestCalcNormResampleFiltHilbert:
     """Test calc_norm_resample_filt_hilbert function."""
 
-    def test_import(self):
+    def test_import_hasattr_scitex_dsp_example_plot_psd(self):
         """Test function can be imported."""
+        # Arrange
+        # Act
+        # Assert
         assert hasattr(scitex.dsp.example, "calc_norm_resample_filt_hilbert")
 
-    def test_basic_functionality(self):
-        """Test basic functionality with demo signal."""
-        # Generate demo signal
+    def test_basic_functionality_sigs_is_pd_dataframe(self):
+        # Arrange
         xx, tt, fs = scitex.dsp.demo_sig(t_sec=2, fs=1000, sig_type="chirp")
-
         # Apply function
+        # Act
         sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
             xx, tt, fs, sig_type="chirp", verbose=False
         )
-
-        # Check output structure
+        # Act
+        # Assert
         assert isinstance(sigs, pd.DataFrame)
+
+    def test_basic_functionality_sigs_index_name_index(self):
+        # Arrange
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=2, fs=1000, sig_type="chirp")
+        # Apply function
+        # Act
+        sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
+            xx, tt, fs, sig_type="chirp", verbose=False
+        )
+        # Act
+        # Assert
         assert sigs.index.name == "index"
+
+    def test_basic_functionality_len_sigs_columns_10(self):
+        # Arrange
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=2, fs=1000, sig_type="chirp")
+        # Apply function
+        # Act
+        sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
+            xx, tt, fs, sig_type="chirp", verbose=False
+        )
+        # Act
+        # Assert
         assert len(sigs.columns) > 10  # Should have multiple processing steps
 
-    def test_output_columns(self):
+
+    def test_output_columns_all_any_col_in_c_for_c_in_sigs_columns_for_col_in_(self):
         """Test that all expected columns are present."""
+        # Arrange
         xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=512)
         sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
             xx, tt, fs, sig_type="chirp", verbose=False
         )
 
+        # Act
         expected_cols = [
             "orig",
             "z_normed",
@@ -60,11 +87,14 @@ class TestCalcNormResampleFiltHilbert:
             "hilbert_pha",
         ]
 
-        for col in expected_cols:
-            assert any(col in c for c in sigs.columns), f"Missing column: {col}"
+        # Assert
+        assert all(any((col in c for c in sigs.columns)) for col in expected_cols), f'Missing column: {col}'
 
-    def test_signal_shapes(self):
+    def test_signal_shapes_calls_demo_sig(self):
         """Test that signal shapes are preserved correctly."""
+        # Arrange
+        # Act
+        # Assert
         xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=1024)
         sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
             xx, tt, fs, sig_type="chirp", verbose=False
@@ -78,76 +108,160 @@ class TestCalcNormResampleFiltHilbert:
             sig, _, _ = sigs[col]
             assert sig.shape == orig_shape, f"{col} shape mismatch"
 
-    def test_resampling_shape(self):
-        """Test resampled signal has correct shape."""
+    def test_resampling_shape_resampled_sig_shape_1_expected_samples(self):
+        # Arrange
         src_fs = 1024
         tgt_fs = 512  # Default target in example
         xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=src_fs)
-
         sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
             xx, tt, fs, sig_type="chirp", verbose=False
         )
-
         # Check resampled signal
         resampled_sig, resampled_tt, resampled_fs = sigs["resampled"]
-
         # Time dimension should be halved
+        # Act
         expected_samples = xx.shape[-1] // (src_fs // tgt_fs)
+        # Act
+        # Assert
         assert resampled_sig.shape[-1] == expected_samples
+
+    def test_resampling_shape_len_resampled_tt_expected_samples(self):
+        # Arrange
+        src_fs = 1024
+        tgt_fs = 512  # Default target in example
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=src_fs)
+        sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
+            xx, tt, fs, sig_type="chirp", verbose=False
+        )
+        # Check resampled signal
+        resampled_sig, resampled_tt, resampled_fs = sigs["resampled"]
+        # Time dimension should be halved
+        # Act
+        expected_samples = xx.shape[-1] // (src_fs // tgt_fs)
+        # Act
+        # Assert
         assert len(resampled_tt) == expected_samples
+
+    def test_resampling_shape_resampled_fs_equals_tgt_fs(self):
+        # Arrange
+        src_fs = 1024
+        tgt_fs = 512  # Default target in example
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=src_fs)
+        sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
+            xx, tt, fs, sig_type="chirp", verbose=False
+        )
+        # Check resampled signal
+        resampled_sig, resampled_tt, resampled_fs = sigs["resampled"]
+        # Time dimension should be halved
+        # Act
+        expected_samples = xx.shape[-1] // (src_fs // tgt_fs)
+        # Act
+        # Assert
         assert resampled_fs == tgt_fs
 
-    def test_tensorpac_signal(self):
+
+    def test_tensorpac_signal_sigs_orig_0_shape_2_10_1000(self):
         """Test handling of tensorpac signal type."""
         # Create 3D signal to simulate tensorpac
+        # Arrange
         xx_3d = np.random.randn(2, 10, 1000, 2)  # Extra dimension
         tt = np.linspace(0, 1, 1000)
         fs = 1000
 
+        # Act
         sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
             xx_3d, tt, fs, sig_type="tensorpac", verbose=False
         )
 
         # Should extract first component
+        # Assert
         assert sigs["orig"][0].shape == (2, 10, 1000)
 
-    def test_filtering_parameters(self):
-        """Test that filtering uses correct parameters."""
+    def test_filtering_parameters_len_bandpass_cols_is_1(self):
+        # Arrange
         xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=1000)
-
         # These are hardcoded in the example
         LOW_HZ = 20
         HIGH_HZ = 50
-
         sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
             xx, tt, fs, sig_type="chirp", verbose=False
         )
-
         # Check column names contain correct frequencies
+        # Act
         bandpass_cols = [c for c in sigs.columns if "bandpass" in c]
+        # Act
+        # Assert
         assert len(bandpass_cols) == 1
+
+    def test_filtering_parameters_f_low_hz_in_bandpass_cols_0(self):
+        # Arrange
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=1000)
+        # These are hardcoded in the example
+        LOW_HZ = 20
+        HIGH_HZ = 50
+        sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
+            xx, tt, fs, sig_type="chirp", verbose=False
+        )
+        # Check column names contain correct frequencies
+        # Act
+        bandpass_cols = [c for c in sigs.columns if "bandpass" in c]
+        # Act
+        # Assert
         assert f"{LOW_HZ}" in bandpass_cols[0]
+
+    def test_filtering_parameters_f_high_hz_in_bandpass_cols_0(self):
+        # Arrange
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=1000)
+        # These are hardcoded in the example
+        LOW_HZ = 20
+        HIGH_HZ = 50
+        sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
+            xx, tt, fs, sig_type="chirp", verbose=False
+        )
+        # Check column names contain correct frequencies
+        # Act
+        bandpass_cols = [c for c in sigs.columns if "bandpass" in c]
+        # Act
+        # Assert
         assert f"{HIGH_HZ}" in bandpass_cols[0]
 
-    def test_verbose_output(self, capsys):
-        """Test verbose output."""
-        xx, tt, fs = scitex.dsp.demo_sig(t_sec=0.5, fs=512)
 
+    def test_verbose_output_index_in_captured_out_or_index_in_captured_out(self, capsys):
+        # Arrange
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=0.5, fs=512)
         # With verbose=True
         sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
             xx, tt, fs, sig_type="chirp", verbose=True
         )
-
+        # Act
         captured = capsys.readouterr()
+        # Act
+        # Assert
         assert "Index" in captured.out or "index" in captured.out
+
+    def test_verbose_output_len_captured_out_0(self, capsys):
+        # Arrange
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=0.5, fs=512)
+        # With verbose=True
+        sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
+            xx, tt, fs, sig_type="chirp", verbose=True
+        )
+        # Act
+        captured = capsys.readouterr()
+        # Act
+        # Assert
         assert len(captured.out) > 0
+
 
 
 class TestPlotSignals:
     """Test plot_signals function."""
 
-    def test_import(self):
+    def test_import_hasattr_scitex_dsp_example_plot_psd(self):
         """Test function can be imported."""
+        # Arrange
+        # Act
+        # Assert
         assert hasattr(scitex.dsp.example, "plot_signals")
 
     @pytest.fixture
@@ -158,18 +272,52 @@ class TestPlotSignals:
             xx, tt, fs, sig_type="chirp", verbose=False
         )
 
-    def test_basic_plotting(self, sample_sigs):
-        """Test basic plotting functionality."""
+    def test_basic_plotting_fig_is_plt_figure(self, sample_sigs):
+        # Arrange
+        # Act
+        # Arrange
+        # Act
         fig = scitex.dsp.example.plot_signals(plt, sample_sigs, "chirp")
-
-        # Check figure properties
+        # Act
+        # Assert
         assert isinstance(fig, plt.Figure)
+
+    def test_basic_plotting_len_fig_axes_len_sample_sigs_columns(self, sample_sigs):
+        # Arrange
+        # Act
+        # Arrange
+        # Act
+        fig = scitex.dsp.example.plot_signals(plt, sample_sigs, "chirp")
+        # Act
+        # Assert
         assert len(fig.axes) == len(sample_sigs.columns)
+
+    def test_basic_plotting_fig_suptitle_is_not_none(self, sample_sigs):
+        # Arrange
+        # Act
+        # Arrange
+        # Act
+        fig = scitex.dsp.example.plot_signals(plt, sample_sigs, "chirp")
+        # Act
+        # Assert
         assert fig._suptitle is not None
+
+    def test_basic_plotting_fig_suptitle_get_text_chirp(self, sample_sigs):
+        # Arrange
+        # Act
+        # Arrange
+        # Act
+        fig = scitex.dsp.example.plot_signals(plt, sample_sigs, "chirp")
+        # Act
+        # Assert
         assert fig._suptitle.get_text() == "chirp"
 
-    def test_axes_properties(self, sample_sigs):
+
+    def test_axes_properties_calls_plot_signals(self, sample_sigs):
         """Test axes properties are set correctly."""
+        # Arrange
+        # Act
+        # Assert
         fig = scitex.dsp.example.plot_signals(plt, sample_sigs, "test_signal")
 
         # Check all axes
@@ -184,31 +332,48 @@ class TestPlotSignals:
             xlim = ax.get_xlim()
             assert xlim[0] < xlim[1]
 
-    def test_hilbert_amp_overlay(self, sample_sigs):
-        """Test that hilbert_amp axis shows original signal too."""
+    def test_hilbert_amp_overlay_hilbert_ax_is_not_none(self, sample_sigs):
+        # Arrange
         fig = scitex.dsp.example.plot_signals(plt, sample_sigs, "chirp")
-
         # Find hilbert_amp axis
         hilbert_ax = None
+        # Act
         for ax, col in zip(fig.axes, sample_sigs.columns):
             if col == "hilbert_amp":
                 hilbert_ax = ax
                 break
-
+        # Act
+        # Assert
         assert hilbert_ax is not None
-        # Should have 2 lines (original + hilbert)
+
+    def test_hilbert_amp_overlay_len_hilbert_ax_lines_is_2(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_signals(plt, sample_sigs, "chirp")
+        # Find hilbert_amp axis
+        hilbert_ax = None
+        # Act
+        for ax, col in zip(fig.axes, sample_sigs.columns):
+            if col == "hilbert_amp":
+                hilbert_ax = ax
+                break
+        # Act
+        # Assert
         assert len(hilbert_ax.lines) == 2
+
 
     @pytest.mark.parametrize("sig_type", ["uniform", "gauss", "chirp"])
     def test_different_signal_types(self, sig_type):
         """Test plotting with different signal types."""
+        # Arrange
         xx, tt, fs = scitex.dsp.demo_sig(t_sec=0.5, fs=256, sig_type=sig_type)
         sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
             xx, tt, fs, sig_type=sig_type, verbose=False
         )
 
+        # Act
         fig = scitex.dsp.example.plot_signals(plt, sigs, sig_type)
 
+        # Assert
         assert fig._suptitle.get_text() == sig_type
         plt.close(fig)
 
@@ -216,8 +381,11 @@ class TestPlotSignals:
 class TestPlotWavelet:
     """Test plot_wavelet function."""
 
-    def test_import(self):
+    def test_import_hasattr_scitex_dsp_example_plot_psd(self):
         """Test function can be imported."""
+        # Arrange
+        # Act
+        # Assert
         assert hasattr(scitex.dsp.example, "plot_wavelet")
 
     @pytest.fixture
@@ -228,34 +396,162 @@ class TestPlotWavelet:
             xx, tt, fs, sig_type="chirp", verbose=False
         )
 
-    def test_basic_wavelet_plot(self, sample_sigs):
-        """Test basic wavelet plotting functionality."""
+    def test_basic_wavelet_plot_fig_is_plt_figure(self, sample_sigs):
+        # Arrange
+        # Act
+        # Arrange
+        # Act
         fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, "orig", "chirp")
-
-        # Should have 2 subplots
+        # Act
+        # Assert
         assert isinstance(fig, plt.Figure)
+
+    def test_basic_wavelet_plot_len_fig_axes_is_2(self, sample_sigs):
+        # Arrange
+        # Act
+        # Arrange
+        # Act
+        fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, "orig", "chirp")
+        # Act
+        # Assert
         assert len(fig.axes) == 2
 
-    def test_wavelet_plot_structure(self, sample_sigs):
-        """Test wavelet plot has correct structure."""
-        fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, "z_normed", "test")
 
+    def test_wavelet_plot_structure_len_ax0_lines_0(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, "z_normed", "test")
         # First axis: signal
+        # Act
         ax0 = fig.axes[0]
+        # Act
+        # Assert
         assert len(ax0.lines) > 0
+
+    def test_wavelet_plot_structure_ax0_get_ylabel_voltage(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, "z_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
         assert ax0.get_ylabel() == "Voltage"
 
+    def test_wavelet_plot_structure_len_ax1_images_0_len_ax0_lines_0(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, "z_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert len(ax0.lines) > 0
+
+    def test_wavelet_plot_structure_len_ax1_images_0_ax0_get_ylabel_voltage(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, "z_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert ax0.get_ylabel() == "Voltage"
+
+    def test_wavelet_plot_structure_len_ax1_images_0_len_ax1_images_0(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, "z_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Assert
+        assert len(ax0.lines) > 0
+        assert ax0.get_ylabel() == "Voltage"
         # Second axis: spectrogram
         ax1 = fig.axes[1]
+        # Act
+        # Assert
         assert len(ax1.images) > 0  # Should have imshow
+
+
+    def test_wavelet_plot_structure_ax1_get_ylabel_frequency_hz_len_ax0_lines_0(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, "z_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert len(ax0.lines) > 0
+
+    def test_wavelet_plot_structure_ax1_get_ylabel_frequency_hz_ax0_get_ylabel_voltage(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, "z_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert ax0.get_ylabel() == "Voltage"
+
+    def test_wavelet_plot_structure_ax1_get_ylabel_frequency_hz_ax1_get_ylabel_frequency_hz(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, "z_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Assert
+        assert len(ax0.lines) > 0
+        assert ax0.get_ylabel() == "Voltage"
+        # Second axis: spectrogram
+        ax1 = fig.axes[1]
+        # Act
+        # Assert
         assert ax1.get_ylabel() == "Frequency [Hz]"
+
+
+    def test_wavelet_plot_structure_ax1_yaxis_inverted_len_ax0_lines_0(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, "z_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert len(ax0.lines) > 0
+
+    def test_wavelet_plot_structure_ax1_yaxis_inverted_ax0_get_ylabel_voltage(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, "z_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert ax0.get_ylabel() == "Voltage"
+
+    def test_wavelet_plot_structure_ax1_yaxis_inverted_ax1_yaxis_inverted(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, "z_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Assert
+        assert len(ax0.lines) > 0
+        assert ax0.get_ylabel() == "Voltage"
+        # Second axis: spectrogram
+        ax1 = fig.axes[1]
+        # Act
+        # Assert
         assert ax1.yaxis_inverted()  # Should be inverted
+
+
 
     @pytest.mark.parametrize(
         "sig_col", ["orig", "z_normed", "bandpass_filted (20 - 50 Hz)"]
     )
     def test_different_signal_columns(self, sample_sigs, sig_col):
         """Test wavelet plot with different signal columns."""
+        # Arrange
         if sig_col not in sample_sigs.columns:
             # Find a bandpass column
             for col in sample_sigs.columns:
@@ -263,8 +559,10 @@ class TestPlotWavelet:
                     sig_col = col
                     break
 
+        # Act
         fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, sig_col, "test")
 
+        # Assert
         assert fig is not None
         plt.close(fig)
 
@@ -272,8 +570,11 @@ class TestPlotWavelet:
 class TestPlotPSD:
     """Test plot_psd function."""
 
-    def test_import(self):
+    def test_import_hasattr_scitex_dsp_example_plot_psd(self):
         """Test function can be imported."""
+        # Arrange
+        # Act
+        # Assert
         assert hasattr(scitex.dsp.example, "plot_psd")
 
     @pytest.fixture
@@ -284,54 +585,297 @@ class TestPlotPSD:
             xx, tt, fs, sig_type="chirp", verbose=False
         )
 
-    def test_basic_psd_plot(self, sample_sigs):
-        """Test basic PSD plotting functionality."""
+    def test_basic_psd_plot_fig_is_plt_figure(self, sample_sigs):
+        # Arrange
+        # Act
+        # Arrange
+        # Act
         fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "orig", "chirp")
-
-        # Should have 2 subplots
+        # Act
+        # Assert
         assert isinstance(fig, plt.Figure)
+
+    def test_basic_psd_plot_len_fig_axes_is_2(self, sample_sigs):
+        # Arrange
+        # Act
+        # Arrange
+        # Act
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "orig", "chirp")
+        # Act
+        # Assert
         assert len(fig.axes) == 2
 
-    def test_psd_plot_structure(self, sample_sigs):
-        """Test PSD plot has correct structure."""
-        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
 
+    def test_psd_plot_structure_len_ax0_lines_0(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
         # First axis: signal
+        # Act
         ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert len(ax0.lines) > 0
+
+    def test_psd_plot_structure_ax0_get_xlabel_time_s(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert ax0.get_xlabel() == "Time [s]"
+
+    def test_psd_plot_structure_ax0_get_ylabel_voltage(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert ax0.get_ylabel() == "Voltage"
+
+    def test_psd_plot_structure_len_ax1_lines_0_len_ax0_lines_0(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert len(ax0.lines) > 0
+
+    def test_psd_plot_structure_len_ax1_lines_0_ax0_get_xlabel_time_s(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert ax0.get_xlabel() == "Time [s]"
+
+    def test_psd_plot_structure_len_ax1_lines_0_ax0_get_ylabel_voltage(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert ax0.get_ylabel() == "Voltage"
+
+    def test_psd_plot_structure_len_ax1_lines_0_len_ax1_lines_0(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Assert
         assert len(ax0.lines) > 0
         assert ax0.get_xlabel() == "Time [s]"
         assert ax0.get_ylabel() == "Voltage"
-
         # Second axis: PSD
         ax1 = fig.axes[1]
+        # Act
+        # Assert
         assert len(ax1.lines) > 0
+
+
+    def test_psd_plot_structure_ax1_get_xlabel_frequency_hz_len_ax0_lines_0(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert len(ax0.lines) > 0
+
+    def test_psd_plot_structure_ax1_get_xlabel_frequency_hz_ax0_get_xlabel_time_s(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert ax0.get_xlabel() == "Time [s]"
+
+    def test_psd_plot_structure_ax1_get_xlabel_frequency_hz_ax0_get_ylabel_voltage(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert ax0.get_ylabel() == "Voltage"
+
+    def test_psd_plot_structure_ax1_get_xlabel_frequency_hz_ax1_get_xlabel_frequency_hz(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Assert
+        assert len(ax0.lines) > 0
+        assert ax0.get_xlabel() == "Time [s]"
+        assert ax0.get_ylabel() == "Voltage"
+        # Second axis: PSD
+        ax1 = fig.axes[1]
+        # Act
+        # Assert
         assert ax1.get_xlabel() == "Frequency [Hz]"
+
+
+    def test_psd_plot_structure_ax1_get_ylabel_power_uv_2_hz_len_ax0_lines_0(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert len(ax0.lines) > 0
+
+    def test_psd_plot_structure_ax1_get_ylabel_power_uv_2_hz_ax0_get_xlabel_time_s(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert ax0.get_xlabel() == "Time [s]"
+
+    def test_psd_plot_structure_ax1_get_ylabel_power_uv_2_hz_ax0_get_ylabel_voltage(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert ax0.get_ylabel() == "Voltage"
+
+    def test_psd_plot_structure_ax1_get_ylabel_power_uv_2_hz_ax1_get_ylabel_power_uv_2_hz(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Assert
+        assert len(ax0.lines) > 0
+        assert ax0.get_xlabel() == "Time [s]"
+        assert ax0.get_ylabel() == "Voltage"
+        # Second axis: PSD
+        ax1 = fig.axes[1]
+        # Act
+        # Assert
         assert ax1.get_ylabel() == "Power [uV^2 / Hz]"
+
+
+    def test_psd_plot_structure_ax1_get_yscale_log_len_ax0_lines_0(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert len(ax0.lines) > 0
+
+    def test_psd_plot_structure_ax1_get_yscale_log_ax0_get_xlabel_time_s(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert ax0.get_xlabel() == "Time [s]"
+
+    def test_psd_plot_structure_ax1_get_yscale_log_ax0_get_ylabel_voltage(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Act
+        # Assert
+        assert ax0.get_ylabel() == "Voltage"
+
+    def test_psd_plot_structure_ax1_get_yscale_log_ax1_get_yscale_log(self, sample_sigs):
+        # Arrange
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, "minmax_normed", "test")
+        # First axis: signal
+        # Act
+        ax0 = fig.axes[0]
+        # Assert
+        assert len(ax0.lines) > 0
+        assert ax0.get_xlabel() == "Time [s]"
+        assert ax0.get_ylabel() == "Voltage"
+        # Second axis: PSD
+        ax1 = fig.axes[1]
+        # Act
+        # Assert
         assert ax1.get_yscale() == "log"  # Should be log scale
 
-    def test_psd_with_filtered_signal(self, sample_sigs):
-        """Test PSD plot with filtered signal."""
-        # Find a filtered signal column
+
+
+    def test_psd_with_filtered_signal_filtered_col_is_not_none(self, sample_sigs):
+        # Arrange
         filtered_col = None
+        # Act
         for col in sample_sigs.columns:
             if "filted" in col:
                 filtered_col = col
                 break
-
+        # Act
+        # Assert
         assert filtered_col is not None
 
-        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, filtered_col, "filtered")
+    def test_psd_with_filtered_signal_fig_suptitle_get_text_filtered_filtered_col_is_not_none(self, sample_sigs):
+        # Arrange
+        filtered_col = None
+        # Act
+        for col in sample_sigs.columns:
+            if "filted" in col:
+                filtered_col = col
+                break
+        # Act
+        # Assert
+        assert filtered_col is not None
 
+    def test_psd_with_filtered_signal_fig_suptitle_get_text_filtered_fig_suptitle_get_text_filtered(self, sample_sigs):
+        # Arrange
+        filtered_col = None
+        # Act
+        for col in sample_sigs.columns:
+            if "filted" in col:
+                filtered_col = col
+                break
+        # Assert
+        assert filtered_col is not None
+        fig = scitex.dsp.example.plot_psd(plt, sample_sigs, filtered_col, "filtered")
+        # Act
+        # Assert
         assert fig._suptitle.get_text() == "filtered"
-        plt.close(fig)
+
+
 
 
 class TestExampleIntegration:
     """Test the full example workflow."""
 
-    def test_full_workflow(self, tmp_path):
+    def test_full_workflow_calls_use(self, tmp_path):
         """Test the complete example workflow."""
         # Set up parameters
+        # Arrange
+        # Act
+        # Assert
         T_SEC = 0.5  # Short for testing
         SIG_TYPES = ["chirp", "gauss"]
         SRC_FS = 512
@@ -364,30 +908,173 @@ class TestExampleIntegration:
             assert fig3 is not None
             plt.close(fig3)
 
-    def test_parameter_dependencies(self):
-        """Test that hardcoded parameters work correctly."""
-        # These are defined in the example
+    def test_parameter_dependencies_sigs_resampled_2_tgt_fs(self):
+        # Arrange
         LOW_HZ = 20
         HIGH_HZ = 50
         SIGMA = 10
         TGT_FS = 512
-
         xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=1024)
+        # Act
         sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
             xx, tt, fs, "chirp", verbose=False
         )
-
-        # Check resampling target
+        # Act
+        # Assert
         assert sigs["resampled"][2] == TGT_FS
 
+    def test_parameter_dependencies_str_low_hz_in_bandpass_col_sigs_resampled_2_tgt_fs(self):
+        # Arrange
+        LOW_HZ = 20
+        HIGH_HZ = 50
+        SIGMA = 10
+        TGT_FS = 512
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=1024)
+        # Act
+        sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
+            xx, tt, fs, "chirp", verbose=False
+        )
+        # Act
+        # Assert
+        assert sigs["resampled"][2] == TGT_FS
+
+    def test_parameter_dependencies_str_low_hz_in_bandpass_col_str_low_hz_in_bandpass_col(self):
+        # Arrange
+        LOW_HZ = 20
+        HIGH_HZ = 50
+        SIGMA = 10
+        TGT_FS = 512
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=1024)
+        # Act
+        sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
+            xx, tt, fs, "chirp", verbose=False
+        )
+        # Check resampling target
+        # Assert
+        assert sigs["resampled"][2] == TGT_FS
+        # Check filter parameters in column names
+        bandpass_col = [c for c in sigs.columns if "bandpass" in c][0]
+        # Act
+        # Assert
+        assert str(LOW_HZ) in bandpass_col
+
+
+    def test_parameter_dependencies_str_high_hz_in_bandpass_col_sigs_resampled_2_tgt_fs(self):
+        # Arrange
+        LOW_HZ = 20
+        HIGH_HZ = 50
+        SIGMA = 10
+        TGT_FS = 512
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=1024)
+        # Act
+        sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
+            xx, tt, fs, "chirp", verbose=False
+        )
+        # Act
+        # Assert
+        assert sigs["resampled"][2] == TGT_FS
+
+    def test_parameter_dependencies_str_high_hz_in_bandpass_col_str_high_hz_in_bandpass_col(self):
+        # Arrange
+        LOW_HZ = 20
+        HIGH_HZ = 50
+        SIGMA = 10
+        TGT_FS = 512
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=1024)
+        # Act
+        sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
+            xx, tt, fs, "chirp", verbose=False
+        )
+        # Check resampling target
+        # Assert
+        assert sigs["resampled"][2] == TGT_FS
+        # Check filter parameters in column names
+        bandpass_col = [c for c in sigs.columns if "bandpass" in c][0]
+        # Act
+        # Assert
+        assert str(HIGH_HZ) in bandpass_col
+
+
+    def test_parameter_dependencies_str_sigma_in_gauss_col_sigs_resampled_2_tgt_fs(self):
+        # Arrange
+        LOW_HZ = 20
+        HIGH_HZ = 50
+        SIGMA = 10
+        TGT_FS = 512
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=1024)
+        # Act
+        sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
+            xx, tt, fs, "chirp", verbose=False
+        )
+        # Act
+        # Assert
+        assert sigs["resampled"][2] == TGT_FS
+
+    def test_parameter_dependencies_str_sigma_in_gauss_col_str_low_hz_in_bandpass_col(self):
+        # Arrange
+        LOW_HZ = 20
+        HIGH_HZ = 50
+        SIGMA = 10
+        TGT_FS = 512
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=1024)
+        # Act
+        sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
+            xx, tt, fs, "chirp", verbose=False
+        )
+        # Check resampling target
+        # Assert
+        assert sigs["resampled"][2] == TGT_FS
+        # Check filter parameters in column names
+        bandpass_col = [c for c in sigs.columns if "bandpass" in c][0]
+        # Act
+        # Assert
+        assert str(LOW_HZ) in bandpass_col
+
+    def test_parameter_dependencies_str_sigma_in_gauss_col_str_high_hz_in_bandpass_col(self):
+        # Arrange
+        LOW_HZ = 20
+        HIGH_HZ = 50
+        SIGMA = 10
+        TGT_FS = 512
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=1024)
+        # Act
+        sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
+            xx, tt, fs, "chirp", verbose=False
+        )
+        # Check resampling target
+        # Assert
+        assert sigs["resampled"][2] == TGT_FS
+        # Check filter parameters in column names
+        bandpass_col = [c for c in sigs.columns if "bandpass" in c][0]
+        # Act
+        # Assert
+        assert str(HIGH_HZ) in bandpass_col
+
+    def test_parameter_dependencies_str_sigma_in_gauss_col_str_sigma_in_gauss_col(self):
+        # Arrange
+        LOW_HZ = 20
+        HIGH_HZ = 50
+        SIGMA = 10
+        TGT_FS = 512
+        xx, tt, fs = scitex.dsp.demo_sig(t_sec=1, fs=1024)
+        # Act
+        sigs = scitex.dsp.example.calc_norm_resample_filt_hilbert(
+            xx, tt, fs, "chirp", verbose=False
+        )
+        # Check resampling target
+        # Assert
+        assert sigs["resampled"][2] == TGT_FS
         # Check filter parameters in column names
         bandpass_col = [c for c in sigs.columns if "bandpass" in c][0]
         assert str(LOW_HZ) in bandpass_col
         assert str(HIGH_HZ) in bandpass_col
-
         # Check gaussian filter sigma
         gauss_col = [c for c in sigs.columns if "gauss" in c and "sigma" in c][0]
+        # Act
+        # Assert
         assert str(SIGMA) in gauss_col
+
+
 
 
 if __name__ == "__main__":

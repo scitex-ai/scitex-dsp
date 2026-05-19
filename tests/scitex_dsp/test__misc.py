@@ -3,13 +3,19 @@
 import scitex_dsp
 
 
-def test_module_importable():
+def test_module_importable_hasattr_scitex_dsp_version():
     """The package imports cleanly."""
+    # Arrange
+    # Act
+    # Assert
     assert hasattr(scitex_dsp, "__version__")
 
 
 def test_ensure_3d_top_level_exposed():
     """`ensure_3d` is reachable from the top-level namespace."""
+    # Arrange
+    # Act
+    # Assert
     assert callable(scitex_dsp.ensure_3d)
 
 

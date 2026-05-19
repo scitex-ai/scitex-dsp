@@ -18,24 +18,36 @@ class TestPacAvailableFlags:
 
     def test_torch_available_flag_exists(self):
         """Test that TORCH_AVAILABLE flag is exported."""
+        # Arrange
+        # Act
         from scitex.dsp._pac import TORCH_AVAILABLE
 
+        # Assert
         assert isinstance(TORCH_AVAILABLE, bool)
 
     def test_check_torch_function_exists(self):
         """Test that _check_torch function is exported."""
+        # Arrange
+        # Act
         from scitex.dsp._pac import _check_torch
 
+        # Assert
         assert callable(_check_torch)
 
     def test_torch_available_is_true_when_torch_installed(self):
         """Test that TORCH_AVAILABLE is True when torch is installed."""
+        # Arrange
+        # Act
         from scitex.dsp._pac import TORCH_AVAILABLE
 
+        # Assert
         assert TORCH_AVAILABLE is True
 
     def test_check_torch_does_not_raise_when_available(self):
         """Test that _check_torch doesn't raise when torch is available."""
+        # Arrange
+        # Act
+        # Assert
         from scitex.dsp._pac import _check_torch
 
         _check_torch()
@@ -44,47 +56,141 @@ class TestPacAvailableFlags:
 class TestPac:
     """Test cases for phase-amplitude coupling (PAC) calculation."""
 
-    def test_import(self):
+    def test_import_callable_pac(self):
         """Test that pac can be imported."""
+        # Arrange
+        # Act
+        # Assert
         assert callable(pac)
 
-    def test_pac_basic_numpy(self):
-        """Test basic PAC calculation with numpy array."""
-        # Create test signal
+    def test_pac_basic_numpy_pac_values_is_np_ndarray(self):
+        # Arrange
         fs = 512
         t_sec = 2
         n_samples = int(fs * t_sec)
         x = np.random.randn(1, 2, n_samples).astype(np.float32)
-
+        # Act
         pac_values, pha_mids, amp_mids = pac(x, fs)
-
+        # Act
+        # Assert
         assert isinstance(pac_values, np.ndarray)
+
+    def test_pac_basic_numpy_pha_mids_is_np_ndarray(self):
+        # Arrange
+        fs = 512
+        t_sec = 2
+        n_samples = int(fs * t_sec)
+        x = np.random.randn(1, 2, n_samples).astype(np.float32)
+        # Act
+        pac_values, pha_mids, amp_mids = pac(x, fs)
+        # Act
+        # Assert
         assert isinstance(pha_mids, np.ndarray)
+
+    def test_pac_basic_numpy_amp_mids_is_np_ndarray(self):
+        # Arrange
+        fs = 512
+        t_sec = 2
+        n_samples = int(fs * t_sec)
+        x = np.random.randn(1, 2, n_samples).astype(np.float32)
+        # Act
+        pac_values, pha_mids, amp_mids = pac(x, fs)
+        # Act
+        # Assert
         assert isinstance(amp_mids, np.ndarray)
+
+    def test_pac_basic_numpy_pac_values_shape_equals_n_1_2_100_100(self):
+        # Arrange
+        fs = 512
+        t_sec = 2
+        n_samples = int(fs * t_sec)
+        x = np.random.randn(1, 2, n_samples).astype(np.float32)
+        # Act
+        pac_values, pha_mids, amp_mids = pac(x, fs)
+        # Act
+        # Assert
         assert pac_values.shape == (1, 2, 100, 100)  # Default band counts
+
+    def test_pac_basic_numpy_len_pha_mids_is_100(self):
+        # Arrange
+        fs = 512
+        t_sec = 2
+        n_samples = int(fs * t_sec)
+        x = np.random.randn(1, 2, n_samples).astype(np.float32)
+        # Act
+        pac_values, pha_mids, amp_mids = pac(x, fs)
+        # Act
+        # Assert
         assert len(pha_mids) == 100
+
+    def test_pac_basic_numpy_len_amp_mids_is_100(self):
+        # Arrange
+        fs = 512
+        t_sec = 2
+        n_samples = int(fs * t_sec)
+        x = np.random.randn(1, 2, n_samples).astype(np.float32)
+        # Act
+        pac_values, pha_mids, amp_mids = pac(x, fs)
+        # Act
+        # Assert
         assert len(amp_mids) == 100
+
+    def test_pac_basic_numpy_np_all_pac_values_0(self):
+        # Arrange
+        fs = 512
+        t_sec = 2
+        n_samples = int(fs * t_sec)
+        x = np.random.randn(1, 2, n_samples).astype(np.float32)
+        # Act
+        pac_values, pha_mids, amp_mids = pac(x, fs)
+        # Act
+        # Assert
         assert np.all(pac_values >= 0)  # PAC values should be non-negative
 
-    def test_pac_basic_torch(self):
-        """Test basic PAC calculation with torch tensor."""
+
+    def test_pac_basic_torch_pac_values_is_torch_tensor(self):
+        # Arrange
         fs = 512
         t_sec = 2
         n_samples = int(fs * t_sec)
         x = torch.randn(1, 2, n_samples)
-
+        # Act
         pac_values, pha_mids, amp_mids = pac(x, fs)
-
+        # Act
+        # Assert
         assert isinstance(pac_values, torch.Tensor)
+
+    def test_pac_basic_torch_pac_values_shape_equals_n_1_2_100_100(self):
+        # Arrange
+        fs = 512
+        t_sec = 2
+        n_samples = int(fs * t_sec)
+        x = torch.randn(1, 2, n_samples)
+        # Act
+        pac_values, pha_mids, amp_mids = pac(x, fs)
+        # Act
+        # Assert
         assert pac_values.shape == (1, 2, 100, 100)
+
+    def test_pac_basic_torch_torch_all_pac_values_0(self):
+        # Arrange
+        fs = 512
+        t_sec = 2
+        n_samples = int(fs * t_sec)
+        x = torch.randn(1, 2, n_samples)
+        # Act
+        pac_values, pha_mids, amp_mids = pac(x, fs)
+        # Act
+        # Assert
         assert torch.all(pac_values >= 0)
 
-    def test_pac_custom_frequency_bands(self):
-        """Test PAC with custom frequency band parameters."""
+
+    def test_pac_custom_frequency_bands_pac_values_shape_equals_n_1_1_50_80(self):
+        # Arrange
         fs = 512
         n_samples = 1024
         x = np.random.randn(1, 1, n_samples).astype(np.float32)
-
+        # Act
         pac_values, pha_mids, amp_mids = pac(
             x,
             fs,
@@ -95,151 +201,362 @@ class TestPac:
             amp_end_hz=200,
             amp_n_bands=80,
         )
-
+        # Act
+        # Assert
         assert pac_values.shape == (1, 1, 50, 80)
+
+    def test_pac_custom_frequency_bands_len_pha_mids_is_50(self):
+        # Arrange
+        fs = 512
+        n_samples = 1024
+        x = np.random.randn(1, 1, n_samples).astype(np.float32)
+        # Act
+        pac_values, pha_mids, amp_mids = pac(
+            x,
+            fs,
+            pha_start_hz=1,
+            pha_end_hz=30,
+            pha_n_bands=50,
+            amp_start_hz=30,
+            amp_end_hz=200,
+            amp_n_bands=80,
+        )
+        # Act
+        # Assert
         assert len(pha_mids) == 50
+
+    def test_pac_custom_frequency_bands_len_amp_mids_is_80(self):
+        # Arrange
+        fs = 512
+        n_samples = 1024
+        x = np.random.randn(1, 1, n_samples).astype(np.float32)
+        # Act
+        pac_values, pha_mids, amp_mids = pac(
+            x,
+            fs,
+            pha_start_hz=1,
+            pha_end_hz=30,
+            pha_n_bands=50,
+            amp_start_hz=30,
+            amp_end_hz=200,
+            amp_n_bands=80,
+        )
+        # Act
+        # Assert
         assert len(amp_mids) == 80
+
+    def test_pac_custom_frequency_bands_pha_mids_0_1(self):
+        # Arrange
+        fs = 512
+        n_samples = 1024
+        x = np.random.randn(1, 1, n_samples).astype(np.float32)
+        # Act
+        pac_values, pha_mids, amp_mids = pac(
+            x,
+            fs,
+            pha_start_hz=1,
+            pha_end_hz=30,
+            pha_n_bands=50,
+            amp_start_hz=30,
+            amp_end_hz=200,
+            amp_n_bands=80,
+        )
+        # Act
+        # Assert
         assert pha_mids[0] >= 1
+
+    def test_pac_custom_frequency_bands_pha_mids_1_30(self):
+        # Arrange
+        fs = 512
+        n_samples = 1024
+        x = np.random.randn(1, 1, n_samples).astype(np.float32)
+        # Act
+        pac_values, pha_mids, amp_mids = pac(
+            x,
+            fs,
+            pha_start_hz=1,
+            pha_end_hz=30,
+            pha_n_bands=50,
+            amp_start_hz=30,
+            amp_end_hz=200,
+            amp_n_bands=80,
+        )
+        # Act
+        # Assert
         assert pha_mids[-1] <= 30
+
+    def test_pac_custom_frequency_bands_amp_mids_0_30(self):
+        # Arrange
+        fs = 512
+        n_samples = 1024
+        x = np.random.randn(1, 1, n_samples).astype(np.float32)
+        # Act
+        pac_values, pha_mids, amp_mids = pac(
+            x,
+            fs,
+            pha_start_hz=1,
+            pha_end_hz=30,
+            pha_n_bands=50,
+            amp_start_hz=30,
+            amp_end_hz=200,
+            amp_n_bands=80,
+        )
+        # Act
+        # Assert
         assert amp_mids[0] >= 30
+
+    def test_pac_custom_frequency_bands_amp_mids_1_200(self):
+        # Arrange
+        fs = 512
+        n_samples = 1024
+        x = np.random.randn(1, 1, n_samples).astype(np.float32)
+        # Act
+        pac_values, pha_mids, amp_mids = pac(
+            x,
+            fs,
+            pha_start_hz=1,
+            pha_end_hz=30,
+            pha_n_bands=50,
+            amp_start_hz=30,
+            amp_end_hz=200,
+            amp_n_bands=80,
+        )
+        # Act
+        # Assert
         assert amp_mids[-1] <= 200
 
-    def test_pac_batch_processing(self):
-        """Test PAC with multiple batch samples."""
+
+    def test_pac_batch_processing_pac_values_shape_0_batch_size(self):
+        # Arrange
         fs = 256
         n_samples = 512
         batch_size = 4
         x = np.random.randn(batch_size, 3, n_samples).astype(np.float32)
-
+        # Act
         pac_values, _, _ = pac(x, fs, batch_size=batch_size)
-
+        # Act
+        # Assert
         assert pac_values.shape[0] == batch_size
+
+    def test_pac_batch_processing_pac_values_shape_equals_batch_size_3_100_100(self):
+        # Arrange
+        fs = 256
+        n_samples = 512
+        batch_size = 4
+        x = np.random.randn(batch_size, 3, n_samples).astype(np.float32)
+        # Act
+        pac_values, _, _ = pac(x, fs, batch_size=batch_size)
+        # Act
+        # Assert
         assert pac_values.shape == (batch_size, 3, 100, 100)
+
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_pac_cuda_device(self):
         """Test PAC calculation on CUDA device."""
+        # Arrange
         fs = 256
         n_samples = 512
         x = torch.randn(1, 2, n_samples)
 
+        # Act
         pac_values, _, _ = pac(x, fs, device="cuda")
 
+        # Assert
         assert pac_values.is_cuda
 
     def test_pac_channel_batching(self):
         """Test PAC with channel batching."""
+        # Arrange
         fs = 256
         n_samples = 512
         n_chs = 16
         x = np.random.randn(1, n_chs, n_samples).astype(np.float32)
 
         # Process with channel batching
+        # Act
         pac_values, _, _ = pac(x, fs, batch_size_ch=4)
 
+        # Assert
         assert pac_values.shape == (1, n_chs, 100, 100)
 
-    def test_pac_fp16_processing(self):
-        """Test PAC with fp16 (half precision) processing."""
+    def test_pac_fp16_processing_pac_values_shape_equals_n_1_2_100_100(self):
+        # Arrange
         fs = 256
         n_samples = 512
         x = np.random.randn(1, 2, n_samples).astype(np.float32)
-
+        # Act
         pac_values, _, _ = pac(x, fs, fp16=True)
-
+        # Act
+        # Assert
         assert pac_values.shape == (1, 2, 100, 100)
+
+    def test_pac_fp16_processing_np_all_np_isfinite_pac_values(self):
+        # Arrange
+        fs = 256
+        n_samples = 512
+        x = np.random.randn(1, 2, n_samples).astype(np.float32)
+        # Act
+        pac_values, _, _ = pac(x, fs, fp16=True)
+        # Act
+        # Assert
         assert np.all(np.isfinite(pac_values))
+
 
     def test_pac_trainable_mode(self):
         """Test PAC with trainable filter parameters."""
+        # Arrange
         fs = 256
         n_samples = 512
         x = np.random.randn(1, 2, n_samples).astype(np.float32)
 
+        # Act
         pac_values, _, _ = pac(x, fs, trainable=True)
 
+        # Assert
         assert pac_values.shape == (1, 2, 100, 100)
 
     def test_pac_permutation_testing(self):
         """Test PAC with permutation testing."""
+        # Arrange
         fs = 256
         n_samples = 512
         x = np.random.randn(1, 1, n_samples).astype(np.float32)
 
+        # Act
         pac_values, _, _ = pac(x, fs, n_perm=10)
 
+        # Assert
         assert pac_values.shape == (1, 1, 100, 100)
 
-    def test_pac_amp_prob_mode(self):
-        """Test PAC with amplitude probability mode."""
+    def test_pac_amp_prob_mode_pac_values1_shape_equals_pac_values2_shape(self):
+        # Arrange
         fs = 256
         n_samples = 512
         x = np.random.randn(1, 2, n_samples).astype(np.float32)
-
         pac_values1, _, _ = pac(x, fs, amp_prob=False)
+        # Act
         pac_values2, _, _ = pac(x, fs, amp_prob=True)
-
+        # Act
+        # Assert
         assert pac_values1.shape == pac_values2.shape
-        # Results should be different with different amp_prob settings
+
+    def test_pac_amp_prob_mode_not_np_allclose_pac_values1_pac_values2(self):
+        # Arrange
+        fs = 256
+        n_samples = 512
+        x = np.random.randn(1, 2, n_samples).astype(np.float32)
+        pac_values1, _, _ = pac(x, fs, amp_prob=False)
+        # Act
+        pac_values2, _, _ = pac(x, fs, amp_prob=True)
+        # Act
+        # Assert
         assert not np.allclose(pac_values1, pac_values2)
 
-    def test_pac_single_channel(self):
-        """Test PAC with single channel signal."""
+
+    def test_pac_single_channel_pac_values_shape_equals_n_1_1_100_100(self):
+        # Arrange
         fs = 256
         n_samples = 512
         x = np.random.randn(1, 1, n_samples).astype(np.float32)
-
+        # Act
         pac_values, pha_mids, amp_mids = pac(x, fs)
-
+        # Act
+        # Assert
         assert pac_values.shape == (1, 1, 100, 100)
+
+    def test_pac_single_channel_np_all_pac_values_0(self):
+        # Arrange
+        fs = 256
+        n_samples = 512
+        x = np.random.randn(1, 1, n_samples).astype(np.float32)
+        # Act
+        pac_values, pha_mids, amp_mids = pac(x, fs)
+        # Act
+        # Assert
         assert np.all(pac_values >= 0)
 
-    def test_pac_frequency_ordering(self):
-        """Test that frequency bands are properly ordered."""
+
+    def test_pac_frequency_ordering_np_all_np_diff_pha_mids_0(self):
+        # Arrange
         fs = 512
         n_samples = 1024
         x = np.random.randn(1, 1, n_samples).astype(np.float32)
-
+        # Act
         _, pha_mids, amp_mids = pac(x, fs)
-
-        # Check frequencies are monotonically increasing
+        # Act
+        # Assert
         assert np.all(np.diff(pha_mids) > 0)
+
+    def test_pac_frequency_ordering_np_all_np_diff_amp_mids_0(self):
+        # Arrange
+        fs = 512
+        n_samples = 1024
+        x = np.random.randn(1, 1, n_samples).astype(np.float32)
+        # Act
+        _, pha_mids, amp_mids = pac(x, fs)
+        # Act
+        # Assert
         assert np.all(np.diff(amp_mids) > 0)
+
 
     def test_pac_empty_signal_raises(self):
         """Test that empty signal raises appropriate error."""
+        # Arrange
         fs = 256
+        # Act
         x = np.array([]).reshape(1, 1, 0)
 
+        # Assert
         with pytest.raises(Exception):
             pac(x, fs)
 
-    def test_pac_invalid_sampling_rate(self):
-        """Test PAC with edge case sampling rates."""
+    def test_pac_invalid_sampling_rate_np_all_pha_mids_10(self):
+        # Arrange
         n_samples = 512
         x = np.random.randn(1, 1, n_samples).astype(np.float32)
-
         # Very low sampling rate should work but limit frequency bands
+        # Act
         pac_values, pha_mids, amp_mids = pac(
             x,
             fs=100,  # Low fs
             pha_end_hz=10,  # Must be less than Nyquist
             amp_end_hz=40,  # Must be less than Nyquist
         )
-
+        # Act
+        # Assert
         assert np.all(pha_mids <= 10)
+
+    def test_pac_invalid_sampling_rate_np_all_amp_mids_40(self):
+        # Arrange
+        n_samples = 512
+        x = np.random.randn(1, 1, n_samples).astype(np.float32)
+        # Very low sampling rate should work but limit frequency bands
+        # Act
+        pac_values, pha_mids, amp_mids = pac(
+            x,
+            fs=100,  # Low fs
+            pha_end_hz=10,  # Must be less than Nyquist
+            amp_end_hz=40,  # Must be less than Nyquist
+        )
+        # Act
+        # Assert
         assert np.all(amp_mids <= 40)
+
 
     def test_pac_multi_batch_multi_channel(self):
         """Test PAC with multiple batches and channels."""
+        # Arrange
         fs = 256
         n_samples = 512
         batch_size = 3
         n_chs = 5
         x = np.random.randn(batch_size, n_chs, n_samples).astype(np.float32)
 
+        # Act
         pac_values, _, _ = pac(x, fs)
 
+        # Assert
         assert pac_values.shape == (batch_size, n_chs, 100, 100)
 
         # Each batch and channel should have unique PAC patterns
@@ -247,24 +564,52 @@ class TestPac:
             for c in range(n_chs):
                 assert np.any(pac_values[b, c] > 0)
 
-    def test_pac_dtype_preservation(self):
-        """Test that PAC preserves appropriate data types."""
+    def test_pac_dtype_preservation_pac_f32_dtype_equals_np_float32(self):
+        # Arrange
         fs = 256
         n_samples = 512
-
         # Test with float32
         x_f32 = np.random.randn(1, 1, n_samples).astype(np.float32)
+        # Act
         pac_f32, _, _ = pac(x_f32, fs)
+        # Act
+        # Assert
         assert pac_f32.dtype == np.float32
 
+    def test_pac_dtype_preservation_pac_f64_dtype_in_np_float32_np_float64_pac_f32_dtype_equals_np_float32(self):
+        # Arrange
+        fs = 256
+        n_samples = 512
+        # Test with float32
+        x_f32 = np.random.randn(1, 1, n_samples).astype(np.float32)
+        # Act
+        pac_f32, _, _ = pac(x_f32, fs)
+        # Act
+        # Assert
+        assert pac_f32.dtype == np.float32
+
+    def test_pac_dtype_preservation_pac_f64_dtype_in_np_float32_np_float64_pac_f64_dtype_in_np_float32_np_float64(self):
+        # Arrange
+        fs = 256
+        n_samples = 512
+        # Test with float32
+        x_f32 = np.random.randn(1, 1, n_samples).astype(np.float32)
+        # Act
+        pac_f32, _, _ = pac(x_f32, fs)
+        # Assert
+        assert pac_f32.dtype == np.float32
         # Test with float64
         x_f64 = np.random.randn(1, 1, n_samples).astype(np.float64)
         pac_f64, _, _ = pac(x_f64, fs)
-        # Should be converted to float32 internally
+        # Act
+        # Assert
         assert pac_f64.dtype in [np.float32, np.float64]
+
+
 
     def test_pac_deterministic_with_seed(self):
         """Test that PAC gives reproducible results with fixed random seed."""
+        # Arrange
         fs = 256
         n_samples = 512
 
@@ -275,9 +620,11 @@ class TestPac:
         x2 = np.random.randn(1, 1, n_samples).astype(np.float32)
 
         pac1, _, _ = pac(x1, fs)
+        # Act
         pac2, _, _ = pac(x2, fs)
 
-        np.testing.assert_allclose(pac1, pac2, rtol=1e-5)
+        # Assert
+        assert np.allclose(pac1, pac2, rtol=1e-5)
 
 
 if __name__ == "__main__":
