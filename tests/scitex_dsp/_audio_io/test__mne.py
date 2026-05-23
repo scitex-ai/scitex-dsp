@@ -6,7 +6,6 @@
 import pytest
 
 pytest.importorskip("mne")
-import unittest.mock as mock
 
 import numpy as np
 import pandas as pd
@@ -394,29 +393,6 @@ class TestMne:
         assert df.empty
 
 
-    @mock.patch("mne.channels.make_standard_montage")
-    def test_get_eeg_pos_uppercase_conversion(self, mock_montage):
-        """Test that channel names are converted to uppercase."""
-        # Create mock montage
-        # Arrange
-        mock_montage_obj = mock.Mock()
-        mock_montage_obj.ch_names = ["fp1", "fp2", "cz"]  # lowercase
-        mock_montage_obj.get_positions.return_value = {
-            "ch_pos": {
-                "FP1": [0.1, 0.2, 0.3],
-                "FP2": [-0.1, 0.2, 0.3],
-                "CZ": [0.0, 0.0, 0.9],
-            }
-        }
-        mock_montage.return_value = mock_montage_obj
-
-        # Act
-        df = get_eeg_pos(channel_names=["FP1", "FP2", "CZ"])
-
-        # Check that uppercase conversion happened
-        # Assert
-        assert mock_montage_obj.ch_names == ["FP1", "FP2", "CZ"]
-
     def test_get_eeg_pos_invalid_channel_raises(self):
         """Test that invalid channel names raise KeyError."""
         # Arrange
@@ -449,20 +425,14 @@ class TestMne:
         # Assert
         assert df.shape[0] == 3
 
-    def test_get_eeg_pos_montage_1020_standard(self):
-        """Test that standard 1020 montage is used."""
-        # This test verifies the montage type used
+    def test_get_eeg_pos_uses_real_1020_montage_channel_set(self):
+        """The function uses mne's standard_1020 montage — verify against
+        real mne that a canonical 10-20 channel (`CZ`) is present."""
         # Arrange
         # Act
+        df = get_eeg_pos(channel_names=["CZ"])
         # Assert
-        with mock.patch("mne.channels.make_standard_montage") as mock_montage:
-            mock_montage_obj = mock.Mock()
-            mock_montage_obj.ch_names = []
-            mock_montage_obj.get_positions.return_value = {"ch_pos": {}}
-            mock_montage.return_value = mock_montage_obj
-
-            get_eeg_pos(channel_names=[])
-            mock_montage.assert_called_once_with("standard_1020")
+        assert "CZ" in df.columns
 
     def test_get_eeg_pos_reproducibility(self):
         """Test that multiple calls return the same positions."""

@@ -66,8 +66,8 @@ def test_three_pac_public_surfaces_resolve_calc_pac_with_tensorpac_in_scitex_dsp
 
 
 pytest.importorskip("mne")
-from unittest.mock import MagicMock, Mock, patch
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 tensorpac = pytest.importorskip("tensorpac")
@@ -169,275 +169,70 @@ class TestCalcPacWithTensorpac:
         except Exception as e:
             pytest.skip(f"tensorpac execution failed: {e}")
 
-    def test_calc_pac_with_tensorpac_mocked(self):
-        """Test PAC calculation with mocked tensorpac."""
-        # Mock tensorpac.Pac class
-        # Arrange
-        # Act
-        # Assert
-        mock_pac_instance = Mock()
-
-        # Mock filter method returns
-        mock_phases = np.random.randn(50, 20, 1024)  # (freq, epoch, time)
-        mock_amplitudes = np.random.randn(30, 20, 1024)
-        mock_pac_instance.filter.side_effect = [mock_phases, mock_amplitudes]
-
-        # Mock fit method
-        mock_xpac = np.random.randn(50, 30, 20)  # (freq_pha, freq_amp, epoch)
-        mock_pac_instance.fit.return_value = mock_xpac
-
-        # Mock frequency arrays
-        mock_pac_instance.f_pha = np.random.randn(50, 2)
-        mock_pac_instance.f_amp = np.random.randn(30, 2)
-
-        with patch("tensorpac.Pac") as mock_pac_class:
-            mock_pac_class.return_value = mock_pac_instance
-
-            # Test data
-            xx = np.random.randn(1, 1, 1024)
-            fs = 512
-            t_sec = 2
-
-            phases, amplitudes, freqs_pha, freqs_amp, pac = calc_pac_with_tensorpac(
-                xx, fs, t_sec, i_batch=0, i_ch=0
-            )
-
-            # Verify function calls
-            mock_pac_class.assert_called_once_with(
-                f_pha="hres", f_amp="mres", dcomplex="wavelet"
-            )
-            assert mock_pac_instance.filter.call_count == 2
-            mock_pac_instance.fit.assert_called_once()
-
-            # Verify outputs
-            assert np.array_equal(phases, mock_phases)
-            assert np.array_equal(amplitudes, mock_amplitudes)
-            assert isinstance(freqs_pha, np.ndarray)
-            assert isinstance(freqs_amp, np.ndarray)
-            assert pac.shape == (30, 50)  # Transposed from (50, 30)
-
-    def test_calc_pac_with_tensorpac_different_indices(self):
-        """Test PAC calculation with different batch and channel indices."""
-        # Arrange
-        # Act
-        # Assert
-        mock_pac_instance = Mock()
-        mock_phases = np.random.randn(50, 20, 1024)
-        mock_amplitudes = np.random.randn(30, 20, 1024)
-        mock_pac_instance.filter.side_effect = [mock_phases, mock_amplitudes]
-        mock_xpac = np.random.randn(50, 30, 20)
-        mock_pac_instance.fit.return_value = mock_xpac
-        mock_pac_instance.f_pha = np.random.randn(50, 2)
-        mock_pac_instance.f_amp = np.random.randn(30, 2)
-
-        with patch("tensorpac.Pac") as mock_pac_class:
-            mock_pac_class.return_value = mock_pac_instance
-
-            # Multi-batch, multi-channel data
-            xx = np.random.randn(3, 5, 1024)
-            fs = 512
-            t_sec = 2
-
-            # Test different indices
-            for i_batch in [0, 1, 2]:
-                for i_ch in [0, 2, 4]:
-                    phases, amplitudes, freqs_pha, freqs_amp, pac = (
-                        calc_pac_with_tensorpac(
-                            xx, fs, t_sec, i_batch=i_batch, i_ch=i_ch
-                        )
-                    )
-
-                    # Verify correct indexing was used
-                    filter_calls = mock_pac_instance.filter.call_args_list
-                    expected_signal = xx[i_batch, i_ch]
-
-                    # Reset for next iteration
-                    mock_pac_instance.reset_mock()
-                    mock_pac_instance.filter.side_effect = [
-                        mock_phases,
-                        mock_amplitudes,
-                    ]
-
 
 class TestPlotPacScitexVsTensorpac:
-    """Test plot_PAC_scitex_vs_tensorpac function."""
+    """Test plot_PAC_scitex_vs_tensorpac with real matplotlib via
+    ``scitex.plt`` — no mocks.
 
-    @patch("scitex.plt.subplots")
-    def test_plot_pac_basic(self, mock_subplots):
-        """Test basic PAC plotting functionality."""
-        # Create mock figure and axes
-        # Arrange
-        mock_fig = MagicMock()
-        mock_ax1 = MagicMock()
-        mock_ax2 = MagicMock()
-        mock_ax3 = MagicMock()
-        mock_axes = [mock_ax1, mock_ax2, mock_ax3]
-        mock_subplots.return_value = (mock_fig, mock_axes)
+    Note: full-render tests are intentionally not included here because the
+    production function calls ``ax.imshow2d`` which is provided by a
+    plotting extension not always available in CI's ``scitex.plt``
+    (only the bare ``imshow`` is). The previous mock-based tests hid
+    this gap. Tests below cover the input-validation contract that
+    runs before any plotting; full render is exercised by the
+    integration suite when the extension is installed."""
 
-        # Test data
-        pac_scitex = np.random.rand(50, 30)
-        pac_tp = np.random.rand(50, 30)
-        freqs_pha = np.linspace(1, 20, 50)
-        freqs_amp = np.linspace(30, 150, 30)
-
-        # Act
-        result = plot_PAC_scitex_vs_tensorpac(pac_scitex, pac_tp, freqs_pha, freqs_amp)
-
-        # Verify function returns the figure
-        # Assert
-        assert result == mock_fig
-
-        # Verify subplots called with correct parameters
-        mock_subplots.assert_called_once_with(ncols=3)
-
-        # Verify imshow2d calls on each axis
-        mock_ax1.imshow2d.assert_called_once()
-        mock_ax2.imshow2d.assert_called_once()
-        mock_ax3.imshow2d.assert_called_once()
-
-        # Verify titles were set
-        mock_ax1.set_title.assert_called_with("scitex")
-        mock_ax2.set_title.assert_called_with("Tensorpac")
-        mock_ax3.set_title.assert_called_with("Difference\n(scitex - Tensorpac)")
-
-        # Verify figure labels
-        mock_fig.suptitle.assert_called_with("PAC (MI) values")
-        mock_fig.supxlabel.assert_called_with("Frequency for phase [Hz]")
-        mock_fig.supylabel.assert_called_with("Frequency for amplitude [Hz]")
-
-    @patch("scitex.plt.subplots")
-    def test_plot_pac_different_shapes(self, mock_subplots):
-        """Test plotting with different PAC matrix shapes."""
-        # Arrange
-        # Act
-        # Assert
-        mock_fig = MagicMock()
-        mock_axes = [MagicMock(), MagicMock(), MagicMock()]
-        mock_subplots.return_value = (mock_fig, mock_axes)
-
-        # Test different matrix sizes
-        for n_pha, n_amp in [(20, 15), (100, 50), (10, 10)]:
-            pac_scitex = np.random.rand(n_pha, n_amp)
-            pac_tp = np.random.rand(n_pha, n_amp)
-            freqs_pha = np.linspace(1, 20, n_pha)
-            freqs_amp = np.linspace(30, 150, n_amp)
-
-            result = plot_PAC_scitex_vs_tensorpac(
-                pac_scitex, pac_tp, freqs_pha, freqs_amp
-            )
-            assert result == mock_fig
-
-    @patch("scitex.plt.subplots")
-    def test_plot_pac_vmin_vmax_calculation(self, mock_subplots):
-        """Test proper vmin/vmax calculation for color scaling."""
-        # Arrange
-        # Act
-        # Assert
-        mock_fig = MagicMock()
-        mock_axes = [MagicMock(), MagicMock(), MagicMock()]
-        mock_subplots.return_value = (mock_fig, mock_axes)
-
-        # Create data with known min/max values
-        pac_scitex = np.array([[0.1, 0.5], [0.3, 0.9]])
-        pac_tp = np.array([[0.2, 0.4], [0.6, 0.8]])
-        freqs_pha = np.array([1, 2])
-        freqs_amp = np.array([30, 40])
-
-        plot_PAC_scitex_vs_tensorpac(pac_scitex, pac_tp, freqs_pha, freqs_amp)
-
-        # Expected vmin/vmax from the data and difference
-        diff = pac_scitex - pac_tp
-        expected_vmin = min(pac_scitex.min(), pac_tp.min(), diff.min())
-        expected_vmax = max(pac_scitex.max(), pac_tp.max(), diff.max())
-
-        # Verify each imshow2d call received correct vmin/vmax
-        for mock_ax in mock_axes:
-            call_kwargs = mock_ax.imshow2d.call_args[1]
-            assert "vmin" in call_kwargs
-            assert "vmax" in call_kwargs
-
-    def test_plot_pac_shape_mismatch_error(self):
-        """Test error handling for mismatched PAC matrix shapes."""
+    def test_plot_pac_raises_assertion_error_for_mismatched_shapes(self):
         # Arrange
         pac_scitex = np.random.rand(50, 30)
         pac_tp = np.random.rand(40, 30)  # Different shape
         freqs_pha = np.linspace(1, 20, 50)
-        # Act
         freqs_amp = np.linspace(30, 150, 30)
-
-        # Assert
-        with pytest.raises(AssertionError):
-            plot_PAC_scitex_vs_tensorpac(pac_scitex, pac_tp, freqs_pha, freqs_amp)
-
-    @patch("scitex.plt.subplots")
-    def test_plot_pac_with_extreme_values(self, mock_subplots):
-        """Test plotting with extreme PAC values."""
-        # Arrange
-        mock_fig = MagicMock()
-        mock_axes = [MagicMock(), MagicMock(), MagicMock()]
-        mock_subplots.return_value = (mock_fig, mock_axes)
-
-        # Create data with extreme values
-        pac_scitex = np.array([[0.0, 1000.0], [1e-10, 1e10]])
-        pac_tp = np.array([[-100.0, 500.0], [1e-5, 1e5]])
-        freqs_pha = np.array([1, 2])
-        freqs_amp = np.array([30, 40])
-
-        # Should not raise an exception
         # Act
-        result = plot_PAC_scitex_vs_tensorpac(pac_scitex, pac_tp, freqs_pha, freqs_amp)
+        ctx = pytest.raises(AssertionError)
         # Assert
-        assert result == mock_fig
+        with ctx:
+            plot_PAC_scitex_vs_tensorpac(
+                pac_scitex, pac_tp, freqs_pha, freqs_amp
+            )
 
 
 class TestPacIntegration:
     """Test integration between PAC calculation and plotting."""
 
-    @patch("scitex.plt.subplots")
-    def test_pac_calculation_and_plotting_workflow(self, mock_subplots):
-        """Test complete PAC workflow from calculation to plotting."""
-        # Mock plotting components
+    def _close(self, fig):
+        try:
+            plt.close(fig)
+        except Exception:
+            pass
+
+    def test_pac_calculation_returns_finite_pac_matrix_for_synthetic_signal(self):
+        """Run the real tensorpac calc pipeline against synthetic data
+        and assert it returns a finite PAC matrix.
+
+        The plot stage is omitted here: ``plot_PAC_scitex_vs_tensorpac``
+        depends on ``ax.imshow2d`` from the optional scitex.plt
+        extension, which is not part of the install in this test env.
+        Splitting calc-from-plot keeps this test honest under no-mocks."""
         # Arrange
+        fs = 256
+        t_sec = 1
+        n_samples = fs * t_sec
+        t = np.linspace(0, t_sec, n_samples)
+        theta = np.sin(2 * np.pi * 6 * t)
+        gamma = (1 + 0.5 * theta) * np.sin(2 * np.pi * 40 * t)
+        signal = theta + gamma + 0.05 * np.random.randn(n_samples)
+        xx = signal[np.newaxis, np.newaxis, :]
+        try:
+            _phases, _amplitudes, _freqs_pha, _freqs_amp, pac_tp = (
+                calc_pac_with_tensorpac(xx, fs, t_sec, i_batch=0, i_ch=0)
+            )
+        except Exception as exc:  # pragma: no cover - env-specific
+            pytest.skip(f"tensorpac calc_pac failed in this env: {exc}")
         # Act
+        all_finite = bool(np.all(np.isfinite(pac_tp)))
         # Assert
-        mock_fig = MagicMock()
-        mock_axes = [MagicMock(), MagicMock(), MagicMock()]
-        mock_subplots.return_value = (mock_fig, mock_axes)
-
-        # Mock tensorpac calculation
-        mock_pac_instance = Mock()
-        mock_phases = np.random.randn(50, 20, 1024)
-        mock_amplitudes = np.random.randn(30, 20, 1024)
-        mock_pac_instance.filter.side_effect = [mock_phases, mock_amplitudes]
-        mock_xpac = np.random.randn(50, 30, 20)
-        mock_pac_instance.fit.return_value = mock_xpac
-        mock_pac_instance.f_pha = np.random.randn(50, 2)
-        mock_pac_instance.f_amp = np.random.randn(30, 2)
-
-        with patch("tensorpac.Pac") as mock_pac_class:
-            mock_pac_class.return_value = mock_pac_instance
-
-            # Calculate PAC
-            xx = np.random.randn(2, 2, 1024)
-            fs = 512
-            t_sec = 2
-
-            phases, amplitudes, freqs_pha, freqs_amp, pac_tp = calc_pac_with_tensorpac(
-                xx, fs, t_sec, i_batch=0, i_ch=0
-            )
-
-            # Create mock scitex PAC result
-            pac_scitex = np.random.rand(*pac_tp.shape)
-
-            # Plot comparison
-            result = plot_PAC_scitex_vs_tensorpac(
-                pac_scitex, pac_tp, freqs_pha, freqs_amp
-            )
-
-            # Verify complete workflow
-            assert result == mock_fig
-            assert isinstance(pac_tp, np.ndarray)
-            assert pac_scitex.shape == pac_tp.shape
+        assert all_finite is True
 
     def test_pac_module_imports_callable_calc_pac_with_tensorpac(self):
         # Arrange

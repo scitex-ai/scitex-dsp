@@ -1,123 +1,96 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Time-stamp: "2025-05-25 17:20:00 (ywatanabe)"
-# File: ./tests/scitex/dsp/test_template.py
+# Time-stamp: "2026-05-24 (mocks-removed)"
+# File: ./tests/scitex_dsp/test_template.py
 
-"""
-Test module for scitex.dsp.template
+"""Tests for the `scitex.dsp.template` module — structural only.
+
+The previous version mocked ``scitex.gen.start`` / ``scitex.gen.close`` and
+asserted ``True``, which exercised nothing. The template module is a
+copy-paste scaffold; the only useful contracts are (a) it imports cleanly
+and (b) the on-disk file contains the canonical session-lifecycle imports
+new callers should adopt. Both are checked against the real module — no
+mocks, no patching.
 """
 
-from unittest.mock import MagicMock, patch
+import os
 
 import pytest
 
 
-class TestTemplate:
-    """Test cases for template module"""
-
-    def test_module_import_smoke_case(self):
-        """Test that the template module can be imported"""
-        # Arrange
-        # Act
-        # Assert
-        try:
-            import scitex.dsp.template
-
-            assert True
-        except ImportError:
-            pytest.fail("Failed to import scitex.dsp.template")
-
-    def test_template_structure_hasattr_template_file(self):
-        # Arrange
-        # Act
-        # Arrange
-        # Act
-        import scitex.dsp.template as template
-        # Act
-        # Assert
-        assert hasattr(template, "__file__")
-
-    def test_template_structure_hasattr_template_name(self):
-        # Arrange
-        # Act
-        # Arrange
-        # Act
-        import scitex.dsp.template as template
-        # Act
-        # Assert
-        assert hasattr(template, "__name__")
+def test_scitex_dsp_template_module_imports_without_error():
+    # Arrange
+    # Act
+    import scitex.dsp.template  # noqa: F401
+    # Assert
+    assert "scitex.dsp.template" in __import__("sys").modules
 
 
-    @patch("scitex.gen.start")
-    @patch("scitex.gen.close")
-    def test_template_main_execution(self, mock_close, mock_start):
-        """Test template main execution block"""
-        # Mock the start function to return expected values
-        # Arrange
-        # Act
-        # Assert
-        mock_config = MagicMock()
-        mock_stdout = MagicMock()
-        mock_stderr = MagicMock()
-        mock_plt = MagicMock()
-        mock_cc = MagicMock()
-
-        mock_start.return_value = (
-            mock_config,
-            mock_stdout,
-            mock_stderr,
-            mock_plt,
-            mock_cc,
-        )
-
-        # Import and execute the template module
-        template_path = "scitex.dsp.template"
-
-        # Since this is a template, we're mainly checking it doesn't crash
-        # and that it follows the expected pattern
-        try:
-            # The template would only execute if run as main
-            # We're testing the structure exists
-            assert True
-        except Exception as e:
-            pytest.fail(f"Template execution failed: {e}")
-
-    def test_template_as_base(self):
-        """Test that template can serve as a base for other modules"""
-        # This template should provide a standard structure
-        # for other DSP modules
-
-        # Expected structure elements. The session lifecycle moved from
-        # scitex.gen.{start,close} to scitex.session.{start,close} during
-        # the 2026-01 standalonization sweep.
-        # Arrange
-        # Act
-        # Assert
-        expected_patterns = [
-            "import sys",
-            "import matplotlib.pyplot",
-            "scitex.session.start",
-            "scitex.session.close",
-        ]
-
-        # Read the template file content
-        import scitex.dsp.template
-
-        template_file = scitex.dsp.template.__file__
-
-        try:
-            with open(template_file, "r") as f:
-                content = f.read()
-
-            # Check for expected patterns
-            for pattern in expected_patterns:
-                assert pattern in content, (
-                    f"Expected pattern '{pattern}' not found in template"
-                )
-
-        except FileNotFoundError:
-            # If we can't read the file, at least check it exists as a module
-            assert hasattr(scitex.dsp.template, "__file__")
+def test_scitex_dsp_template_module_has_dunder_file_attribute():
+    # Arrange
+    import scitex.dsp.template as template
+    # Act
+    has_file = hasattr(template, "__file__")
+    # Assert
+    assert has_file is True
 
 
-# EOF
+def test_scitex_dsp_template_module_has_dunder_name_attribute():
+    # Arrange
+    import scitex.dsp.template as template
+    # Act
+    has_name = hasattr(template, "__name__")
+    # Assert
+    assert has_name is True
+
+
+def test_scitex_dsp_template_file_contains_sys_import_pattern():
+    # Arrange
+    import scitex.dsp.template
+
+    template_file = scitex.dsp.template.__file__
+    # Act
+    with open(template_file, "r") as fh:
+        content = fh.read()
+    # Assert
+    assert "import sys" in content
+
+
+def test_scitex_dsp_template_file_contains_matplotlib_pyplot_import():
+    # Arrange
+    import scitex.dsp.template
+
+    template_file = scitex.dsp.template.__file__
+    # Act
+    with open(template_file, "r") as fh:
+        content = fh.read()
+    # Assert
+    assert "import matplotlib.pyplot" in content
+
+
+def test_scitex_dsp_template_file_contains_session_start_call():
+    # Arrange
+    import scitex.dsp.template
+
+    template_file = scitex.dsp.template.__file__
+    # Act
+    with open(template_file, "r") as fh:
+        content = fh.read()
+    # Assert
+    assert "scitex.session.start" in content
+
+
+def test_scitex_dsp_template_file_contains_session_close_call():
+    # Arrange
+    import scitex.dsp.template
+
+    template_file = scitex.dsp.template.__file__
+    # Act
+    with open(template_file, "r") as fh:
+        content = fh.read()
+    # Assert
+    assert "scitex.session.close" in content
+
+
+if __name__ == "__main__":
+    pytest.main([os.path.abspath(__file__)])
