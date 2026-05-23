@@ -44,12 +44,13 @@ class TestTransformAvailableFlags:
     def test_check_torch_does_not_raise_when_available(self):
         """Test that _check_torch doesn't raise when torch is available."""
         # Arrange
-        # Act
-        # Assert
         from scitex.dsp._transform import _check_torch
 
-        # Should not raise
-        _check_torch()
+        # Act
+        result = _check_torch()
+
+        # Assert
+        assert result is None
 
 
 class TestTransform:
@@ -59,21 +60,9 @@ class TestTransform:
         # Arrange
         # Act
         # Assert
-        # Arrange
-        # Act
-        # Assert
-        # Arrange
-        # Act
-        # Assert
         assert callable(to_sktime_df)
 
     def test_import_callable_to_segments(self):
-        # Arrange
-        # Act
-        # Assert
-        # Arrange
-        # Act
-        # Assert
         # Arrange
         # Act
         # Assert
@@ -111,8 +100,8 @@ class TestTransform:
         assert list(df.columns) == ["dim_0"]
 
 
-    def test_to_sktime_df_single_channel(self):
-        """Test conversion with single channel."""
+    def test_to_sktime_df_single_channel_len_equals_n_samples(self):
+        """Single channel: dataframe row count equals n_samples."""
         # Arrange
         n_samples, seq_len, n_channels = 3, 50, 1
         arr = np.random.randn(n_samples, seq_len, n_channels)
@@ -122,43 +111,47 @@ class TestTransform:
 
         # Assert
         assert len(df) == n_samples
-        for i in range(n_samples):
-            cell_data = df.iloc[i, 0]
-            assert "channel_0" in cell_data.index
-            assert len(cell_data["channel_0"]) == seq_len
 
-    def test_to_sktime_df_shape_validation_raises_valueerror(self):
+    def test_to_sktime_df_single_channel_channel_0_present(self):
+        """Single channel: every row exposes a 'channel_0' index."""
         # Arrange
+        n_samples, seq_len, n_channels = 3, 50, 1
+        arr = np.random.randn(n_samples, seq_len, n_channels)
+
         # Act
+        df = to_sktime_df(arr)
+
+        # Assert
+        assert all("channel_0" in df.iloc[i, 0].index for i in range(n_samples))
+
+    def test_to_sktime_df_single_channel_channel_length_equals_seq_len(self):
+        """Single channel: each row's channel_0 series length equals seq_len."""
         # Arrange
+        n_samples, seq_len, n_channels = 3, 50, 1
+        arr = np.random.randn(n_samples, seq_len, n_channels)
+
         # Act
+        df = to_sktime_df(arr)
+
+        # Assert
+        assert all(len(df.iloc[i, 0]["channel_0"]) == seq_len for i in range(n_samples))
+
+    def test_to_sktime_df_2d_array_raises_value_error(self):
+        # Arrange
         arr_2d = np.random.randn(10, 20)
         # Act
+        ctx = pytest.raises(ValueError, match="Input data must be a 3D array")
         # Assert
-        with pytest.raises(ValueError, match="Input data must be a 3D array"):
+        with ctx:
             to_sktime_df(arr_2d)
 
-    def test_to_sktime_df_shape_validation_raises_valueerror_raises_valueerror(self):
+    def test_to_sktime_df_4d_array_raises_value_error(self):
         # Arrange
-        # Act
-        arr_2d = np.random.randn(10, 20)
-        # Act
-        # Assert
-        with pytest.raises(ValueError, match="Input data must be a 3D array"):
-            to_sktime_df(arr_2d)
-
-    def test_to_sktime_df_shape_validation_raises_valueerror_raises_valueerror_2(self):
-        # Arrange
-        # Act
-        arr_2d = np.random.randn(10, 20)
-        # Assert
-        with pytest.raises(ValueError, match="Input data must be a 3D array"):
-            to_sktime_df(arr_2d)
-        # 4D array should raise error
         arr_4d = np.random.randn(5, 10, 20, 3)
         # Act
+        ctx = pytest.raises(ValueError, match="Input data must be a 3D array")
         # Assert
-        with pytest.raises(ValueError, match="Input data must be a 3D array"):
+        with ctx:
             to_sktime_df(arr_4d)
 
 
@@ -166,22 +159,20 @@ class TestTransform:
     def test_to_sktime_df_data_preservation(self):
         """Test that data is preserved during conversion."""
         # Arrange
-        # Act
-        # Assert
         n_samples, seq_len, n_channels = 2, 10, 2
         arr = np.arange(n_samples * seq_len * n_channels).reshape(
             n_samples, seq_len, n_channels
         )
 
+        # Act
         df = to_sktime_df(arr)
 
-        # Check that data is preserved
-        for i in range(n_samples):
-            cell_data = df.iloc[i, 0]
-            for j in range(n_channels):
-                channel_data = cell_data[f"channel_{j}"]
-                expected_data = arr[i, :, j]
-                np.testing.assert_array_equal(channel_data.values, expected_data)
+        # Assert
+        assert all(
+            np.array_equal(df.iloc[i, 0][f"channel_{j}"].values, arr[i, :, j])
+            for i in range(n_samples)
+            for j in range(n_channels)
+        )
 
     def test_to_segments_basic_numpy_segments_is_np_ndarray(self):
         # Arrange
@@ -205,17 +196,14 @@ class TestTransform:
         # Assert
         assert isinstance(segments, np.ndarray)
 
-    def test_to_segments_basic_numpy_segments_shape_equals_n_1_2_expected_n_segments_wind_segments_shape_equals_n_1_2_expected_n_segments_wind(self):
+    def test_to_segments_basic_numpy_segments_shape_matches_expected(self):
         # Arrange
         signal_len = 1000
         window_size = 100
         x = np.random.randn(1, 2, signal_len).astype(np.float32)
-        # Act
-        segments = to_segments(x, window_size)
-        # Assert
-        assert isinstance(segments, np.ndarray)
         expected_n_segments = signal_len // window_size
         # Act
+        segments = to_segments(x, window_size)
         # Assert
         assert segments.shape == (1, 2, expected_n_segments, window_size)
 
@@ -243,17 +231,14 @@ class TestTransform:
         # Assert
         assert isinstance(segments, torch.Tensor)
 
-    def test_to_segments_basic_torch_segments_shape_equals_n_1_3_expected_n_segments_wind_segments_shape_equals_n_1_3_expected_n_segments_wind(self):
+    def test_to_segments_basic_torch_segments_shape_matches_expected(self):
         # Arrange
         signal_len = 500
         window_size = 50
         x = torch.randn(1, 3, signal_len)
-        # Act
-        segments = to_segments(x, window_size)
-        # Assert
-        assert isinstance(segments, torch.Tensor)
         expected_n_segments = signal_len // window_size
         # Act
+        segments = to_segments(x, window_size)
         # Assert
         assert segments.shape == (1, 3, expected_n_segments, window_size)
 
@@ -367,48 +352,37 @@ class TestTransform:
         # Assert
         assert segments_f32.dtype == torch.float32
 
-    def test_to_segments_dtype_preservation_segments_f64_dtype_equals_torch_float64_segments_f64_dtype_equals_torch_float64(self):
+    def test_to_segments_dtype_preservation_f64(self):
         # Arrange
         signal_len = 200
         window_size = 50
-        # Test float32
-        x_f32 = torch.randn(1, 1, signal_len, dtype=torch.float32)
-        # Act
-        segments_f32 = to_segments(x_f32, window_size)
-        # Assert
-        assert segments_f32.dtype == torch.float32
-        # Test float64
         x_f64 = torch.randn(1, 1, signal_len, dtype=torch.float64)
-        segments_f64 = to_segments(x_f64, window_size)
         # Act
+        segments_f64 = to_segments(x_f64, window_size)
         # Assert
         assert segments_f64.dtype == torch.float64
 
 
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_to_segments_device_preservation_segments_is_cuda(self):
         # Arrange
-        if not torch.cuda.is_available():
-            pytest.skip("CUDA not available")
         signal_len = 200
         window_size = 50
         x = torch.randn(1, 2, signal_len).cuda()
         # Act
         segments = to_segments(x, window_size)
-        # Act
         # Assert
         assert segments.is_cuda
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_to_segments_device_preservation_segments_device_equals_x_device(self):
         # Arrange
-        if not torch.cuda.is_available():
-            pytest.skip("CUDA not available")
         signal_len = 200
         window_size = 50
         x = torch.randn(1, 2, signal_len).cuda()
         # Act
         segments = to_segments(x, window_size)
-        # Act
         # Assert
         assert segments.device == x.device
 
@@ -416,22 +390,22 @@ class TestTransform:
     def test_to_segments_content_verification(self):
         """Test that segment content is correct."""
         # Arrange
-        # Act
-        # Assert
         signal_len = 100
         window_size = 10
-        # Create a simple pattern for easy verification
         x = np.arange(signal_len).reshape(1, 1, signal_len).astype(np.float32)
+        stride = window_size  # default overlap_factor=1
 
+        # Act
         segments = to_segments(x, window_size)
 
-        # Default overlap_factor=1 → stride == window_size, so the i-th
-        # segment starts at i*window_size.
-        stride = window_size
-        for i in range(min(5, segments.shape[2])):
-            start = i * stride
-            expected = np.arange(start, start + window_size)
-            np.testing.assert_array_equal(segments[0, 0, i, :], expected)
+        # Assert
+        assert all(
+            np.array_equal(
+                segments[0, 0, i, :],
+                np.arange(i * stride, i * stride + window_size),
+            )
+            for i in range(min(5, segments.shape[2]))
+        )
 
     def test_to_segments_high_overlap_segments_shape_2_expected_n_segments(self):
         # Arrange

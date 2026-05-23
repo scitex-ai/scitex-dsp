@@ -60,21 +60,32 @@ class TestZ:
         assert np.all(np.abs(row_stds - 1.0) < 0.02)
 
 
-    def test_basic_3d_result_shape_equals_signal_shape_2(self):
-        """Test z-score normalization on 3D signal."""
+    def test_basic_3d_result_shape_equals_signal_shape(self):
+        """Test z-score normalization on 3D signal preserves shape."""
         # Arrange
         signal = np.random.randn(5, 10, 100)
         # Act
         result = scitex.dsp.norm.z(signal, dim=-1)
-
-        # Check last dimension has zero mean (float32 tolerance)
         # Assert
         assert result.shape == signal.shape
-        flat_result = result.reshape(-1, 100)
-        for row in flat_result:
-            assert np.abs(np.mean(row)) < 1e-5
-            # Check std is close to 1.0 (allowing for Bessel correction)
-            assert np.abs(np.std(row) - 1.0) < 0.02
+
+    def test_basic_3d_all_rows_zero_mean(self):
+        """Test z-score normalization on 3D signal: every row has zero mean."""
+        # Arrange
+        signal = np.random.randn(5, 10, 100)
+        # Act
+        result = scitex.dsp.norm.z(signal, dim=-1)
+        # Assert
+        assert all(np.abs(np.mean(row)) < 1e-5 for row in result.reshape(-1, 100))
+
+    def test_basic_3d_all_rows_unit_std(self):
+        """Test z-score normalization on 3D signal: every row has ~unit std."""
+        # Arrange
+        signal = np.random.randn(5, 10, 100)
+        # Act
+        result = scitex.dsp.norm.z(signal, dim=-1)
+        # Assert
+        assert all(np.abs(np.std(row) - 1.0) < 0.02 for row in result.reshape(-1, 100))
 
     def test_different_dimensions_np_all_np_abs_np_mean_result0_axis_0_1e_05(self):
         # Arrange
@@ -86,69 +97,21 @@ class TestZ:
         # Assert
         assert np.all(np.abs(np.mean(result0, axis=0)) < 1e-5)
 
-    def test_different_dimensions_np_all_np_abs_np_mean_result1_axis_1_1e_05_np_all_np_abs_np_mean_result0_axis_0_1e_05(self):
+    def test_different_dimensions_dim1_zero_mean(self):
+        """z-score along dim=1 yields zero mean along that axis."""
         # Arrange
         signal = np.random.randn(4, 5, 6)
-        # Test along dim=0 (float32 tolerance)
         # Act
-        result0 = scitex.dsp.norm.z(signal, dim=0)
-        # Act
-        # Assert
-        assert np.all(np.abs(np.mean(result0, axis=0)) < 1e-5)
-
-    def test_different_dimensions_np_all_np_abs_np_mean_result1_axis_1_1e_05_np_all_np_abs_np_mean_result1_axis_1_1e_05(self):
-        # Arrange
-        signal = np.random.randn(4, 5, 6)
-        # Test along dim=0 (float32 tolerance)
-        # Act
-        result0 = scitex.dsp.norm.z(signal, dim=0)
-        # Assert
-        assert np.all(np.abs(np.mean(result0, axis=0)) < 1e-5)
-        # Test along dim=1 (float32 tolerance)
         result1 = scitex.dsp.norm.z(signal, dim=1)
-        # Act
         # Assert
         assert np.all(np.abs(np.mean(result1, axis=1)) < 1e-5)
 
-
-    def test_different_dimensions_np_all_np_abs_np_mean_result2_axis_2_1e_05_np_all_np_abs_np_mean_result0_axis_0_1e_05(self):
+    def test_different_dimensions_dim2_zero_mean(self):
+        """z-score along dim=2 yields zero mean along that axis."""
         # Arrange
         signal = np.random.randn(4, 5, 6)
-        # Test along dim=0 (float32 tolerance)
         # Act
-        result0 = scitex.dsp.norm.z(signal, dim=0)
-        # Act
-        # Assert
-        assert np.all(np.abs(np.mean(result0, axis=0)) < 1e-5)
-
-    def test_different_dimensions_np_all_np_abs_np_mean_result2_axis_2_1e_05_np_all_np_abs_np_mean_result1_axis_1_1e_05(self):
-        # Arrange
-        signal = np.random.randn(4, 5, 6)
-        # Test along dim=0 (float32 tolerance)
-        # Act
-        result0 = scitex.dsp.norm.z(signal, dim=0)
-        # Assert
-        assert np.all(np.abs(np.mean(result0, axis=0)) < 1e-5)
-        # Test along dim=1 (float32 tolerance)
-        result1 = scitex.dsp.norm.z(signal, dim=1)
-        # Act
-        # Assert
-        assert np.all(np.abs(np.mean(result1, axis=1)) < 1e-5)
-
-    def test_different_dimensions_np_all_np_abs_np_mean_result2_axis_2_1e_05_np_all_np_abs_np_mean_result2_axis_2_1e_05(self):
-        # Arrange
-        signal = np.random.randn(4, 5, 6)
-        # Test along dim=0 (float32 tolerance)
-        # Act
-        result0 = scitex.dsp.norm.z(signal, dim=0)
-        # Assert
-        assert np.all(np.abs(np.mean(result0, axis=0)) < 1e-5)
-        # Test along dim=1 (float32 tolerance)
-        result1 = scitex.dsp.norm.z(signal, dim=1)
-        assert np.all(np.abs(np.mean(result1, axis=1)) < 1e-5)
-        # Test along dim=2 (default) (float32 tolerance)
         result2 = scitex.dsp.norm.z(signal, dim=2)
-        # Act
         # Assert
         assert np.all(np.abs(np.mean(result2, axis=2)) < 1e-5)
 
@@ -272,19 +235,16 @@ class TestMinmax:
         # Assert
         assert result.shape == signal.shape
 
-    def test_basic_3d_all_np_abs_row_max_pytest_approx_1_0_for_row_in_flat_result_all_np_abs_row_max_pytest_approx_1_0_for_row_in_flat_result(self):
+    def test_basic_3d_all_rows_max_abs_equals_one(self):
+        """minmax on 3D signal: every flattened row's max abs equals 1.0."""
         # Arrange
         signal = np.random.randn(3, 4, 50) * 5
         # Act
         result = scitex.dsp.norm.minmax(signal, dim=-1)
-        # Check shape preserved
         # Assert
-        assert result.shape == signal.shape
-        # Check normalization along last dimension
-        flat_result = result.reshape(-1, 50)
-        # Act
-        # Assert
-        assert all(np.abs(row).max() == pytest.approx(1.0) for row in flat_result)
+        assert all(
+            np.abs(row).max() == pytest.approx(1.0) for row in result.reshape(-1, 50)
+        )
 
 
 
@@ -308,17 +268,12 @@ class TestMinmax:
         # Assert
         assert np.abs(result).max() == pytest.approx(2.0)
 
-    def test_amplitude_scaling_np_abs_result_max_pytest_approx_0_5_np_abs_result_max_pytest_approx_0_5(self):
+    def test_amplitude_scaling_amp_0_5_max_abs_equals_0_5(self):
+        """minmax with amp=0.5 yields max abs == 0.5."""
         # Arrange
         signal = np.array([-4.0, -2.0, 0.0, 2.0, 4.0])
-        # Test amp=2.0
         # Act
-        result = scitex.dsp.norm.minmax(signal, amp=2.0)
-        # Assert
-        assert np.abs(result).max() == pytest.approx(2.0)
-        # Test amp=0.5
         result = scitex.dsp.norm.minmax(signal, amp=0.5)
-        # Act
         # Assert
         assert np.abs(result).max() == pytest.approx(0.5)
 
@@ -422,16 +377,14 @@ class TestMinmax:
         # Assert
         assert isinstance(result, torch.Tensor)
 
-    def test_torch_input_torch_allclose_max_abs_per_row_torch_ones_like_max_abs_per_r_torch_allclose_max_abs_per_row_torch_ones_like_max_abs_per_r(self):
+    def test_torch_input_max_abs_per_row_equals_ones(self):
+        """minmax on torch input yields max abs per row equal to 1.0."""
         # Arrange
         signal = torch.randn(5, 50) * 10
         # Act
         result = scitex.dsp.norm.minmax(signal)
         # Assert
-        assert isinstance(result, torch.Tensor)
         max_abs_per_row = torch.abs(result).max(dim=-1)[0]
-        # Act
-        # Assert
         assert torch.allclose(max_abs_per_row, torch.ones_like(max_abs_per_row))
 
 
@@ -479,41 +432,21 @@ class TestMinmax:
         # Assert
         assert result[0] == pytest.approx(1.0)
 
-    def test_edge_cases_result_0_pytest_approx_1_0_result_0_pytest_approx_1_0_2(self):
+    def test_edge_cases_symmetric_pair_result_0_equals_neg_one(self):
+        """minmax on [-2, 2]: first element normalizes to -1.0."""
         # Arrange
-        signal = np.array([5.0])
-        # Act
-        result = scitex.dsp.norm.minmax(signal)
-        # Assert
-        assert result[0] == pytest.approx(1.0)
-        # Two values with same absolute value
         signal = np.array([-2.0, 2.0])
-        result = scitex.dsp.norm.minmax(signal)
         # Act
+        result = scitex.dsp.norm.minmax(signal)
         # Assert
         assert result[0] == pytest.approx(-1.0)
 
-
-    def test_edge_cases_result_1_pytest_approx_1_0_result_0_pytest_approx_1_0(self):
+    def test_edge_cases_symmetric_pair_result_1_equals_one(self):
+        """minmax on [-2, 2]: second element normalizes to +1.0."""
         # Arrange
-        signal = np.array([5.0])
-        # Act
-        result = scitex.dsp.norm.minmax(signal)
-        # Act
-        # Assert
-        assert result[0] == pytest.approx(1.0)
-
-    def test_edge_cases_result_1_pytest_approx_1_0_result_1_pytest_approx_1_0(self):
-        # Arrange
-        signal = np.array([5.0])
-        # Act
-        result = scitex.dsp.norm.minmax(signal)
-        # Assert
-        assert result[0] == pytest.approx(1.0)
-        # Two values with same absolute value
         signal = np.array([-2.0, 2.0])
-        result = scitex.dsp.norm.minmax(signal)
         # Act
+        result = scitex.dsp.norm.minmax(signal)
         # Assert
         assert result[1] == pytest.approx(1.0)
 
