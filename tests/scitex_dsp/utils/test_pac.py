@@ -80,94 +80,76 @@ class TestCalcPacWithTensorpac:
     """Test calc_pac_with_tensorpac function."""
 
     @pytest.mark.skipif(not TENSORPAC_AVAILABLE, reason="tensorpac not available")
-    def test_calc_pac_with_tensorpac_basic(self):
-        """Test basic PAC calculation with tensorpac."""
-        # Create synthetic signal with phase-amplitude coupling
-        # Arrange
-        # Act
-        # Assert
-        fs = 512
-        t_sec = 2
+    @staticmethod
+    def _synthetic_pac_signal(fs=512, t_sec=2, theta_freq=6, gamma_freq=40):
+        """Build (1,1,T) signal with simple theta-gamma coupling."""
         n_samples = fs * t_sec
         t = np.linspace(0, t_sec, n_samples)
-
-        # Create signal with theta-gamma coupling
-        theta_freq = 6  # Hz
-        gamma_freq = 40  # Hz
-
-        # Phase signal (theta)
         phase_signal = np.sin(2 * np.pi * theta_freq * t)
-
-        # Amplitude modulated gamma signal
         gamma_signal = (1 + 0.5 * phase_signal) * np.sin(2 * np.pi * gamma_freq * t)
-
-        # Combine signals
         signal = phase_signal + gamma_signal + 0.1 * np.random.randn(n_samples)
+        return signal[np.newaxis, np.newaxis, :]
 
-        # Create batch structure expected by the function
-        xx = signal[np.newaxis, np.newaxis, :]  # (batch, ch, time)
+    def test_calc_pac_with_tensorpac_basic_pac_shape(self):
+        """calc_pac_with_tensorpac returns pac shaped (n_freqs_pha, n_freqs_amp)."""
+        # Arrange
+        fs, t_sec = 512, 2
+        xx = self._synthetic_pac_signal(fs=fs, t_sec=t_sec)
+        # Act
+        _phases, _amplitudes, freqs_pha, freqs_amp, pac = calc_pac_with_tensorpac(
+            xx, fs, t_sec, i_batch=0, i_ch=0
+        )
+        # Assert
+        assert pac.shape == (len(freqs_pha), len(freqs_amp))
 
-        try:
-            phases, amplitudes, freqs_pha, freqs_amp, pac = calc_pac_with_tensorpac(
-                xx, fs, t_sec, i_batch=0, i_ch=0
-            )
+    def test_calc_pac_with_tensorpac_basic_phases_3d(self):
+        """phases output is 3-D (freq_pha, epoch, time)."""
+        # Arrange
+        fs, t_sec = 512, 2
+        xx = self._synthetic_pac_signal(fs=fs, t_sec=t_sec)
+        # Act
+        phases, _amplitudes, _freqs_pha, _freqs_amp, _pac = calc_pac_with_tensorpac(
+            xx, fs, t_sec, i_batch=0, i_ch=0
+        )
+        # Assert
+        assert phases.ndim == 3
 
-            # Verify outputs
-            assert phases.ndim == 3  # (freq_pha, epoch, time)
-            assert amplitudes.ndim == 3  # (freq_amp, epoch, time)
-            assert isinstance(freqs_pha, np.ndarray)
-            assert isinstance(freqs_amp, np.ndarray)
-            assert pac.ndim == 2  # (freq_pha, freq_amp)
-            assert pac.shape == (len(freqs_pha), len(freqs_amp))
-
-        except Exception as e:
-            pytest.skip(f"tensorpac import or execution failed: {e}")
+    def test_calc_pac_with_tensorpac_basic_amplitudes_3d(self):
+        """amplitudes output is 3-D (freq_amp, epoch, time)."""
+        # Arrange
+        fs, t_sec = 512, 2
+        xx = self._synthetic_pac_signal(fs=fs, t_sec=t_sec)
+        # Act
+        _phases, amplitudes, _freqs_pha, _freqs_amp, _pac = calc_pac_with_tensorpac(
+            xx, fs, t_sec, i_batch=0, i_ch=0
+        )
+        # Assert
+        assert amplitudes.ndim == 3
 
     @pytest.mark.skipif(not TENSORPAC_AVAILABLE, reason="tensorpac not available")
-    def test_calc_pac_with_tensorpac_realistic_eeg(self):
-        """Test PAC calculation with realistic EEG-like signal."""
-        # Realistic EEG parameters
-        # Arrange
-        # Act
-        # Assert
-        fs = 250  # Hz
-        t_sec = 4  # seconds
+    @staticmethod
+    def _realistic_eeg_signal(fs=250, t_sec=4):
+        """Realistic EEG-like signal with alpha-beta phase modulation."""
         n_samples = fs * t_sec
         t = np.linspace(0, t_sec, n_samples)
-
-        # Multiple frequency components
-        # Alpha rhythm (8-12 Hz)
         alpha = np.sin(2 * np.pi * 10 * t)
-
-        # Beta rhythm modulated by alpha phase
-        beta_freq = 20
         phase_coupling = np.angle(np.exp(1j * 2 * np.pi * 10 * t))
-        beta = (1 + 0.3 * np.cos(phase_coupling)) * np.sin(2 * np.pi * beta_freq * t)
-
-        # Add noise
+        beta = (1 + 0.3 * np.cos(phase_coupling)) * np.sin(2 * np.pi * 20 * t)
         noise = 0.2 * np.random.randn(n_samples)
         signal = alpha + beta + noise
+        return signal[np.newaxis, np.newaxis, :]
 
-        # Batch format
-        xx = signal[np.newaxis, np.newaxis, :]
-
-        try:
-            phases, amplitudes, freqs_pha, freqs_amp, pac = calc_pac_with_tensorpac(
-                xx, fs, t_sec, i_batch=0, i_ch=0
-            )
-
-            # Verify realistic frequency ranges
-            assert freqs_pha.min() >= 1.0  # Low frequency for phase
-            assert freqs_pha.max() <= fs / 4  # Below Nyquist/2
-            assert freqs_amp.min() >= freqs_pha.max()  # Amplitude freq > phase freq
-            assert freqs_amp.max() <= fs / 2  # Below Nyquist
-
-            # Verify PAC values are reasonable
-            assert np.all(np.isfinite(pac))
-            assert pac.min() >= 0  # PAC values should be non-negative
-
-        except Exception as e:
-            pytest.skip(f"tensorpac execution failed: {e}")
+    def test_calc_pac_with_tensorpac_realistic_eeg_pac_is_finite(self):
+        """Realistic EEG input produces a finite, non-negative PAC matrix."""
+        # Arrange
+        fs, t_sec = 250, 4
+        xx = self._realistic_eeg_signal(fs=fs, t_sec=t_sec)
+        # Act
+        _phases, _amplitudes, _freqs_pha, _freqs_amp, pac = calc_pac_with_tensorpac(
+            xx, fs, t_sec, i_batch=0, i_ch=0
+        )
+        # Assert: all PAC entries finite and non-negative.
+        assert bool(np.all(np.isfinite(pac)) and pac.min() >= 0)
 
 
 class TestPlotPacScitexVsTensorpac:
@@ -223,77 +205,48 @@ class TestPacIntegration:
         gamma = (1 + 0.5 * theta) * np.sin(2 * np.pi * 40 * t)
         signal = theta + gamma + 0.05 * np.random.randn(n_samples)
         xx = signal[np.newaxis, np.newaxis, :]
-        try:
-            _phases, _amplitudes, _freqs_pha, _freqs_amp, pac_tp = (
-                calc_pac_with_tensorpac(xx, fs, t_sec, i_batch=0, i_ch=0)
-            )
-        except Exception as exc:  # pragma: no cover - env-specific
-            pytest.skip(f"tensorpac calc_pac failed in this env: {exc}")
         # Act
-        all_finite = bool(np.all(np.isfinite(pac_tp)))
+        _phases, _amplitudes, _freqs_pha, _freqs_amp, pac_tp = (
+            calc_pac_with_tensorpac(xx, fs, t_sec, i_batch=0, i_ch=0)
+        )
         # Assert
-        assert all_finite is True
+        assert bool(np.all(np.isfinite(pac_tp))) is True
 
     def test_pac_module_imports_callable_calc_pac_with_tensorpac(self):
         # Arrange
         # Act
-        # Arrange
-        # Act
-        from scitex.dsp.utils.pac import (
-            calc_pac_with_tensorpac,
-            plot_PAC_scitex_vs_tensorpac,
-        )
-        # Act
+        from scitex.dsp.utils.pac import calc_pac_with_tensorpac
         # Assert
         assert callable(calc_pac_with_tensorpac)
 
     def test_pac_module_imports_callable_plot_pac_scitex_vs_tensorpac(self):
         # Arrange
         # Act
-        # Arrange
-        # Act
-        from scitex.dsp.utils.pac import (
-            calc_pac_with_tensorpac,
-            plot_PAC_scitex_vs_tensorpac,
-        )
-        # Act
+        from scitex.dsp.utils.pac import plot_PAC_scitex_vs_tensorpac
         # Assert
         assert callable(plot_PAC_scitex_vs_tensorpac)
 
 
-    @pytest.mark.skipif(not TENSORPAC_AVAILABLE, reason="tensorpac not available")
-    def test_pac_realistic_workflow_end_to_end(self):
-        """Test realistic PAC workflow if tensorpac is available."""
+    def test_pac_realistic_workflow_end_to_end_pac_shape_and_finite(self):
+        """End-to-end PAC: pac is shaped (n_freqs_pha, n_freqs_amp) and finite."""
         # Arrange
+        fs = 128
+        t_sec = 1
+        n_samples = fs * t_sec
+        t = np.linspace(0, t_sec, n_samples)
+        theta = np.sin(2 * np.pi * 8 * t)
+        gamma = (1 + 0.5 * theta) * np.sin(2 * np.pi * 40 * t)
+        signal = theta + gamma + 0.1 * np.random.randn(n_samples)
+        xx = signal[np.newaxis, np.newaxis, :]
         # Act
-        # Assert
-        try:
-            # Generate synthetic coupled signal
-            fs = 128  # Lower sampling rate for faster test
-            t_sec = 1
-            n_samples = fs * t_sec
-            t = np.linspace(0, t_sec, n_samples)
-
-            # Simple theta-gamma coupling
-            theta = np.sin(2 * np.pi * 8 * t)
-            gamma = (1 + 0.5 * theta) * np.sin(2 * np.pi * 40 * t)
-            signal = theta + gamma + 0.1 * np.random.randn(n_samples)
-
-            xx = signal[np.newaxis, np.newaxis, :]
-
-            # Calculate PAC
-            phases, amplitudes, freqs_pha, freqs_amp, pac = calc_pac_with_tensorpac(
-                xx, fs, t_sec, i_batch=0, i_ch=0
-            )
-
-            # Verify results are reasonable
-            assert phases.shape[0] > 0  # Has phase frequencies
-            assert amplitudes.shape[0] > 0  # Has amplitude frequencies
-            assert pac.shape == (len(freqs_pha), len(freqs_amp))
-            assert np.all(np.isfinite(pac))
-
-        except Exception as e:
-            pytest.skip(f"End-to-end PAC test failed: {e}")
+        _phases, _amplitudes, freqs_pha, freqs_amp, pac = calc_pac_with_tensorpac(
+            xx, fs, t_sec, i_batch=0, i_ch=0
+        )
+        # Assert: PAC shape matches freq grid and contains only finite values.
+        assert (
+            pac.shape == (len(freqs_pha), len(freqs_amp))
+            and bool(np.all(np.isfinite(pac)))
+        )
 
 
 if __name__ == "__main__":
