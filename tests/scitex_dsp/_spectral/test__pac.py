@@ -46,11 +46,11 @@ class TestPacAvailableFlags:
     def test_check_torch_does_not_raise_when_available(self):
         """Test that _check_torch doesn't raise when torch is available."""
         # Arrange
-        # Act
-        # Assert
         from scitex.dsp._pac import _check_torch
-
-        _check_torch()
+        # Act
+        result = _check_torch()
+        # Assert
+        assert result is None
 
 
 class TestPac:
@@ -544,25 +544,35 @@ class TestPac:
         assert np.all(amp_mids <= 40)
 
 
-    def test_pac_multi_batch_multi_channel(self):
-        """Test PAC with multiple batches and channels."""
+    def test_pac_multi_batch_multi_channel_shape(self):
+        """PAC with multiple batches/channels returns the expected 4-D shape."""
         # Arrange
         fs = 256
         n_samples = 512
         batch_size = 3
         n_chs = 5
         x = np.random.randn(batch_size, n_chs, n_samples).astype(np.float32)
-
         # Act
         pac_values, _, _ = pac(x, fs)
-
         # Assert
         assert pac_values.shape == (batch_size, n_chs, 100, 100)
 
-        # Each batch and channel should have unique PAC patterns
-        for b in range(batch_size):
-            for c in range(n_chs):
-                assert np.any(pac_values[b, c] > 0)
+    def test_pac_multi_batch_multi_channel_each_slice_nonzero(self):
+        """Each (batch, channel) PAC slice contains at least one positive value."""
+        # Arrange
+        fs = 256
+        n_samples = 512
+        batch_size = 3
+        n_chs = 5
+        x = np.random.randn(batch_size, n_chs, n_samples).astype(np.float32)
+        # Act
+        pac_values, _, _ = pac(x, fs)
+        # Assert: every (b, c) slice has some positive coupling.
+        assert all(
+            bool(np.any(pac_values[b, c] > 0))
+            for b in range(batch_size)
+            for c in range(n_chs)
+        )
 
     def test_pac_dtype_preservation_pac_f32_dtype_equals_np_float32(self):
         # Arrange
@@ -588,20 +598,13 @@ class TestPac:
         # Assert
         assert pac_f32.dtype == np.float32
 
-    def test_pac_dtype_preservation_pac_f64_dtype_in_np_float32_np_float64_pac_f64_dtype_in_np_float32_np_float64(self):
+    def test_pac_dtype_preservation_float64_input(self):
         # Arrange
         fs = 256
         n_samples = 512
-        # Test with float32
-        x_f32 = np.random.randn(1, 1, n_samples).astype(np.float32)
-        # Act
-        pac_f32, _, _ = pac(x_f32, fs)
-        # Assert
-        assert pac_f32.dtype == np.float32
-        # Test with float64
         x_f64 = np.random.randn(1, 1, n_samples).astype(np.float64)
-        pac_f64, _, _ = pac(x_f64, fs)
         # Act
+        pac_f64, _, _ = pac(x_f64, fs)
         # Assert
         assert pac_f64.dtype in [np.float32, np.float64]
 
