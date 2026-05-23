@@ -46,11 +46,11 @@ class TestZeroPadAvailableFlags:
     def test_check_torch_does_not_raise_when_available(self):
         """Test that _check_torch doesn't raise when torch is available."""
         # Arrange
-        # Act
-        # Assert
         from scitex.dsp.utils._zero_pad import _check_torch
-
-        _check_torch()
+        # Act
+        result = _check_torch()
+        # Assert
+        assert result is None
 
 
 def test_zero_pad_1d_basic_len_result_is_7():
@@ -424,21 +424,15 @@ def test_zero_pad_different_dimensions_result_dim1_shape_equals_n_3_2_result_dim
     assert result_dim0.shape == (2, 3)
 
 
-def test_zero_pad_different_dimensions_result_dim1_shape_equals_n_3_2_result_dim1_shape_equals_n_3_2():
+def test_zero_pad_different_dimensions_dim1_shape_equals_n_3_2():
     # Arrange
     from scitex.dsp.utils import zero_pad
     x1 = torch.tensor([1, 2])
     x2 = torch.tensor([3, 4, 5])
-    # Test dim=0 (default): two 1-D tensors stacked along new axis 0
-    # → shape (n_inputs, max_len) = (2, 3)
-    # Act
-    result_dim0 = zero_pad([x1, x2], dim=0)
-    # Assert
-    assert result_dim0.shape == (2, 3)
     # Test dim=1: stacked along axis 1 → shape (max_len, n_inputs) = (3, 2).
     # torch.stack(.., dim=1) inserts the new axis AT 1, not at 0.
-    result_dim1 = zero_pad([x1, x2], dim=1)
     # Act
+    result_dim1 = zero_pad([x1, x2], dim=1)
     # Assert
     assert result_dim1.shape == (3, 2)
 
@@ -478,12 +472,20 @@ def test_zero_pad_preserve_device():
     # Assert
     assert result.device == x1.device
 
-    # Test CUDA if available
-    if torch.cuda.is_available():
-        x1_cuda = x1.cuda()
-        x2_cuda = x2.cuda()
-        result_cuda = zero_pad([x1_cuda, x2_cuda])
-        assert result_cuda.device == x1_cuda.device
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
+def test_zero_pad_preserve_device_cuda():
+    """Test that zero padding preserves CUDA device."""
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+
+    x1 = torch.tensor([1, 2]).cuda()
+    x2 = torch.tensor([3, 4, 5]).cuda()
+
+    # Act
+    result_cuda = zero_pad([x1, x2])
+    # Assert
+    assert result_cuda.device == x1.device
 
 
 def test_zero_pad_large_size_difference_result_shape_equals_n_2_100():
@@ -536,8 +538,8 @@ def test_zero_pad_large_size_difference_torch_equal_result_1_x2():
 
 
 
-def test_zero_pad_real_signal_example():
-    """Test zero padding with realistic signal processing example."""
+def test_zero_pad_real_signal_example_shape():
+    """Test zero padding with realistic signal processing example: output shape."""
     # Arrange
     from scitex.dsp.utils import zero_pad
 
@@ -552,22 +554,37 @@ def test_zero_pad_real_signal_example():
     trials = [trial1, trial2, trial3]
     # Act
     result = zero_pad(trials)
-
-    # Should be padded to longest trial (2 seconds = 500 samples)
-    # Assert
+    # Assert: padded to longest trial (2 seconds = 500 samples)
     assert result.shape == (3, 500)
 
-    # Check that original signals are preserved (centered-padding offsets)
-    # rather than scanning for nonzero — sine waves cross zero at interior
-    # points and the heuristic mis-detects boundaries.
+
+def test_zero_pad_real_signal_example_preserves_signals():
+    """Test zero padding preserves original signals with centered offsets."""
+    # Arrange
+    from scitex.dsp.utils import zero_pad
+
+    fs = 250
+    trial1 = torch.sin(2 * np.pi * 10 * torch.linspace(0, 1, fs))
+    trial2 = torch.sin(
+        2 * np.pi * 10 * torch.linspace(0, 1.5, int(fs * 1.5))
+    )
+    trial3 = torch.sin(2 * np.pi * 10 * torch.linspace(0, 2, fs * 2))
+    trials = [trial1, trial2, trial3]
+    # Act
+    result = zero_pad(trials)
     max_len = result.shape[1]
-    for i, trial in enumerate(trials):
+    extracted_all = []
+    for trial in trials:
         L = trial.shape[0]
         needed = max_len - L
         left = needed // 2
-        extracted = result[i, left : left + L]
-        assert extracted.shape == trial.shape
-        assert torch.allclose(extracted, trial, atol=1e-6)
+        idx = len(extracted_all)
+        extracted_all.append(result[idx, left : left + L])
+    # Assert: every trial body matches its source
+    assert all(
+        torch.allclose(extracted, trial, atol=1e-6)
+        for extracted, trial in zip(extracted_all, trials)
+    )
 
 
 def test_zero_pad_gradient_flow_x1_grad_is_not_none():
@@ -708,21 +725,14 @@ def test_zero_pad_different_numeric_types_result_float_dtype_in_torch_float32_to
     assert result_int.dtype in [torch.int64, torch.long]  # Default int type
 
 
-def test_zero_pad_different_numeric_types_result_float_dtype_in_torch_float32_torch_float_result_float_dtype_in_torch_float32_torch_float():
+def test_zero_pad_different_numeric_types_float_dtype():
     # Arrange
     from scitex.dsp.utils import zero_pad
-    # Test with integers
-    x1 = [1, 2]
-    x2 = [3, 4, 5]
-    # Act
-    result_int = zero_pad([x1, x2])
-    # Assert
-    assert result_int.dtype in [torch.int64, torch.long]  # Default int type
     # Test with floats
     x1 = [1.0, 2.0]
     x2 = [3.0, 4.0, 5.0]
-    result_float = zero_pad([x1, x2])
     # Act
+    result_float = zero_pad([x1, x2])
     # Assert
     assert result_float.dtype in [torch.float32, torch.float64]  # Default float type
 
