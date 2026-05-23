@@ -284,48 +284,37 @@ class TestResample:
         # Assert
         assert xr_f32.dtype == torch.float32
 
-    def test_resample_dtype_preservation_xr_f64_dtype_equals_torch_float64_xr_f64_dtype_equals_torch_float64(self):
+    def test_resample_dtype_preservation_float64(self):
         # Arrange
         src_fs = 100
         tgt_fs = 200
-        # Test float32
-        x_f32 = torch.randn(1, 1, 100, dtype=torch.float32)
-        # Act
-        xr_f32 = resample(x_f32, src_fs, tgt_fs)
-        # Assert
-        assert xr_f32.dtype == torch.float32
-        # Test float64
         x_f64 = torch.randn(1, 1, 100, dtype=torch.float64)
-        xr_f64 = resample(x_f64, src_fs, tgt_fs)
         # Act
+        xr_f64 = resample(x_f64, src_fs, tgt_fs)
         # Assert
         assert xr_f64.dtype == torch.float64
 
 
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_resample_device_preservation_xr_is_cuda(self):
         # Arrange
-        if not torch.cuda.is_available():
-            pytest.skip("CUDA not available")
         src_fs = 100
         tgt_fs = 200
         x = torch.randn(1, 1, 100).cuda()
         # Act
         xr = resample(x, src_fs, tgt_fs)
-        # Act
         # Assert
         assert xr.is_cuda
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_resample_device_preservation_xr_device_equals_x_device(self):
         # Arrange
-        if not torch.cuda.is_available():
-            pytest.skip("CUDA not available")
         src_fs = 100
         tgt_fs = 200
         x = torch.randn(1, 1, 100).cuda()
         # Act
         xr = resample(x, src_fs, tgt_fs)
-        # Act
         # Assert
         assert xr.device == x.device
 
@@ -348,17 +337,11 @@ class TestResample:
         # Assert
         assert xr.shape[-1] == 100
 
-    def test_resample_extreme_ratios_xr_shape_1_100_xr_shape_1_100_2(self):
+    def test_resample_extreme_ratios_large_downsampling(self):
         # Arrange
-        x = np.random.randn(1, 1, 10).astype(np.float32)
-        # Act
-        xr = resample(x, 10, 100)  # 10x upsampling
-        # Assert
-        assert xr.shape[-1] == 100
-        # Large downsampling ratio
         x = np.random.randn(1, 1, 1000).astype(np.float32)
-        xr = resample(x, 1000, 100)  # 10x downsampling
         # Act
+        xr = resample(x, 1000, 100)  # 10x downsampling
         # Assert
         assert xr.shape[-1] == 100
 
