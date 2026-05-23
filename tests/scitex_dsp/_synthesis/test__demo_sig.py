@@ -12,6 +12,17 @@ import numpy as np
 import pytest
 
 
+@pytest.fixture
+def complex_demo_sig(request):
+    """Generate a complex demo signal; skip if optional deps missing."""
+    sig_type = request.param
+    from scitex_dsp import demo_sig
+    try:
+        return demo_sig(sig_type=sig_type, batch_size=1, n_chs=2, t_sec=0.5, fs=256)
+    except (ImportError, ModuleNotFoundError):
+        pytest.skip(f"Optional dependencies not available for {sig_type}")
+
+
 class TestDemoSigAvailableFlags:
     """Test _AVAILABLE flags for optional dependencies."""
 
@@ -20,7 +31,6 @@ class TestDemoSigAvailableFlags:
         # Arrange
         # Act
         from scitex_dsp._synthesis._demo_sig import MNE_AVAILABLE
-
         # Assert
         assert isinstance(MNE_AVAILABLE, bool)
 
@@ -29,7 +39,6 @@ class TestDemoSigAvailableFlags:
         # Arrange
         # Act
         from scitex_dsp._synthesis._demo_sig import RIPPLE_DETECTION_AVAILABLE
-
         # Assert
         assert isinstance(RIPPLE_DETECTION_AVAILABLE, bool)
 
@@ -38,7 +47,6 @@ class TestDemoSigAvailableFlags:
         # Arrange
         # Act
         from scitex_dsp._synthesis._demo_sig import TENSORPAC_AVAILABLE
-
         # Assert
         assert isinstance(TENSORPAC_AVAILABLE, bool)
 
@@ -47,7 +55,6 @@ class TestDemoSigAvailableFlags:
         # Arrange
         # Act
         from scitex_dsp._synthesis._demo_sig import _check_mne
-
         # Assert
         assert callable(_check_mne)
 
@@ -56,7 +63,6 @@ class TestDemoSigAvailableFlags:
         # Arrange
         # Act
         from scitex_dsp._synthesis._demo_sig import _check_ripple_detection
-
         # Assert
         assert callable(_check_ripple_detection)
 
@@ -65,7 +71,6 @@ class TestDemoSigAvailableFlags:
         # Arrange
         # Act
         from scitex_dsp._synthesis._demo_sig import _check_tensorpac
-
         # Assert
         assert callable(_check_tensorpac)
 
@@ -78,7 +83,6 @@ class TestDemoSig:
         # Arrange
         # Act
         from scitex_dsp import demo_sig
-
         # Assert
         assert callable(demo_sig)
 
@@ -87,39 +91,24 @@ class TestDemoSig:
         """Test basic signal generation produces expected shape."""
         # Arrange
         from scitex_dsp import demo_sig
-        batch_size = 2
-        n_chs = 3
-        t_sec = 1.0
-        fs = 100
+        batch_size, n_chs, t_sec, fs = 2, 3, 1.0, 100
         # Act
-        try:
-            sig, _tt, _fs_out = demo_sig(
-                sig_type=sig_type,
-                batch_size=batch_size,
-                n_chs=n_chs,
-                t_sec=t_sec,
-                fs=fs,
-            )
-        except ImportError:
-            pytest.skip(f"Dependencies not available for {sig_type}")
-        expected_samples = int(t_sec * fs)
+        sig, _tt, _fs_out = demo_sig(
+            sig_type=sig_type, batch_size=batch_size, n_chs=n_chs, t_sec=t_sec, fs=fs,
+        )
         # Assert
-        assert sig.shape == (batch_size, n_chs, expected_samples)
+        assert sig.shape == (batch_size, n_chs, int(t_sec * fs))
 
     @pytest.mark.parametrize("sig_type", ["uniform", "gauss", "periodic", "chirp"])
     def test_basic_signal_types_time_vector_length(self, sig_type):
         """Test basic signal generation produces expected time vector length."""
         # Arrange
         from scitex_dsp import demo_sig
-        t_sec = 1.0
-        fs = 100
+        t_sec, fs = 1.0, 100
         # Act
-        try:
-            _sig, tt, _fs_out = demo_sig(
-                sig_type=sig_type, batch_size=2, n_chs=3, t_sec=t_sec, fs=fs,
-            )
-        except ImportError:
-            pytest.skip(f"Dependencies not available for {sig_type}")
+        _sig, tt, _fs_out = demo_sig(
+            sig_type=sig_type, batch_size=2, n_chs=3, t_sec=t_sec, fs=fs,
+        )
         # Assert
         assert len(tt) == int(t_sec * fs)
 
@@ -130,12 +119,9 @@ class TestDemoSig:
         from scitex_dsp import demo_sig
         fs = 100
         # Act
-        try:
-            _sig, _tt, fs_out = demo_sig(
-                sig_type=sig_type, batch_size=2, n_chs=3, t_sec=1.0, fs=fs,
-            )
-        except ImportError:
-            pytest.skip(f"Dependencies not available for {sig_type}")
+        _sig, _tt, fs_out = demo_sig(
+            sig_type=sig_type, batch_size=2, n_chs=3, t_sec=1.0, fs=fs,
+        )
         # Assert
         assert fs_out == fs
 
@@ -145,12 +131,9 @@ class TestDemoSig:
         # Arrange
         from scitex_dsp import demo_sig
         # Act
-        try:
-            _sig, tt, _fs_out = demo_sig(
-                sig_type=sig_type, batch_size=2, n_chs=3, t_sec=1.0, fs=100,
-            )
-        except ImportError:
-            pytest.skip(f"Dependencies not available for {sig_type}")
+        _sig, tt, _fs_out = demo_sig(
+            sig_type=sig_type, batch_size=2, n_chs=3, t_sec=1.0, fs=100,
+        )
         # Assert
         assert np.allclose(tt[0], 0.0)
 
@@ -159,15 +142,11 @@ class TestDemoSig:
         """Test basic signal generation ends time at t_sec - 1/fs."""
         # Arrange
         from scitex_dsp import demo_sig
-        t_sec = 1.0
-        fs = 100
+        t_sec, fs = 1.0, 100
         # Act
-        try:
-            _sig, tt, _fs_out = demo_sig(
-                sig_type=sig_type, batch_size=2, n_chs=3, t_sec=t_sec, fs=fs,
-            )
-        except ImportError:
-            pytest.skip(f"Dependencies not available for {sig_type}")
+        _sig, tt, _fs_out = demo_sig(
+            sig_type=sig_type, batch_size=2, n_chs=3, t_sec=t_sec, fs=fs,
+        )
         # Assert
         assert np.allclose(tt[-1], t_sec - 1 / fs)
 
@@ -205,23 +184,20 @@ class TestDemoSig:
         assert abs(sig.std() - 1.0) < 0.1  # Std should be close to 1
 
 
-    def test_periodic_signal_with_freqs(self):
+    def test_periodic_signal_with_freqs_shape(self):
         """Test periodic signal generation with specified frequencies."""
         # Arrange
         from scitex_dsp import demo_sig
-        freqs_hz = [10, 20]  # 10 Hz and 20 Hz
+        freqs_hz = [10, 20]
         # Act
-        try:
-            sig, _tt, _fs = demo_sig(
-                sig_type="periodic",
-                batch_size=1,
-                n_chs=1,
-                t_sec=1,
-                fs=1000,
-                freqs_hz=freqs_hz,
-            )
-        except Exception:
-            pytest.skip("Frequency spec not supported in this version")
+        sig, _tt, _fs = demo_sig(
+            sig_type="periodic",
+            batch_size=1,
+            n_chs=1,
+            t_sec=1,
+            fs=1000,
+            freqs_hz=freqs_hz,
+        )
         # Assert
         assert sig.shape == (1, 1, 1000)
 
@@ -337,8 +313,7 @@ class TestDemoSig:
     def test_time_vector_properties_tt_0_0_0(self):
         # Arrange
         from scitex_dsp import demo_sig
-        t_sec = 2.0
-        fs = 500
+        t_sec, fs = 2.0, 500
         # Act
         _, tt, _ = demo_sig(t_sec=t_sec, fs=fs)
         # Assert
@@ -347,8 +322,7 @@ class TestDemoSig:
     def test_time_vector_properties_np_allclose_tt_1_t_sec_1_fs(self):
         # Arrange
         from scitex_dsp import demo_sig
-        t_sec = 2.0
-        fs = 500
+        t_sec, fs = 2.0, 500
         # Act
         _, tt, _ = demo_sig(t_sec=t_sec, fs=fs)
         # Assert
@@ -357,8 +331,7 @@ class TestDemoSig:
     def test_time_vector_properties_evenly_spaced(self):
         # Arrange
         from scitex_dsp import demo_sig
-        t_sec = 2.0
-        fs = 500
+        t_sec, fs = 2.0, 500
         # Act
         _, tt, _ = demo_sig(t_sec=t_sec, fs=fs)
         dt = np.diff(tt)
@@ -377,7 +350,7 @@ class TestDemoSig:
             demo_sig(sig_type="invalid_type")
 
     @pytest.mark.parametrize(
-        "sig_type",
+        "complex_demo_sig",
         [
             "ripple",
             pytest.param(
@@ -390,23 +363,19 @@ class TestDemoSig:
             "tensorpac",
             "pac",
         ],
+        indirect=True,
     )
-    def test_complex_signal_types_ndim(self, sig_type):
+    def test_complex_signal_types_ndim(self, complex_demo_sig):
         """Test complex signal types produce >=3D signals."""
         # Arrange
-        from scitex_dsp import demo_sig
+        sig, _tt, _fs = complex_demo_sig
         # Act
-        try:
-            sig, _tt, _fs = demo_sig(
-                sig_type=sig_type, batch_size=1, n_chs=2, t_sec=0.5, fs=256
-            )
-        except (ImportError, ModuleNotFoundError):
-            pytest.skip(f"Optional dependencies not available for {sig_type}")
+        ndim = sig.ndim
         # Assert
-        assert sig.ndim >= 3  # At least batch x channels x time
+        assert ndim >= 3  # At least batch x channels x time
 
     @pytest.mark.parametrize(
-        "sig_type",
+        "complex_demo_sig",
         [
             "ripple",
             pytest.param(
@@ -419,23 +388,19 @@ class TestDemoSig:
             "tensorpac",
             "pac",
         ],
+        indirect=True,
     )
-    def test_complex_signal_types_time_nonempty(self, sig_type):
+    def test_complex_signal_types_time_nonempty(self, complex_demo_sig):
         """Test complex signal types produce non-empty time vector."""
         # Arrange
-        from scitex_dsp import demo_sig
+        _sig, tt, _fs = complex_demo_sig
         # Act
-        try:
-            _sig, tt, _fs = demo_sig(
-                sig_type=sig_type, batch_size=1, n_chs=2, t_sec=0.5, fs=256
-            )
-        except (ImportError, ModuleNotFoundError):
-            pytest.skip(f"Optional dependencies not available for {sig_type}")
+        length = len(tt)
         # Assert
-        assert len(tt) > 0
+        assert length > 0
 
     @pytest.mark.parametrize(
-        "sig_type",
+        "complex_demo_sig",
         [
             "ripple",
             pytest.param(
@@ -448,18 +413,13 @@ class TestDemoSig:
             "tensorpac",
             "pac",
         ],
+        indirect=True,
     )
-    def test_complex_signal_types_fs_equals_256(self, sig_type):
+    def test_complex_signal_types_fs_equals_256(self, complex_demo_sig):
         """Test complex signal types return input fs."""
         # Arrange
-        from scitex_dsp import demo_sig
+        _sig, _tt, fs = complex_demo_sig
         # Act
-        try:
-            _sig, _tt, fs = demo_sig(
-                sig_type=sig_type, batch_size=1, n_chs=2, t_sec=0.5, fs=256
-            )
-        except (ImportError, ModuleNotFoundError):
-            pytest.skip(f"Optional dependencies not available for {sig_type}")
         # Assert
         assert fs == 256
 
@@ -480,12 +440,9 @@ class TestDemoSig:
         # Arrange
         from scitex_dsp import demo_sig
         # Act
-        try:
-            sig, _tt, _fs = demo_sig(
-                sig_type="chirp", batch_size=1, n_chs=1, t_sec=1, fs=1000
-            )
-        except Exception:
-            pytest.skip("Chirp generation not available")
+        sig, _tt, _fs = demo_sig(
+            sig_type="chirp", batch_size=1, n_chs=1, t_sec=1, fs=1000
+        )
         # Assert
         assert sig.std() > 0
 
@@ -494,12 +451,9 @@ class TestDemoSig:
         # Arrange
         from scitex_dsp import demo_sig
         # Act
-        try:
-            sig, _tt, _fs = demo_sig(
-                sig_type="chirp", batch_size=1, n_chs=1, t_sec=1, fs=1000
-            )
-        except Exception:
-            pytest.skip("Chirp generation not available")
+        sig, _tt, _fs = demo_sig(
+            sig_type="chirp", batch_size=1, n_chs=1, t_sec=1, fs=1000
+        )
         # Assert
         assert sig.shape == (1, 1, 1000)
 
@@ -516,10 +470,6 @@ if __name__ == "__main__":
 # --------------------------------------------------------------------------------
 # Start of Source Code from: /home/ywatanabe/proj/scitex-code/src/scitex/dsp/_demo_sig.py
 # --------------------------------------------------------------------------------
-# #!/usr/bin/env python3
-# # Time-stamp: "2024-11-06 01:45:32 (ywatanabe)"
-# # File: ./scitex_repo/src/scitex/dsp/_demo_sig.py
-#
 # (source code omitted for brevity in test file)
 # --------------------------------------------------------------------------------
 # End of Source Code from: /home/ywatanabe/proj/scitex-code/src/scitex/dsp/_demo_sig.py
