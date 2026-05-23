@@ -268,7 +268,7 @@ class TestAddNoise:
         # Act
         noisy_gauss = gauss(clean_signal, amp=0.0)
         # Assert
-        assert_allclose(noisy_gauss, clean_signal, rtol=1e-6)
+        assert np.allclose(noisy_gauss, clean_signal, rtol=1e-6)
 
     def test_zero_amplitude_white_returns_unchanged(self, clean_signal):
         # Arrange
@@ -276,7 +276,7 @@ class TestAddNoise:
         # Act
         noisy_white = white(clean_signal, amp=0.0)
         # Assert
-        assert_allclose(noisy_white, clean_signal, rtol=1e-6)
+        assert np.allclose(noisy_white, clean_signal, rtol=1e-6)
 
     def test_reproducibility_with_seed(self, clean_signal):
         # Arrange

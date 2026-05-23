@@ -390,16 +390,19 @@ class TestPlotWavelet:
         # Assert
         assert ax1.yaxis_inverted()  # Should be inverted
 
-    @pytest.mark.parametrize(
-        "sig_col", ["orig", "z_normed", "bandpass_filted (20 - 50 Hz)"]
-    )
+    @pytest.mark.parametrize("sig_col", ["orig", "z_normed"])
     def test_different_signal_columns_returns_fig(self, sample_sigs, sig_col):
         # Arrange
-        if sig_col not in sample_sigs.columns:
-            for col in sample_sigs.columns:
-                if "bandpass" in col:
-                    sig_col = col
-                    break
+        # Act
+        fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, sig_col, "test")
+        # Assert
+        assert fig is not None
+        plt.close(fig)
+
+    def test_bandpass_filted_signal_column_returns_fig(self, sample_sigs):
+        # Arrange
+        bandpass_cols = [col for col in sample_sigs.columns if "bandpass" in col]
+        sig_col = bandpass_cols[0]  # KeyError surfaces missing-column bug
         # Act
         fig = scitex.dsp.example.plot_wavelet(plt, sample_sigs, sig_col, "test")
         # Assert
