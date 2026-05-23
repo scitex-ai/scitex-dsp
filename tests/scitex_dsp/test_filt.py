@@ -269,23 +269,16 @@ class TestFilt:
         # Assert
         assert t_out.shape == t.shape
 
-    def test_gaussian_filter_np_std_diff_filtered_np_std_diff_original_np_std_diff_filtered_np_std_diff_original(self, simple_signal):
+    def test_gaussian_filter_reduces_high_freq_std(self, simple_signal):
         # Arrange
         from scitex.dsp.filt import gauss
         signal, t, fs = simple_signal
         sigma = 5  # Smoothing parameter
         # Act
         filtered, t_out = gauss(signal, sigma, t=t)
-        # Check output shape
-        # Assert
-        assert filtered.shape == signal.shape
-        assert t_out.shape == t.shape
-        # Gaussian filter should smooth the signal
-        # Check that high frequency variations are reduced
         diff_original = np.diff(signal)
         diff_filtered = np.diff(filtered)
-        # Act
-        # Assert
+        # Assert: Gaussian filter smooths the signal
         assert np.std(diff_filtered) < np.std(diff_original)
 
 
@@ -318,23 +311,15 @@ class TestFilt:
         # Assert
         assert filtered.shape == signal.shape
 
-    def test_multi_channel_filtering_np_argmax_channel_energies_1_np_argmax_channel_energies_1(self, multi_channel_signal):
+    def test_multi_channel_filtering_middle_channel_has_highest_energy(self, multi_channel_signal):
         # Arrange
         from scitex.dsp.filt import bandpass
         signal, t, fs = multi_channel_signal
         bands = np.array([[80, 120]])  # Pass only 100 Hz channel
-        # bandpass may add a leading batch axis (when input is 2-D)
-        # and a band axis (n_bands=1) — squeeze size-1 dims so the
-        # shape comparison ignores them.
         # Act
         filtered = np.asarray(bandpass(signal, fs, bands)).squeeze()
-        # Check shape preservation
-        # Assert
-        assert filtered.shape == signal.shape
-        # Middle channel (100 Hz) should have highest energy
         channel_energies = np.std(filtered, axis=1)
-        # Act
-        # Assert
+        # Assert: middle channel (100 Hz) has highest energy
         assert np.argmax(channel_energies) == 1
 
 
@@ -379,14 +364,11 @@ class TestFilt:
         assert filtered.shape == signal_torch.shape
 
 
-    def test_multiple_bands_calls_linspace(self):
-        """Test filtering with multiple frequency bands."""
+    def test_multiple_bands_preserves_signal_length(self):
+        """Test filtering with multiple frequency bands preserves length."""
         # Arrange
-        # Act
-        # Assert
         from scitex.dsp.filt import bandpass
 
-        # Create signal with multiple frequency components
         fs = 1000
         t = np.linspace(0, 1, fs, endpoint=False)
         signal = (
@@ -394,19 +376,15 @@ class TestFilt:
             + np.sin(2 * np.pi * 150 * t)
             + np.sin(2 * np.pi * 250 * t)
         )
-
-        # Multiple pass bands
         bands = np.array([[40, 60], [140, 160]])  # Pass 50 and 150 Hz
-
+        # Act
         try:
             filtered = np.asarray(bandpass(signal, fs, bands))
-            # bandpass adds a band axis; signal length must be preserved.
-            assert filtered.shape[-1] == signal.shape[-1]
         except Exception:
-            # Single band fallback
             bands_single = np.array([[40, 160]])
             filtered = np.asarray(bandpass(signal, fs, bands_single)).squeeze(-2)
-            assert filtered.shape[-1] == signal.shape[-1]
+        # Assert
+        assert filtered.shape[-1] == signal.shape[-1]
 
     def test_edge_frequencies_np_std_filtered_low_np_std_signal_0_5(self, simple_signal):
         # Arrange
@@ -436,20 +414,13 @@ class TestFilt:
         # Assert
         assert np.std(filtered_low) < np.std(signal) * 0.5
 
-    def test_edge_frequencies_np_std_filtered_high_np_std_signal_0_5_np_std_filtered_high_np_std_signal_0_5(self, simple_signal):
+    def test_edge_frequencies_highpass_near_nyquist_reduces_std(self, simple_signal):
         # Arrange
-        from scitex.dsp.filt import highpass, lowpass
+        from scitex.dsp.filt import highpass
         signal, t, fs = simple_signal
-        # Use cutoffs that are inside the safe range for the upstream
-        # IIR filter: very-low (1 Hz) and right-at-Nyquist push the
-        # filter into a degenerate state where the output is a single
-        # sample. Use 5 Hz / Nyquist*0.95 instead, still extreme.
+        # Use Nyquist*0.45 — extreme but safe for the upstream IIR.
         # Act
-        filtered_low, _ = lowpass(signal, fs, 5, t=t)
-        # Assert
-        assert np.std(filtered_low) < np.std(signal) * 0.5
         filtered_high, _ = highpass(signal, fs, fs * 0.45, t=t)
-        # Act
         # Assert
         assert np.std(filtered_high) < np.std(signal) * 0.5
 
@@ -490,31 +461,60 @@ class TestFilt:
         # Assert
         assert filtered.shape == signal.shape
 
-    def test_filter_stability_smoke_case(self, simple_signal):
-        """Test that filters don't introduce instabilities."""
+    def test_filter_stability_no_nan(self, simple_signal):
+        """Test that filters do not produce NaN values."""
         # Arrange
-        # Act
-        # Assert
         from scitex.dsp.filt import bandpass, highpass, lowpass
-
         signal, _, fs = simple_signal
-
         filters = [
             (bandpass, {"bands": np.array([[40, 60]])}),
             (lowpass, {"cutoffs_hz": 100}),
             (highpass, {"cutoffs_hz": 100}),
         ]
+        # Act
+        outputs = [
+            np.asarray(filt_func(signal, fs, **params)).squeeze()
+            for filt_func, params in filters
+        ]
+        # Assert
+        assert not any(np.any(np.isnan(out)) for out in outputs)
 
-        for filt_func, params in filters:
-            # signal_fn may add batch/band axes; squeeze size-1 dims.
-            filtered = np.asarray(filt_func(signal, fs, **params)).squeeze()
+    def test_filter_stability_no_inf(self, simple_signal):
+        """Test that filters do not produce Inf values."""
+        # Arrange
+        from scitex.dsp.filt import bandpass, highpass, lowpass
+        signal, _, fs = simple_signal
+        filters = [
+            (bandpass, {"bands": np.array([[40, 60]])}),
+            (lowpass, {"cutoffs_hz": 100}),
+            (highpass, {"cutoffs_hz": 100}),
+        ]
+        # Act
+        outputs = [
+            np.asarray(filt_func(signal, fs, **params)).squeeze()
+            for filt_func, params in filters
+        ]
+        # Assert
+        assert not any(np.any(np.isinf(out)) for out in outputs)
 
-            # Check for NaN or Inf
-            assert not np.any(np.isnan(filtered))
-            assert not np.any(np.isinf(filtered))
-
-            # Check that output is bounded
-            assert np.max(np.abs(filtered)) < np.max(np.abs(signal)) * 10
+    def test_filter_stability_bounded_output(self, simple_signal):
+        """Test that filtered output amplitude is bounded."""
+        # Arrange
+        from scitex.dsp.filt import bandpass, highpass, lowpass
+        signal, _, fs = simple_signal
+        filters = [
+            (bandpass, {"bands": np.array([[40, 60]])}),
+            (lowpass, {"cutoffs_hz": 100}),
+            (highpass, {"cutoffs_hz": 100}),
+        ]
+        bound = np.max(np.abs(signal)) * 10
+        # Act
+        outputs = [
+            np.asarray(filt_func(signal, fs, **params)).squeeze()
+            for filt_func, params in filters
+        ]
+        # Assert
+        assert all(np.max(np.abs(out)) < bound for out in outputs)
 
     @pytest.mark.parametrize("sigma", [1, 3, 5, 10])
     def test_gaussian_sigma_effect(self, sigma):
