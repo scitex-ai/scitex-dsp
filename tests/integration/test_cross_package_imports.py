@@ -36,9 +36,12 @@ CROSS_PACKAGE_IMPORTS = [
 
 
 @pytest.mark.parametrize("module_name", CROSS_PACKAGE_IMPORTS)
-def test_cross_package_import(module_name):
-    """Importing scitex-dsp's declared cross-package dependency must succeed."""
+def test_cross_package_dependency_imports_as_module_with_matching_name(module_name):
+    """Importing scitex-dsp's declared cross-package dependency must
+    succeed and return a module whose ``__name__`` matches what we asked
+    for (rejects shim modules that re-export under a different name)."""
     # Arrange
     # Act
+    mod = pytest.importorskip(module_name)
     # Assert
-    pytest.importorskip(module_name)
+    assert mod.__name__ == module_name

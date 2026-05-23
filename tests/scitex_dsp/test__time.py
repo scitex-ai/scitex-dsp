@@ -258,21 +258,29 @@ class TestTime:
         # Assert
         assert abs(t[1] - t[0] - 0.001) < 1e-12
 
-    def test_time_zero_duration(self):
-        """Test time array with zero duration."""
+    def test_time_zero_duration_returns_at_most_one_sample(self):
         # Arrange
         start_sec = 5
         end_sec = 5
         fs = 100
-
         # Act
         t = time(start_sec, end_sec, fs)
-
-        # Should return empty array or single point
         # Assert
         assert len(t) <= 1
-        if len(t) == 1:
-            assert t[0] == start_sec
+
+    def test_time_one_sample_zero_duration_value_is_start_or_empty(self):
+        """When start == end, the array is either empty (allowed) or
+        single-sample equal to start. Asserts the upper-bound shape
+        property; companion test pins length <= 1."""
+        # Arrange
+        start_sec = 5
+        end_sec = 5
+        fs = 100
+        # Act
+        t = time(start_sec, end_sec, fs)
+        is_valid = len(t) == 0 or t[0] == start_sec
+        # Assert
+        assert is_valid is True
 
     def test_time_very_long_duration_len_t_is_3600(self):
         # Arrange

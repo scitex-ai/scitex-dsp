@@ -33,15 +33,15 @@ DEMOS = SIBLING_DEMOS + EMBEDDED_DEMOS
 
 
 @pytest.mark.parametrize("module", DEMOS, ids=lambda m: m.rsplit(".", 1)[-1])
-def test_demo_runs_calls_importorskip(module, tmp_path):
-    """Execute the demo end-to-end in an isolated working directory."""
-    # The umbrella ``scitex`` package is required by some demos
-    # (``scitex.session.start`` etc.). Skip cleanly if absent.
+def test_demo_module_runs_to_zero_exit_code(module, tmp_path):
+    """Execute the demo end-to-end in an isolated working directory and
+    assert it exits cleanly. On non-zero exit, the full subprocess
+    stdout + stderr are surfaced in the failure message via
+    `subprocess.run(check=True)` so the real error is visible without
+    a local re-run."""
     # Arrange
-    # Act
-    # Assert
     pytest.importorskip("scitex")
-
+    # Act
     result = subprocess.run(
         [sys.executable, "-m", module],
         cwd=tmp_path,
@@ -49,12 +49,9 @@ def test_demo_runs_calls_importorskip(module, tmp_path):
         timeout=180,
         capture_output=True,
     )
-    if result.returncode != 0:
-        # Surface stderr in the pytest failure so the real error
-        # (NameError line, API mismatch, etc.) is visible without
-        # re-running locally.
-        raise AssertionError(
-            f"{module} exited {result.returncode}\n"
-            f"--- stdout ---\n{result.stdout.decode()}\n"
-            f"--- stderr ---\n{result.stderr.decode()}"
-        )
+    # Assert
+    assert result.returncode == 0, (
+        f"{module} exited {result.returncode}\n"
+        f"--- stdout ---\n{result.stdout.decode()}\n"
+        f"--- stderr ---\n{result.stderr.decode()}"
+    )
