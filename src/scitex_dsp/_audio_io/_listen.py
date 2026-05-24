@@ -15,9 +15,26 @@ os.environ["PULSE_SERVER"] = "unix:/mnt/wslg/PulseServer"
 # export PULSE_SERVER=unix:/mnt/wslg/PulseServer
 
 
-def list_and_select_device() -> int:
+def list_and_select_device(
+    *,
+    query_devices=None,
+    input_fn=None,
+    print_fn=None,
+) -> int:
     """
     List available audio devices and prompt user to select one.
+
+    Parameters
+    ----------
+    query_devices : callable, optional
+        Callable returning the list of audio devices. Defaults to
+        ``sounddevice.query_devices`` — pass a hand-rolled fake from
+        tests to avoid mocking PortAudio.
+    input_fn : callable, optional
+        Callable taking a prompt string and returning user input.
+        Defaults to the builtin ``input``.
+    print_fn : callable, optional
+        Callable used for output. Defaults to the builtin ``print``.
 
     Example
     -------
@@ -31,16 +48,22 @@ def list_and_select_device() -> int:
     int
         Selected device ID
     """
+    if query_devices is None:
+        query_devices = sd.query_devices
+    if input_fn is None:
+        input_fn = input
+    if print_fn is None:
+        print_fn = print
     try:
-        print("Available audio devices:")
-        devices = sd.query_devices()
-        print(devices)
-        device_id = int(input("Enter the ID of the device you want to use: "))
+        print_fn("Available audio devices:")
+        devices = query_devices()
+        print_fn(devices)
+        device_id = int(input_fn("Enter the ID of the device you want to use: "))
         if device_id not in range(len(devices)):
             raise ValueError(f"Invalid device ID: {device_id}")
         return device_id
     except (ValueError, sd.PortAudioError) as err:
-        print(f"Error during device selection: {err}")
+        print_fn(f"Error during device selection: {err}")
         return 0
 
 

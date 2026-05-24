@@ -247,22 +247,13 @@ class TestHilbert:
         # Assert
         assert np.all(phase <= np.pi)
 
-    def test_phase_amplitude_relationship_np_std_center_amp_np_mean_center_amp_0_01_np_std_center_amp_np_mean_center_amp_0_01(self, simple_signal):
+    def test_phase_amplitude_relationship_center_amplitude_near_constant(self, simple_signal):
+        """Sine wave: center-window amplitude std/mean < 1%."""
         # Arrange
         # Act
         phase, amplitude = hilbert(simple_signal)
-        # Amplitude should be non-negative
         # Assert
-        assert np.all(amplitude >= 0)
-        # Phase should be in radians
-        assert np.all(phase >= -np.pi)
-        assert np.all(phase <= np.pi)
-        # For a sine wave, amplitude should be ~constant (canonical
-        # Hilbert returns peak amplitude). Default mask is hard-step,
-        # matching scipy.signal.hilbert.
         center_amp = amplitude[100:-100]
-        # Act
-        # Assert
         assert np.std(center_amp) / np.mean(center_amp) < 0.01
 
 
@@ -331,17 +322,12 @@ class TestHilbert:
         # Assert
         assert phase1.shape == signal_2d.shape
 
-    def test_dim_parameter_phase2_shape_equals_signal_2d_shape_phase2_shape_equals_signal_2d_shape(self, simple_signal):
+    def test_dim_parameter_dim0_phase_shape_preserved(self, simple_signal):
+        """Hilbert along dim=0 preserves signal shape."""
         # Arrange
         signal_2d = np.stack([simple_signal, simple_signal * 0.5])
-        # Transform along last dimension (default)
         # Act
-        phase1, amp1 = hilbert(signal_2d, dim=-1)
-        # Assert
-        assert phase1.shape == signal_2d.shape
-        # Transform along first dimension
         phase2, amp2 = hilbert(signal_2d, dim=0)
-        # Act
         # Assert
         assert phase2.shape == signal_2d.shape
 
@@ -356,17 +342,13 @@ class TestHilbert:
         # Assert
         assert phase1.shape == signal_2d.shape
 
-    def test_dim_parameter_not_np_allclose_phase1_phase2_not_np_allclose_phase1_phase2(self, simple_signal):
+    def test_dim_parameter_phase_differs_between_dims(self, simple_signal):
+        """Phase along dim=-1 differs from phase along dim=0."""
         # Arrange
         signal_2d = np.stack([simple_signal, simple_signal * 0.5])
-        # Transform along last dimension (default)
+        phase1, _ = hilbert(signal_2d, dim=-1)
         # Act
-        phase1, amp1 = hilbert(signal_2d, dim=-1)
-        # Assert
-        assert phase1.shape == signal_2d.shape
-        # Transform along first dimension
-        phase2, amp2 = hilbert(signal_2d, dim=0)
-        # Act
+        phase2, _ = hilbert(signal_2d, dim=0)
         # Assert
         assert not np.allclose(phase1, phase2)
 
@@ -381,17 +363,13 @@ class TestHilbert:
         # Assert
         assert phase1.shape == signal_2d.shape
 
-    def test_dim_parameter_not_np_allclose_amp1_amp2_not_np_allclose_amp1_amp2(self, simple_signal):
+    def test_dim_parameter_amplitude_differs_between_dims(self, simple_signal):
+        """Amplitude along dim=-1 differs from amplitude along dim=0."""
         # Arrange
         signal_2d = np.stack([simple_signal, simple_signal * 0.5])
-        # Transform along last dimension (default)
+        _, amp1 = hilbert(signal_2d, dim=-1)
         # Act
-        phase1, amp1 = hilbert(signal_2d, dim=-1)
-        # Assert
-        assert phase1.shape == signal_2d.shape
-        # Transform along first dimension
-        phase2, amp2 = hilbert(signal_2d, dim=0)
-        # Act
+        _, amp2 = hilbert(signal_2d, dim=0)
         # Assert
         assert not np.allclose(amp1, amp2)
 
@@ -432,51 +410,39 @@ class TestHilbert:
         # Assert
         assert correlation > 0.99
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_torch_device_handling_phase_device_equals_tensor_signal_device(self, simple_signal):
         # Arrange
-        if not torch.cuda.is_available():
-            pytest.skip("CUDA not available")
-        # Create tensor on GPU
         tensor_signal = torch.from_numpy(simple_signal).cuda()
         # Act
         phase, amplitude = hilbert(tensor_signal)
-        # Act
         # Assert
         assert phase.device == tensor_signal.device
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_torch_device_handling_amplitude_device_equals_tensor_signal_device(self, simple_signal):
         # Arrange
-        if not torch.cuda.is_available():
-            pytest.skip("CUDA not available")
-        # Create tensor on GPU
         tensor_signal = torch.from_numpy(simple_signal).cuda()
         # Act
         phase, amplitude = hilbert(tensor_signal)
-        # Act
         # Assert
         assert amplitude.device == tensor_signal.device
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_torch_device_handling_phase_is_cuda(self, simple_signal):
         # Arrange
-        if not torch.cuda.is_available():
-            pytest.skip("CUDA not available")
-        # Create tensor on GPU
         tensor_signal = torch.from_numpy(simple_signal).cuda()
         # Act
         phase, amplitude = hilbert(tensor_signal)
-        # Act
         # Assert
         assert phase.is_cuda
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_torch_device_handling_amplitude_is_cuda(self, simple_signal):
         # Arrange
-        if not torch.cuda.is_available():
-            pytest.skip("CUDA not available")
-        # Create tensor on GPU
         tensor_signal = torch.from_numpy(simple_signal).cuda()
         # Act
         phase, amplitude = hilbert(tensor_signal)
-        # Act
         # Assert
         assert amplitude.is_cuda
 
@@ -526,17 +492,25 @@ class TestHilbert:
         assert np.allclose(amp1, amp2[1], rtol=1e-5)
 
 
-    def test_dtype_preservation_smoke_case(self):
-        """Test that output dtype matches input dtype."""
+    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+    def test_dtype_preservation_phase(self, dtype):
+        """hilbert preserves dtype on phase output."""
         # Arrange
+        signal = np.random.randn(1000).astype(dtype)
         # Act
+        phase, _ = hilbert(signal)
         # Assert
-        for dtype in [np.float32, np.float64]:
-            signal = np.random.randn(1000).astype(dtype)
-            phase, amplitude = hilbert(signal)
+        assert phase.dtype == dtype
 
-            assert phase.dtype == dtype
-            assert amplitude.dtype == dtype
+    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+    def test_dtype_preservation_amplitude(self, dtype):
+        """hilbert preserves dtype on amplitude output."""
+        # Arrange
+        signal = np.random.randn(1000).astype(dtype)
+        # Act
+        _, amplitude = hilbert(signal)
+        # Assert
+        assert amplitude.dtype == dtype
 
     def test_empty_signal_phase_shape_equals_n_0(self):
         # Arrange

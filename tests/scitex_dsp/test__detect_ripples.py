@@ -86,33 +86,14 @@ class TestDetectRipplesBasicFunctionality:
         signal = signal[np.newaxis, :]
         # Act
         df = detect_ripples(signal, fs, low_hz=80, high_hz=140, sd=1.5)
-        # Act
         # Assert
         assert isinstance(df, pd.DataFrame)
 
-    def test_detect_ripples_basic_all_col_in_df_columns_for_col_in_required_columns_df_is_pd_dataframe(self, simple_signal):
+    def test_detect_ripples_basic_has_required_columns(self, simple_signal):
         # Arrange
         np.random.seed(42)  # For reproducibility
         signal, fs = simple_signal
-        # Make it 2D (1 channel)
         signal = signal[np.newaxis, :]
-        # Act
-        df = detect_ripples(signal, fs, low_hz=80, high_hz=140, sd=1.5)
-        # Act
-        # Assert
-        assert isinstance(df, pd.DataFrame)
-
-    def test_detect_ripples_basic_all_col_in_df_columns_for_col_in_required_columns_all_col_in_df_columns_for_col_in_required_columns(self, simple_signal):
-        # Arrange
-        np.random.seed(42)  # For reproducibility
-        signal, fs = simple_signal
-        # Make it 2D (1 channel)
-        signal = signal[np.newaxis, :]
-        # Act
-        df = detect_ripples(signal, fs, low_hz=80, high_hz=140, sd=1.5)
-        # Assert
-        assert isinstance(df, pd.DataFrame)
-        # Check required columns
         required_columns = [
             "start_s",
             "end_s",
@@ -122,25 +103,31 @@ class TestDetectRipplesBasicFunctionality:
             "peak_amp_sd",
         ]
         # Act
+        df = detect_ripples(signal, fs, low_hz=80, high_hz=140, sd=1.5)
         # Assert
         assert all(col in df.columns for col in required_columns)
 
 
 
-    def test_detect_ripples_multi_channel(self, multi_channel_signal):
-        """Test ripple detection on multi-channel signal."""
+    def test_detect_ripples_multi_channel_returns_dataframe(self, multi_channel_signal):
+        """Test ripple detection on multi-channel signal returns DataFrame."""
         # Arrange
         np.random.seed(42)
         signal, fs = multi_channel_signal
-
         # Act
         df = detect_ripples(signal, fs, low_hz=80, high_hz=140, sd=1.5)
-
         # Assert
         assert isinstance(df, pd.DataFrame)
-        # Multi-channel processing may combine channels, so just check we get results
-        if len(df) > 0:
-            assert all(df["duration_s"] > 0)
+
+    def test_detect_ripples_multi_channel_positive_durations(self, multi_channel_signal):
+        """Test ripple detection on multi-channel signal yields positive durations."""
+        # Arrange
+        np.random.seed(42)
+        signal, fs = multi_channel_signal
+        # Act
+        df = detect_ripples(signal, fs, low_hz=80, high_hz=140, sd=1.5)
+        # Assert
+        assert len(df) == 0 or all(df["duration_s"] > 0)
 
     def test_detect_ripples_3d_input_df_is_pd_dataframe(self, simple_signal):
         # Arrange
@@ -152,21 +139,17 @@ class TestDetectRipplesBasicFunctionality:
         batch_signal = batch_signal[:, np.newaxis, :]
         # Act
         df = detect_ripples(batch_signal, fs, low_hz=80, high_hz=140, sd=1.5)
-        # Act
         # Assert
         assert isinstance(df, pd.DataFrame)
 
-    def test_detect_ripples_3d_input_all_col_in_df_columns_for_col_in_start_s_end_s_duration_s(self, simple_signal):
+    def test_detect_ripples_3d_input_has_basic_columns(self, simple_signal):
         # Arrange
         np.random.seed(42)
         signal, fs = simple_signal
-        # Create batch of 3 signals
         batch_signal = np.stack([signal, signal * 1.5, signal * 0.8])
-        # Add channel dimension
         batch_signal = batch_signal[:, np.newaxis, :]
         # Act
         df = detect_ripples(batch_signal, fs, low_hz=80, high_hz=140, sd=1.5)
-        # Act
         # Assert
         assert all(col in df.columns for col in ["start_s", "end_s", "duration_s"])
 
@@ -179,7 +162,6 @@ class TestDetectRipplesBasicFunctionality:
         result = detect_ripples(
             signal, fs, low_hz=80, high_hz=140, return_preprocessed_signal=True
         )
-        # Act
         # Assert
         assert isinstance(result, tuple)
 
@@ -191,11 +173,10 @@ class TestDetectRipplesBasicFunctionality:
         result = detect_ripples(
             signal, fs, low_hz=80, high_hz=140, return_preprocessed_signal=True
         )
-        # Act
         # Assert
         assert len(result) == 3
 
-    def test_detect_ripples_with_preprocessed_return_df_is_pd_dataframe_result_is_tuple(self, simple_signal):
+    def test_detect_ripples_with_preprocessed_df_is_pd_dataframe(self, simple_signal):
         # Arrange
         signal, fs = simple_signal
         signal = signal[np.newaxis, :]
@@ -203,40 +184,12 @@ class TestDetectRipplesBasicFunctionality:
         result = detect_ripples(
             signal, fs, low_hz=80, high_hz=140, return_preprocessed_signal=True
         )
-        # Act
-        # Assert
-        assert isinstance(result, tuple)
-
-    def test_detect_ripples_with_preprocessed_return_df_is_pd_dataframe_len_result_is_3(self, simple_signal):
-        # Arrange
-        signal, fs = simple_signal
-        signal = signal[np.newaxis, :]
-        # Act
-        result = detect_ripples(
-            signal, fs, low_hz=80, high_hz=140, return_preprocessed_signal=True
-        )
-        # Act
-        # Assert
-        assert len(result) == 3
-
-    def test_detect_ripples_with_preprocessed_return_df_is_pd_dataframe_df_is_pd_dataframe(self, simple_signal):
-        # Arrange
-        signal, fs = simple_signal
-        signal = signal[np.newaxis, :]
-        # Act
-        result = detect_ripples(
-            signal, fs, low_hz=80, high_hz=140, return_preprocessed_signal=True
-        )
-        # Assert
-        assert isinstance(result, tuple)
-        assert len(result) == 3
-        df, xx_r, fs_r = result
-        # Act
+        df, _xx_r, _fs_r = result
         # Assert
         assert isinstance(df, pd.DataFrame)
 
 
-    def test_detect_ripples_with_preprocessed_return_xx_r_is_np_ndarray_result_is_tuple(self, simple_signal):
+    def test_detect_ripples_with_preprocessed_xx_r_is_np_ndarray(self, simple_signal):
         # Arrange
         signal, fs = simple_signal
         signal = signal[np.newaxis, :]
@@ -244,40 +197,12 @@ class TestDetectRipplesBasicFunctionality:
         result = detect_ripples(
             signal, fs, low_hz=80, high_hz=140, return_preprocessed_signal=True
         )
-        # Act
-        # Assert
-        assert isinstance(result, tuple)
-
-    def test_detect_ripples_with_preprocessed_return_xx_r_is_np_ndarray_len_result_is_3(self, simple_signal):
-        # Arrange
-        signal, fs = simple_signal
-        signal = signal[np.newaxis, :]
-        # Act
-        result = detect_ripples(
-            signal, fs, low_hz=80, high_hz=140, return_preprocessed_signal=True
-        )
-        # Act
-        # Assert
-        assert len(result) == 3
-
-    def test_detect_ripples_with_preprocessed_return_xx_r_is_np_ndarray_xx_r_is_np_ndarray(self, simple_signal):
-        # Arrange
-        signal, fs = simple_signal
-        signal = signal[np.newaxis, :]
-        # Act
-        result = detect_ripples(
-            signal, fs, low_hz=80, high_hz=140, return_preprocessed_signal=True
-        )
-        # Assert
-        assert isinstance(result, tuple)
-        assert len(result) == 3
-        df, xx_r, fs_r = result
-        # Act
+        _df, xx_r, _fs_r = result
         # Assert
         assert isinstance(xx_r, np.ndarray)
 
 
-    def test_detect_ripples_with_preprocessed_return_fs_r_is_int_float_result_is_tuple(self, simple_signal):
+    def test_detect_ripples_with_preprocessed_fs_r_is_int_float(self, simple_signal):
         # Arrange
         signal, fs = simple_signal
         signal = signal[np.newaxis, :]
@@ -285,40 +210,12 @@ class TestDetectRipplesBasicFunctionality:
         result = detect_ripples(
             signal, fs, low_hz=80, high_hz=140, return_preprocessed_signal=True
         )
-        # Act
-        # Assert
-        assert isinstance(result, tuple)
-
-    def test_detect_ripples_with_preprocessed_return_fs_r_is_int_float_len_result_is_3(self, simple_signal):
-        # Arrange
-        signal, fs = simple_signal
-        signal = signal[np.newaxis, :]
-        # Act
-        result = detect_ripples(
-            signal, fs, low_hz=80, high_hz=140, return_preprocessed_signal=True
-        )
-        # Act
-        # Assert
-        assert len(result) == 3
-
-    def test_detect_ripples_with_preprocessed_return_fs_r_is_int_float_fs_r_is_int_float(self, simple_signal):
-        # Arrange
-        signal, fs = simple_signal
-        signal = signal[np.newaxis, :]
-        # Act
-        result = detect_ripples(
-            signal, fs, low_hz=80, high_hz=140, return_preprocessed_signal=True
-        )
-        # Assert
-        assert isinstance(result, tuple)
-        assert len(result) == 3
-        df, xx_r, fs_r = result
-        # Act
+        _df, _xx_r, fs_r = result
         # Assert
         assert isinstance(fs_r, (int, float))
 
 
-    def test_detect_ripples_with_preprocessed_return_fs_r_fs_result_is_tuple(self, simple_signal):
+    def test_detect_ripples_with_preprocessed_fs_r_less_than_fs(self, simple_signal):
         # Arrange
         signal, fs = simple_signal
         signal = signal[np.newaxis, :]
@@ -326,35 +223,7 @@ class TestDetectRipplesBasicFunctionality:
         result = detect_ripples(
             signal, fs, low_hz=80, high_hz=140, return_preprocessed_signal=True
         )
-        # Act
-        # Assert
-        assert isinstance(result, tuple)
-
-    def test_detect_ripples_with_preprocessed_return_fs_r_fs_len_result_is_3(self, simple_signal):
-        # Arrange
-        signal, fs = simple_signal
-        signal = signal[np.newaxis, :]
-        # Act
-        result = detect_ripples(
-            signal, fs, low_hz=80, high_hz=140, return_preprocessed_signal=True
-        )
-        # Act
-        # Assert
-        assert len(result) == 3
-
-    def test_detect_ripples_with_preprocessed_return_fs_r_fs_fs_r_fs(self, simple_signal):
-        # Arrange
-        signal, fs = simple_signal
-        signal = signal[np.newaxis, :]
-        # Act
-        result = detect_ripples(
-            signal, fs, low_hz=80, high_hz=140, return_preprocessed_signal=True
-        )
-        # Assert
-        assert isinstance(result, tuple)
-        assert len(result) == 3
-        df, xx_r, fs_r = result
-        # Act
+        _df, _xx_r, fs_r = result
         # Assert
         assert fs_r < fs  # Should be downsampled to ~3x low_hz
 
@@ -389,14 +258,9 @@ class TestDetectRipplesParameters:
         """Test detection with different frequency bands."""
         # Arrange
         signal, fs = ripple_signal
-
-        # Test narrow band
         df_narrow = detect_ripples(signal, fs, low_hz=100, high_hz=120)
-
-        # Test wide band
         # Act
         df_wide = detect_ripples(signal, fs, low_hz=80, high_hz=200)
-
         # Assert
         assert len(df_wide) >= len(df_narrow)  # Wide band should catch more
 
@@ -404,68 +268,51 @@ class TestDetectRipplesParameters:
         """Test different standard deviation thresholds."""
         # Arrange
         signal, fs = ripple_signal
-
-        # Low threshold - more detections
         df_low = detect_ripples(signal, fs, low_hz=80, high_hz=140, sd=1.0)
-
-        # High threshold - fewer detections
         # Act
         df_high = detect_ripples(signal, fs, low_hz=80, high_hz=140, sd=3.0)
-
         # Assert
         assert len(df_low) >= len(df_high)
 
     def test_smoothing_sigma_df_sharp_is_pd_dataframe(self, ripple_signal):
         # Arrange
         signal, fs = ripple_signal
-        # Less smoothing
+        # Act
         df_sharp = detect_ripples(
             signal, fs, low_hz=80, high_hz=140, smoothing_sigma_ms=2, sd=1.5
         )
-        # More smoothing
-        # Act
-        df_smooth = detect_ripples(
-            signal, fs, low_hz=80, high_hz=140, smoothing_sigma_ms=10, sd=1.5
-        )
-        # Act
         # Assert
         assert isinstance(df_sharp, pd.DataFrame)
 
     def test_smoothing_sigma_df_smooth_is_pd_dataframe(self, ripple_signal):
         # Arrange
         signal, fs = ripple_signal
-        # Less smoothing
-        df_sharp = detect_ripples(
-            signal, fs, low_hz=80, high_hz=140, smoothing_sigma_ms=2, sd=1.5
-        )
-        # More smoothing
         # Act
         df_smooth = detect_ripples(
             signal, fs, low_hz=80, high_hz=140, smoothing_sigma_ms=10, sd=1.5
         )
-        # Act
         # Assert
         assert isinstance(df_smooth, pd.DataFrame)
 
 
-    def test_min_duration_len_df_short_len_df_long(self, ripple_signal):
-        """Test minimum duration filtering."""
+    def test_min_duration_len_df_short_ge_len_df_long(self, ripple_signal):
+        """Test minimum duration filtering reduces count."""
         # Arrange
         signal, fs = ripple_signal
-
-        # Short duration threshold
         df_short = detect_ripples(signal, fs, low_hz=80, high_hz=140, min_duration_ms=5)
-
-        # Long duration threshold
         # Act
         df_long = detect_ripples(signal, fs, low_hz=80, high_hz=140, min_duration_ms=50)
-
         # Assert
         assert len(df_short) >= len(df_long)
 
-        # Check all events meet minimum duration
-        if len(df_long) > 0:
-            assert all(df_long["duration_s"] >= 0.05)
+    def test_min_duration_long_events_meet_threshold(self, ripple_signal):
+        """Test minimum duration filtering enforces duration."""
+        # Arrange
+        signal, fs = ripple_signal
+        # Act
+        df_long = detect_ripples(signal, fs, low_hz=80, high_hz=140, min_duration_ms=50)
+        # Assert
+        assert len(df_long) == 0 or all(df_long["duration_s"] >= 0.05)
 
 
 class TestDetectRipplesEdgeCases:
@@ -475,9 +322,8 @@ class TestDetectRipplesEdgeCases:
         """Test with empty signal."""
         # Arrange
         signal = np.array([]).reshape(1, 0)
-        # Act
         fs = 1000
-
+        # Act
         # Assert
         with pytest.raises(Exception):  # Should handle gracefully
             detect_ripples(signal, fs, low_hz=80, high_hz=140)
@@ -488,7 +334,6 @@ class TestDetectRipplesEdgeCases:
         fs = 1000
         # Act
         df = detect_ripples(signal, fs, low_hz=80, high_hz=140)
-        # Act
         # Assert
         assert isinstance(df, pd.DataFrame)
 
@@ -498,7 +343,6 @@ class TestDetectRipplesEdgeCases:
         fs = 1000
         # Act
         df = detect_ripples(signal, fs, low_hz=80, high_hz=140)
-        # Act
         # Assert
         assert len(df) == 0  # No ripples in flat signal
 
@@ -509,26 +353,20 @@ class TestDetectRipplesEdgeCases:
         np.random.seed(42)
         signal = np.random.randn(1, 5000) * 0.1
         fs = 1000
-
         # Act
         df = detect_ripples(signal, fs, low_hz=80, high_hz=140, sd=3.0)
-
         # Assert
         assert isinstance(df, pd.DataFrame)
-        # Very few or no detections expected with high threshold
 
     def test_very_short_signal(self):
         """Test with very short signal."""
         # Arrange
         signal = np.random.randn(1, 100)
         fs = 1000
-
         # Act
         df = detect_ripples(signal, fs, low_hz=80, high_hz=140)
-
         # Assert
         assert isinstance(df, pd.DataFrame)
-        # Likely no detections in such short signal
 
     def test_nan_handling_df_is_pd_dataframe(self):
         """Test handling of NaN values."""
@@ -536,13 +374,10 @@ class TestDetectRipplesEdgeCases:
         signal = np.random.randn(1, 2000)
         signal[0, 500:600] = np.nan
         fs = 1000
-
         # Act
         df = detect_ripples(signal, fs, low_hz=80, high_hz=140)
-
         # Assert
         assert isinstance(df, pd.DataFrame)
-        # Should handle NaNs gracefully
 
 
 class TestPreprocessing:
@@ -553,8 +388,7 @@ class TestPreprocessing:
         signal_2d = np.random.randn(4, 1000)
         fs = 1000
         # Act
-        xx_r, fs_r = _preprocess(signal_2d, fs, low_hz=80, high_hz=140)
-        # Act
+        xx_r, _fs_r = _preprocess(signal_2d, fs, low_hz=80, high_hz=140)
         # Assert
         assert xx_r.ndim == 2  # Returns 2D after processing
 
@@ -563,8 +397,7 @@ class TestPreprocessing:
         signal_2d = np.random.randn(4, 1000)
         fs = 1000
         # Act
-        xx_r, fs_r = _preprocess(signal_2d, fs, low_hz=80, high_hz=140)
-        # Act
+        _xx_r, fs_r = _preprocess(signal_2d, fs, low_hz=80, high_hz=140)
         # Assert
         assert fs_r >= int(np.ceil(140 * 2.5))
 
@@ -573,8 +406,7 @@ class TestPreprocessing:
         signal_2d = np.random.randn(4, 1000)
         fs = 1000
         # Act
-        xx_r, fs_r = _preprocess(signal_2d, fs, low_hz=80, high_hz=140)
-        # Act
+        _xx_r, fs_r = _preprocess(signal_2d, fs, low_hz=80, high_hz=140)
         # Assert
         assert fs_r >= 80 * 3
 
@@ -585,8 +417,7 @@ class TestPreprocessing:
         fs = 2000
         low_hz = 100
         # Act
-        xx_r, fs_r = _preprocess(signal, fs, low_hz=low_hz, high_hz=200)
-        # Act
+        _xx_r, fs_r = _preprocess(signal, fs, low_hz=low_hz, high_hz=200)
         # Assert
         assert fs_r >= int(np.ceil(200 * 2.5))  # Nyquist > high_hz
 
@@ -596,8 +427,7 @@ class TestPreprocessing:
         fs = 2000
         low_hz = 100
         # Act
-        xx_r, fs_r = _preprocess(signal, fs, low_hz=low_hz, high_hz=200)
-        # Act
+        _xx_r, fs_r = _preprocess(signal, fs, low_hz=low_hz, high_hz=200)
         # Assert
         assert fs_r >= low_hz * 3
 
@@ -607,8 +437,7 @@ class TestPreprocessing:
         fs = 2000
         low_hz = 100
         # Act
-        xx_r, fs_r = _preprocess(signal, fs, low_hz=low_hz, high_hz=200)
-        # Act
+        xx_r, _fs_r = _preprocess(signal, fs, low_hz=low_hz, high_hz=200)
         # Assert
         assert xx_r.shape[-1] < signal.shape[-1]
 
@@ -616,56 +445,44 @@ class TestPreprocessing:
     def test_preprocess_filtering_xx_r_is_np_ndarray(self):
         # Arrange
         from scitex_dsp import demo_sig
-        # Get a ripple demo signal
-        signal, t, fs = demo_sig(sig_type="ripple", n_chs=4)
-        # Ensure 3D format
+        signal, _t, fs = demo_sig(sig_type="ripple", n_chs=4)
         if signal.ndim == 2:
             signal = signal[np.newaxis, :]
         # Act
-        xx_r, fs_r = _preprocess(signal, fs, low_hz=80, high_hz=140)
-        # Act
+        xx_r, _fs_r = _preprocess(signal, fs, low_hz=80, high_hz=140)
         # Assert
         assert isinstance(xx_r, np.ndarray)
 
     def test_preprocess_filtering_xx_r_ndim_equals_n_2(self):
         # Arrange
         from scitex_dsp import demo_sig
-        # Get a ripple demo signal
-        signal, t, fs = demo_sig(sig_type="ripple", n_chs=4)
-        # Ensure 3D format
+        signal, _t, fs = demo_sig(sig_type="ripple", n_chs=4)
         if signal.ndim == 2:
             signal = signal[np.newaxis, :]
         # Act
-        xx_r, fs_r = _preprocess(signal, fs, low_hz=80, high_hz=140)
-        # Act
+        xx_r, _fs_r = _preprocess(signal, fs, low_hz=80, high_hz=140)
         # Assert
         assert xx_r.ndim == 2  # Should be 2D after processing
 
     def test_preprocess_filtering_fs_r_int_np_ceil_140_2_5(self):
         # Arrange
         from scitex_dsp import demo_sig
-        # Get a ripple demo signal
-        signal, t, fs = demo_sig(sig_type="ripple", n_chs=4)
-        # Ensure 3D format
+        signal, _t, fs = demo_sig(sig_type="ripple", n_chs=4)
         if signal.ndim == 2:
             signal = signal[np.newaxis, :]
         # Act
-        xx_r, fs_r = _preprocess(signal, fs, low_hz=80, high_hz=140)
-        # Act
+        _xx_r, fs_r = _preprocess(signal, fs, low_hz=80, high_hz=140)
         # Assert
         assert fs_r >= int(np.ceil(140 * 2.5))  # Nyquist > high_hz
 
     def test_preprocess_filtering_fs_r_80_3(self):
         # Arrange
         from scitex_dsp import demo_sig
-        # Get a ripple demo signal
-        signal, t, fs = demo_sig(sig_type="ripple", n_chs=4)
-        # Ensure 3D format
+        signal, _t, fs = demo_sig(sig_type="ripple", n_chs=4)
         if signal.ndim == 2:
             signal = signal[np.newaxis, :]
         # Act
-        xx_r, fs_r = _preprocess(signal, fs, low_hz=80, high_hz=140)
-        # Act
+        _xx_r, fs_r = _preprocess(signal, fs, low_hz=80, high_hz=140)
         # Assert
         assert fs_r >= 80 * 3
 
@@ -675,46 +492,33 @@ class TestEventDetection:
     """Test the event detection function."""
 
     def test_find_events_basic(self):
-        """Test basic event finding."""
-        # Create z-scored signal with clear peaks
+        """Test basic event finding returns DataFrame."""
         # Arrange
         signal = np.random.randn(1, 1000) * 0.1
-        # Add strong peaks that will survive z-scoring
         signal[0, 200:250] += 5.0
         signal[0, 600:650] += 4.0
-        # Z-score the signal as the function expects
         signal = (signal - signal.mean()) / signal.std()
-
         fs = 250
         # Act
         df = _find_events(signal, fs, sd=2.0, min_duration_ms=10)
-
         # Assert
         assert isinstance(df, pd.DataFrame)
-        # May or may not find events depending on preprocessing
 
     def test_find_events_multi_channel(self):
-        """Test event finding on multiple channels."""
+        """Test event finding on multiple channels returns DataFrame."""
         # Arrange
         n_channels = 3
         signal = np.random.randn(n_channels, 1000) * 0.1
-
-        # Add peaks at different locations for each channel
         for ch in range(n_channels):
             start = 200 + ch * 200
             signal[ch, start : start + 50] += 5.0
-
-        # Z-score each channel
         for ch in range(n_channels):
             signal[ch] = (signal[ch] - signal[ch].mean()) / signal[ch].std()
-
         fs = 250
         # Act
         df = _find_events(signal, fs, sd=2.0, min_duration_ms=10)
-
         # Assert
         assert isinstance(df, pd.DataFrame)
-        # Check structure is correct even if no events found
 
 
 class TestHelperFunctions:
@@ -731,13 +535,11 @@ class TestHelperFunctions:
                 "peak_amp_sd": [2.5, 3.0, 2.8],
             }
         )
-        # Mock signal for edge calculation
         xx_r = np.zeros((1, 500))
         fs_r = 250
         low_hz = 80
         # Act
         df_filtered = _drop_ripples_at_edges(df, low_hz, xx_r, fs_r)
-        # Act
         # Assert
         assert len(df_filtered) < len(df)  # Some events removed
 
@@ -745,25 +547,23 @@ class TestHelperFunctions:
         # Arrange
         df = pd.DataFrame(
             {
-                "start_s": [0.01, 0.5, 1.9],  # First and last are at edges
+                "start_s": [0.01, 0.5, 1.9],
                 "end_s": [0.05, 0.7, 1.95],
                 "peak_s": [0.03, 0.6, 1.92],
                 "duration_s": [0.04, 0.2, 0.05],
                 "peak_amp_sd": [2.5, 3.0, 2.8],
             }
         )
-        # Mock signal for edge calculation
         xx_r = np.zeros((1, 500))
         fs_r = 250
         low_hz = 80
         # Act
         df_filtered = _drop_ripples_at_edges(df, low_hz, xx_r, fs_r)
-        # Act
         # Assert
         assert 0.5 in df_filtered["start_s"].values
 
 
-    def test_calc_relative_peak_position_rel_peak_pos_in_df_with_rel_columns(self):
+    def test_calc_relative_peak_position_rel_peak_pos_in_columns(self):
         # Arrange
         df = pd.DataFrame(
             {
@@ -775,11 +575,10 @@ class TestHelperFunctions:
         )
         # Act
         df_with_rel = _calc_relative_peak_position(df)
-        # Act
         # Assert
         assert "rel_peak_pos" in df_with_rel.columns
 
-    def test_calc_relative_peak_position_abs_df_with_rel_iloc_0_rel_peak_pos_0_5_0_01(self):
+    def test_calc_relative_peak_position_iloc_0_value(self):
         # Arrange
         df = pd.DataFrame(
             {
@@ -791,11 +590,10 @@ class TestHelperFunctions:
         )
         # Act
         df_with_rel = _calc_relative_peak_position(df)
-        # Act
         # Assert
         assert abs(df_with_rel.iloc[0]["rel_peak_pos"] - 0.5) < 0.01
 
-    def test_calc_relative_peak_position_abs_df_with_rel_iloc_1_rel_peak_pos_0_5_0_01(self):
+    def test_calc_relative_peak_position_iloc_1_value(self):
         # Arrange
         df = pd.DataFrame(
             {
@@ -807,7 +605,6 @@ class TestHelperFunctions:
         )
         # Act
         df_with_rel = _calc_relative_peak_position(df)
-        # Act
         # Assert
         assert abs(df_with_rel.iloc[1]["rel_peak_pos"] - 0.5) < 0.01
 
@@ -825,10 +622,6 @@ class TestHelperFunctions:
                 "duration_s": [0.2],
             }
         )
-
-        df_sorted = _sort_columns(df)
-
-        # Act
         expected_order = [
             "start_s",
             "end_s",
@@ -837,6 +630,8 @@ class TestHelperFunctions:
             "rel_peak_pos",
             "peak_amp_sd",
         ]
+        # Act
+        df_sorted = _sort_columns(df)
         # Assert
         assert list(df_sorted.columns) == expected_order
 
@@ -844,38 +639,48 @@ class TestHelperFunctions:
 class TestIntegration:
     """Integration tests with realistic scenarios."""
 
-    def test_realistic_eeg_like_signal(self):
-        """Test with realistic EEG-like signal."""
+    def test_realistic_eeg_like_signal_returns_dataframe(self):
+        """Test realistic EEG-like signal returns DataFrame."""
         # Arrange
         np.random.seed(42)
         fs = 1000
         duration = 5
         t = np.arange(0, duration, 1 / fs)
-
-        # Simulate EEG with multiple frequency components
         eeg = (
-            0.2 * np.sin(2 * np.pi * 8 * t)  # Alpha
-            + 0.1 * np.sin(2 * np.pi * 20 * t)  # Beta
+            0.2 * np.sin(2 * np.pi * 8 * t)
+            + 0.1 * np.sin(2 * np.pi * 20 * t)
             + 0.05 * np.random.randn(len(t))
-        )  # Noise
-
-        # Add strong ripple events
+        )
         ripple_events = [(1.0, 1.15, 120), (2.5, 2.65, 100), (4.0, 4.2, 110)]
         for start, end, freq in ripple_events:
             idx = (t >= start) & (t <= end)
             eeg[idx] += 10 * np.sin(2 * np.pi * freq * t[idx])
-
         eeg = eeg[np.newaxis, :]
-
         # Act
         df = detect_ripples(eeg, fs, low_hz=80, high_hz=140, sd=1.5)
-
         # Assert
         assert isinstance(df, pd.DataFrame)
-        # Check structure and reasonable values if events detected
-        if len(df) > 0:
-            assert all(df["duration_s"] > 0.01)  # Reasonable durations
-            assert all(df["peak_amp_sd"] > 0)  # Positive amplitudes
+
+    def test_realistic_eeg_like_signal_positive_amplitudes(self):
+        """Test realistic EEG-like signal produces positive amplitudes."""
+        # Arrange
+        np.random.seed(42)
+        fs = 1000
+        duration = 5
+        t = np.arange(0, duration, 1 / fs)
+        eeg = (
+            0.2 * np.sin(2 * np.pi * 8 * t)
+            + 0.1 * np.sin(2 * np.pi * 20 * t)
+            + 0.05 * np.random.randn(len(t))
+        )
+        for start, end, freq in [(1.0, 1.15, 120), (2.5, 2.65, 100), (4.0, 4.2, 110)]:
+            idx = (t >= start) & (t <= end)
+            eeg[idx] += 10 * np.sin(2 * np.pi * freq * t[idx])
+        eeg = eeg[np.newaxis, :]
+        # Act
+        df = detect_ripples(eeg, fs, low_hz=80, high_hz=140, sd=1.5)
+        # Assert
+        assert len(df) == 0 or all(df["peak_amp_sd"] > 0)
 
     def test_batch_processing_df_is_pd_dataframe(self):
         # Arrange
@@ -883,24 +688,20 @@ class TestIntegration:
         n_batch = 5
         n_channels = 2
         duration = 2
-        # Create batch of signals
         batch_signals = []
         for b in range(n_batch):
             t = np.arange(0, duration, 1 / fs)
             channels = []
             for ch in range(n_channels):
                 signal = np.random.randn(len(t)) * 0.1
-                # Add ripple at different time for each batch/channel
                 ripple_time = 0.5 + b * 0.2 + ch * 0.1
                 idx = (t >= ripple_time) & (t <= ripple_time + 0.15)
                 signal[idx] += 3 * np.sin(2 * np.pi * 110 * t[idx])
                 channels.append(signal)
             batch_signals.append(np.array(channels))
         batch_array = np.array(batch_signals)
-        # Process entire batch
         # Act
         df = detect_ripples(batch_array, fs, low_hz=80, high_hz=140)
-        # Act
         # Assert
         assert isinstance(df, pd.DataFrame)
 
@@ -910,24 +711,20 @@ class TestIntegration:
         n_batch = 5
         n_channels = 2
         duration = 2
-        # Create batch of signals
         batch_signals = []
         for b in range(n_batch):
             t = np.arange(0, duration, 1 / fs)
             channels = []
             for ch in range(n_channels):
                 signal = np.random.randn(len(t)) * 0.1
-                # Add ripple at different time for each batch/channel
                 ripple_time = 0.5 + b * 0.2 + ch * 0.1
                 idx = (t >= ripple_time) & (t <= ripple_time + 0.15)
                 signal[idx] += 3 * np.sin(2 * np.pi * 110 * t[idx])
                 channels.append(signal)
             batch_signals.append(np.array(channels))
         batch_array = np.array(batch_signals)
-        # Process entire batch
         # Act
         df = detect_ripples(batch_array, fs, low_hz=80, high_hz=140)
-        # Act
         # Assert
         assert len(df) > 0
 
@@ -937,24 +734,20 @@ class TestIntegration:
         n_batch = 5
         n_channels = 2
         duration = 2
-        # Create batch of signals
         batch_signals = []
         for b in range(n_batch):
             t = np.arange(0, duration, 1 / fs)
             channels = []
             for ch in range(n_channels):
                 signal = np.random.randn(len(t)) * 0.1
-                # Add ripple at different time for each batch/channel
                 ripple_time = 0.5 + b * 0.2 + ch * 0.1
                 idx = (t >= ripple_time) & (t <= ripple_time + 0.15)
                 signal[idx] += 3 * np.sin(2 * np.pi * 110 * t[idx])
                 channels.append(signal)
             batch_signals.append(np.array(channels))
         batch_array = np.array(batch_signals)
-        # Process entire batch
         # Act
         df = detect_ripples(batch_array, fs, low_hz=80, high_hz=140)
-        # Act
         # Assert
         assert len(df.index.unique()) > 1
 

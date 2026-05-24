@@ -37,51 +37,41 @@ class TestAddNoise:
 
     def test_module_import_hasattr_scitex_dsp_add_noise_gauss(self):
         # Arrange
-        # Act
-        # Arrange
-        # Act
         import scitex.dsp.add_noise
         # Act
+        present = hasattr(scitex.dsp.add_noise, "gauss")
         # Assert
-        assert hasattr(scitex.dsp.add_noise, "gauss")
+        assert present
 
     def test_module_import_hasattr_scitex_dsp_add_noise_white(self):
         # Arrange
-        # Act
-        # Arrange
-        # Act
         import scitex.dsp.add_noise
         # Act
+        present = hasattr(scitex.dsp.add_noise, "white")
         # Assert
-        assert hasattr(scitex.dsp.add_noise, "white")
+        assert present
 
     def test_module_import_hasattr_scitex_dsp_add_noise_pink(self):
         # Arrange
-        # Act
-        # Arrange
-        # Act
         import scitex.dsp.add_noise
         # Act
+        present = hasattr(scitex.dsp.add_noise, "pink")
         # Assert
-        assert hasattr(scitex.dsp.add_noise, "pink")
+        assert present
 
     def test_module_import_hasattr_scitex_dsp_add_noise_brown(self):
         # Arrange
-        # Act
-        # Arrange
-        # Act
         import scitex.dsp.add_noise
         # Act
+        present = hasattr(scitex.dsp.add_noise, "brown")
         # Assert
-        assert hasattr(scitex.dsp.add_noise, "brown")
-
+        assert present
 
     def test_gauss_noise_noisy_shape_equals_clean_signal_shape(self, clean_signal):
         # Arrange
         from scitex.dsp.add_noise import gauss
         # Act
         noisy = gauss(clean_signal, amp=0.1)
-        # Act
         # Assert
         assert noisy.shape == clean_signal.shape
 
@@ -90,80 +80,26 @@ class TestAddNoise:
         from scitex.dsp.add_noise import gauss
         # Act
         noisy = gauss(clean_signal, amp=0.1)
-        # Act
         # Assert
         assert not np.array_equal(noisy, clean_signal)
 
-    def test_gauss_noise_np_abs_np_mean_noise_0_05_noisy_shape_equals_clean_signal_shape(self, clean_signal):
+    def test_gauss_noise_zero_mean_property(self, clean_signal):
         # Arrange
         from scitex.dsp.add_noise import gauss
-        # Act
         noisy = gauss(clean_signal, amp=0.1)
         # Act
-        # Assert
-        assert noisy.shape == clean_signal.shape
-
-    def test_gauss_noise_np_abs_np_mean_noise_0_05_not_np_array_equal_noisy_clean_signal(self, clean_signal):
-        # Arrange
-        from scitex.dsp.add_noise import gauss
-        # Act
-        noisy = gauss(clean_signal, amp=0.1)
-        # Act
-        # Assert
-        assert not np.array_equal(noisy, clean_signal)
-
-    def test_gauss_noise_np_abs_np_mean_noise_0_05_np_abs_np_mean_noise_0_05(self, clean_signal):
-        # Arrange
-        from scitex.dsp.add_noise import gauss
-        # Act
-        noisy = gauss(clean_signal, amp=0.1)
-        # Check shape preserved
-        # Assert
-        assert noisy.shape == clean_signal.shape
-        # Check that noise was added (signal changed)
-        assert not np.array_equal(noisy, clean_signal)
-        # Check noise properties
         noise = noisy - clean_signal
-        # Act
         # Assert
         assert np.abs(np.mean(noise)) < 0.05  # Should be zero mean
 
-
-    def test_gauss_noise_n_0_05_np_std_noise_0_15_noisy_shape_equals_clean_signal_shape(self, clean_signal):
+    def test_gauss_noise_std_within_expected_range(self, clean_signal):
         # Arrange
         from scitex.dsp.add_noise import gauss
-        # Act
         noisy = gauss(clean_signal, amp=0.1)
         # Act
-        # Assert
-        assert noisy.shape == clean_signal.shape
-
-    def test_gauss_noise_n_0_05_np_std_noise_0_15_not_np_array_equal_noisy_clean_signal(self, clean_signal):
-        # Arrange
-        from scitex.dsp.add_noise import gauss
-        # Act
-        noisy = gauss(clean_signal, amp=0.1)
-        # Act
-        # Assert
-        assert not np.array_equal(noisy, clean_signal)
-
-    def test_gauss_noise_n_0_05_np_std_noise_0_15_n_0_05_np_std_noise_0_15(self, clean_signal):
-        # Arrange
-        from scitex.dsp.add_noise import gauss
-        # Act
-        noisy = gauss(clean_signal, amp=0.1)
-        # Check shape preserved
-        # Assert
-        assert noisy.shape == clean_signal.shape
-        # Check that noise was added (signal changed)
-        assert not np.array_equal(noisy, clean_signal)
-        # Check noise properties
         noise = noisy - clean_signal
-        # Act
         # Assert
         assert 0.05 < np.std(noise) < 0.15  # Should have std ~ amp
-
-
 
     def test_white_noise_noisy_shape_equals_clean_signal_shape(self, clean_signal):
         # Arrange
@@ -171,7 +107,6 @@ class TestAddNoise:
         amp = 0.2
         # Act
         noisy = white(clean_signal, amp=amp)
-        # Act
         # Assert
         assert noisy.shape == clean_signal.shape
 
@@ -181,55 +116,24 @@ class TestAddNoise:
         amp = 0.2
         # Act
         noisy = white(clean_signal, amp=amp)
-        # Act
         # Assert
         assert not np.array_equal(noisy, clean_signal)
 
-    def test_white_noise_np_all_np_abs_noise_amp_1_01_noisy_shape_equals_clean_signal_shape(self, clean_signal):
+    def test_white_noise_bounded_by_amplitude(self, clean_signal):
         # Arrange
         from scitex.dsp.add_noise import white
         amp = 0.2
-        # Act
         noisy = white(clean_signal, amp=amp)
         # Act
-        # Assert
-        assert noisy.shape == clean_signal.shape
-
-    def test_white_noise_np_all_np_abs_noise_amp_1_01_not_np_array_equal_noisy_clean_signal(self, clean_signal):
-        # Arrange
-        from scitex.dsp.add_noise import white
-        amp = 0.2
-        # Act
-        noisy = white(clean_signal, amp=amp)
-        # Act
-        # Assert
-        assert not np.array_equal(noisy, clean_signal)
-
-    def test_white_noise_np_all_np_abs_noise_amp_1_01_np_all_np_abs_noise_amp_1_01(self, clean_signal):
-        # Arrange
-        from scitex.dsp.add_noise import white
-        amp = 0.2
-        # Act
-        noisy = white(clean_signal, amp=amp)
-        # Check shape preserved
-        # Assert
-        assert noisy.shape == clean_signal.shape
-        # Check that noise was added
-        assert not np.array_equal(noisy, clean_signal)
-        # Check noise is bounded by amplitude
         noise = noisy - clean_signal
-        # Act
         # Assert
         assert np.all(np.abs(noise) <= amp * 1.01)  # Small tolerance
-
-
 
     def test_pink_noise_noisy_shape_equals_clean_signal_shape(self, clean_signal):
         # Arrange
         from scitex.dsp.add_noise import pink
         # Act
         noisy = pink(clean_signal, amp=0.1)
-        # Act
         # Assert
         assert noisy.shape == clean_signal.shape
 
@@ -238,52 +142,23 @@ class TestAddNoise:
         from scitex.dsp.add_noise import pink
         # Act
         noisy = pink(clean_signal, amp=0.1)
-        # Act
         # Assert
         assert not np.array_equal(noisy, clean_signal)
 
-    def test_pink_noise_np_std_noise_0_noisy_shape_equals_clean_signal_shape(self, clean_signal):
+    def test_pink_noise_has_nonzero_std(self, clean_signal):
         # Arrange
         from scitex.dsp.add_noise import pink
-        # Act
         noisy = pink(clean_signal, amp=0.1)
         # Act
-        # Assert
-        assert noisy.shape == clean_signal.shape
-
-    def test_pink_noise_np_std_noise_0_not_np_array_equal_noisy_clean_signal(self, clean_signal):
-        # Arrange
-        from scitex.dsp.add_noise import pink
-        # Act
-        noisy = pink(clean_signal, amp=0.1)
-        # Act
-        # Assert
-        assert not np.array_equal(noisy, clean_signal)
-
-    def test_pink_noise_np_std_noise_0_np_std_noise_0(self, clean_signal):
-        # Arrange
-        from scitex.dsp.add_noise import pink
-        # Act
-        noisy = pink(clean_signal, amp=0.1)
-        # Check shape preserved
-        # Assert
-        assert noisy.shape == clean_signal.shape
-        # Check that noise was added
-        assert not np.array_equal(noisy, clean_signal)
-        # Pink noise should have more low-frequency content
         noise = noisy - clean_signal
-        # Act
         # Assert
         assert np.std(noise) > 0
-
-
 
     def test_brown_noise_noisy_shape_equals_clean_signal_shape(self, clean_signal):
         # Arrange
         from scitex.dsp.add_noise import brown
         # Act
         noisy = brown(clean_signal, amp=0.1)
-        # Act
         # Assert
         assert noisy.shape == clean_signal.shape
 
@@ -292,308 +167,201 @@ class TestAddNoise:
         from scitex.dsp.add_noise import brown
         # Act
         noisy = brown(clean_signal, amp=0.1)
-        # Act
         # Assert
         assert not np.array_equal(noisy, clean_signal)
 
-    def test_brown_noise_np_std_noise_0_noisy_shape_equals_clean_signal_shape(self, clean_signal):
+    def test_brown_noise_has_nonzero_std(self, clean_signal):
         # Arrange
         from scitex.dsp.add_noise import brown
-        # Act
         noisy = brown(clean_signal, amp=0.1)
         # Act
-        # Assert
-        assert noisy.shape == clean_signal.shape
-
-    def test_brown_noise_np_std_noise_0_not_np_array_equal_noisy_clean_signal(self, clean_signal):
-        # Arrange
-        from scitex.dsp.add_noise import brown
-        # Act
-        noisy = brown(clean_signal, amp=0.1)
-        # Act
-        # Assert
-        assert not np.array_equal(noisy, clean_signal)
-
-    def test_brown_noise_np_std_noise_0_np_std_noise_0(self, clean_signal):
-        # Arrange
-        from scitex.dsp.add_noise import brown
-        # Act
-        noisy = brown(clean_signal, amp=0.1)
-        # Check shape preserved
-        # Assert
-        assert noisy.shape == clean_signal.shape
-        # Check that noise was added
-        assert not np.array_equal(noisy, clean_signal)
-        # Brown noise is integrated white noise
         noise = noisy - clean_signal
-        # Act
         # Assert
         assert np.std(noise) > 0
 
-
-
-    def test_amplitude_scaling_np_std_noise2_np_std_noise1(self, clean_signal):
+    def test_amplitude_scaling_higher_amp_yields_larger_noise_std(self, clean_signal):
         # Arrange
         from scitex.dsp.add_noise import gauss
-        # Test different amplitudes
         amp1, amp2 = 0.1, 0.5
         noisy1 = gauss(clean_signal, amp=amp1)
         noisy2 = gauss(clean_signal, amp=amp2)
         noise1 = noisy1 - clean_signal
         # Act
         noise2 = noisy2 - clean_signal
-        # Act
         # Assert
         assert np.std(noise2) > np.std(noise1)
 
-    def test_amplitude_scaling_n_3_ratio_7_np_std_noise2_np_std_noise1(self, clean_signal):
+    def test_amplitude_scaling_ratio_approximately_proportional(self, clean_signal):
         # Arrange
         from scitex.dsp.add_noise import gauss
-        # Test different amplitudes
         amp1, amp2 = 0.1, 0.5
         noisy1 = gauss(clean_signal, amp=amp1)
         noisy2 = gauss(clean_signal, amp=amp2)
         noise1 = noisy1 - clean_signal
-        # Act
         noise2 = noisy2 - clean_signal
         # Act
-        # Assert
-        assert np.std(noise2) > np.std(noise1)
-
-    def test_amplitude_scaling_n_3_ratio_7_n_3_ratio_7(self, clean_signal):
-        # Arrange
-        from scitex.dsp.add_noise import gauss
-        # Test different amplitudes
-        amp1, amp2 = 0.1, 0.5
-        noisy1 = gauss(clean_signal, amp=amp1)
-        noisy2 = gauss(clean_signal, amp=amp2)
-        noise1 = noisy1 - clean_signal
-        # Act
-        noise2 = noisy2 - clean_signal
-        # Larger amplitude should produce larger noise
-        # Assert
-        assert np.std(noise2) > np.std(noise1)
-        # Rough proportionality check
         ratio = np.std(noise2) / np.std(noise1)
-        # Act
         # Assert
         assert 3 < ratio < 7  # Approximately amp2/amp1 = 5
 
-
-
-    def test_multi_channel_noise(self, multi_channel_signal):
-        """Test noise addition to multi-channel signals."""
+    @pytest.mark.parametrize("noise_type", ["gauss", "white", "pink", "brown"])
+    def test_multi_channel_noise_preserves_shape(self, multi_channel_signal, noise_type):
         # Arrange
+        import scitex.dsp.add_noise as add_noise
+        noise_func = getattr(add_noise, noise_type)
         # Act
+        noisy = noise_func(multi_channel_signal, amp=0.1)
         # Assert
-        from scitex.dsp.add_noise import brown, gauss, pink, white
+        assert noisy.shape == multi_channel_signal.shape
 
-        noise_funcs = [gauss, white, pink, brown]
-
-        for noise_func in noise_funcs:
-            noisy = noise_func(multi_channel_signal, amp=0.1)
-
-            # Check shape preserved
-            assert noisy.shape == multi_channel_signal.shape
-
-            # Check each channel has different noise
-            noise = noisy - multi_channel_signal
-            for i in range(len(noise) - 1):
-                assert not np.array_equal(noise[i], noise[i + 1])
-
-    def test_torch_tensor_input(self, clean_signal):
-        """Test noise addition with PyTorch tensor input."""
+    @pytest.mark.parametrize("noise_type", ["gauss", "white", "pink", "brown"])
+    def test_multi_channel_noise_channels_differ(self, multi_channel_signal, noise_type):
         # Arrange
+        import scitex.dsp.add_noise as add_noise
+        noise_func = getattr(add_noise, noise_type)
+        noisy = noise_func(multi_channel_signal, amp=0.1)
+        noise = noisy - multi_channel_signal
         # Act
+        all_pairs_differ = all(
+            not np.array_equal(noise[i], noise[i + 1])
+            for i in range(len(noise) - 1)
+        )
         # Assert
-        from scitex.dsp.add_noise import brown, gauss, pink, white
+        assert all_pairs_differ
 
+    @pytest.mark.parametrize("noise_type", ["gauss", "white", "pink", "brown"])
+    def test_torch_tensor_input_returns_tensor(self, clean_signal, noise_type):
+        # Arrange
+        import scitex.dsp.add_noise as add_noise
+        noise_func = getattr(add_noise, noise_type)
         signal_torch = torch.tensor(clean_signal)
-        noise_funcs = [gauss, white, pink, brown]
-
-        for noise_func in noise_funcs:
-            noisy = noise_func(signal_torch, amp=0.1)
-
-            # Should return torch tensor
-            assert isinstance(noisy, torch.Tensor)
-            assert noisy.shape == signal_torch.shape
-
-            # Should add noise
-            assert not torch.equal(noisy, signal_torch)
-
-    def test_zero_amplitude_calls_gauss(self, clean_signal):
-        """Test that zero amplitude returns unchanged signal."""
-        # Arrange
         # Act
+        noisy = noise_func(signal_torch, amp=0.1)
         # Assert
-        from scitex.dsp.add_noise import gauss, white
+        assert isinstance(noisy, torch.Tensor)
 
-        # With zero amplitude, signal should be unchanged
-        noisy_gauss = gauss(clean_signal, amp=0.0)
-        noisy_white = white(clean_signal, amp=0.0)
+    @pytest.mark.parametrize("noise_type", ["gauss", "white", "pink", "brown"])
+    def test_torch_tensor_input_preserves_shape(self, clean_signal, noise_type):
+        # Arrange
+        import scitex.dsp.add_noise as add_noise
+        noise_func = getattr(add_noise, noise_type)
+        signal_torch = torch.tensor(clean_signal)
+        # Act
+        noisy = noise_func(signal_torch, amp=0.1)
+        # Assert
+        assert noisy.shape == signal_torch.shape
 
-        assert_allclose(noisy_gauss, clean_signal, rtol=1e-6)
-        assert_allclose(noisy_white, clean_signal, rtol=1e-6)
+    @pytest.mark.parametrize("noise_type", ["gauss", "white", "pink", "brown"])
+    def test_torch_tensor_input_adds_noise(self, clean_signal, noise_type):
+        # Arrange
+        import scitex.dsp.add_noise as add_noise
+        noise_func = getattr(add_noise, noise_type)
+        signal_torch = torch.tensor(clean_signal)
+        # Act
+        noisy = noise_func(signal_torch, amp=0.1)
+        # Assert
+        assert not torch.equal(noisy, signal_torch)
 
-    def test_reproducibility_with_seed(self, clean_signal):
-        """Test that noise is reproducible with same random seed."""
+    def test_zero_amplitude_gauss_returns_unchanged(self, clean_signal):
         # Arrange
         from scitex.dsp.add_noise import gauss
+        # Act
+        noisy_gauss = gauss(clean_signal, amp=0.0)
+        # Assert
+        assert np.allclose(noisy_gauss, clean_signal, rtol=1e-6)
 
-        # Set seed and generate noise
+    def test_zero_amplitude_white_returns_unchanged(self, clean_signal):
+        # Arrange
+        from scitex.dsp.add_noise import white
+        # Act
+        noisy_white = white(clean_signal, amp=0.0)
+        # Assert
+        assert np.allclose(noisy_white, clean_signal, rtol=1e-6)
+
+    def test_reproducibility_with_seed(self, clean_signal):
+        # Arrange
+        from scitex.dsp.add_noise import gauss
         torch.manual_seed(42)
         noisy1 = gauss(torch.tensor(clean_signal), amp=0.1)
-
-        # Reset seed and generate again
         torch.manual_seed(42)
         # Act
         noisy2 = gauss(torch.tensor(clean_signal), amp=0.1)
-
-        # Should be identical
         # Assert
         assert torch.equal(noisy1, noisy2)
 
-    def test_different_dimensions_noisy_1d_shape_equals_signal_1d_shape(self):
+    def test_different_dimensions_1d_shape_preserved(self):
         # Arrange
-        from scitex.dsp.add_noise import brown, gauss, pink
-        # 1D signal
+        from scitex.dsp.add_noise import gauss
         signal_1d = torch.randn(1000)
         # Act
         noisy_1d = gauss(signal_1d, amp=0.1)
-        # Act
         # Assert
         assert noisy_1d.shape == signal_1d.shape
 
-    def test_different_dimensions_noisy_2d_shape_equals_signal_2d_shape_noisy_1d_shape_equals_signal_1d_shape(self):
+    def test_different_dimensions_2d_shape_preserved(self):
         # Arrange
-        from scitex.dsp.add_noise import brown, gauss, pink
-        # 1D signal
-        signal_1d = torch.randn(1000)
-        # Act
-        noisy_1d = gauss(signal_1d, amp=0.1)
-        # Act
-        # Assert
-        assert noisy_1d.shape == signal_1d.shape
-
-    def test_different_dimensions_noisy_2d_shape_equals_signal_2d_shape_noisy_2d_shape_equals_signal_2d_shape(self):
-        # Arrange
-        from scitex.dsp.add_noise import brown, gauss, pink
-        # 1D signal
-        signal_1d = torch.randn(1000)
-        # Act
-        noisy_1d = gauss(signal_1d, amp=0.1)
-        # Assert
-        assert noisy_1d.shape == signal_1d.shape
-        # 2D signal
+        from scitex.dsp.add_noise import gauss
         signal_2d = torch.randn(4, 1000)
-        noisy_2d = gauss(signal_2d, amp=0.1)
         # Act
+        noisy_2d = gauss(signal_2d, amp=0.1)
         # Assert
         assert noisy_2d.shape == signal_2d.shape
 
-
-    def test_different_dimensions_noisy_3d_shape_equals_signal_3d_shape_noisy_1d_shape_equals_signal_1d_shape(self):
+    def test_different_dimensions_3d_shape_preserved(self):
         # Arrange
-        from scitex.dsp.add_noise import brown, gauss, pink
-        # 1D signal
-        signal_1d = torch.randn(1000)
-        # Act
-        noisy_1d = gauss(signal_1d, amp=0.1)
-        # Act
-        # Assert
-        assert noisy_1d.shape == signal_1d.shape
-
-    def test_different_dimensions_noisy_3d_shape_equals_signal_3d_shape_noisy_2d_shape_equals_signal_2d_shape(self):
-        # Arrange
-        from scitex.dsp.add_noise import brown, gauss, pink
-        # 1D signal
-        signal_1d = torch.randn(1000)
-        # Act
-        noisy_1d = gauss(signal_1d, amp=0.1)
-        # Assert
-        assert noisy_1d.shape == signal_1d.shape
-        # 2D signal
-        signal_2d = torch.randn(4, 1000)
-        noisy_2d = gauss(signal_2d, amp=0.1)
-        # Act
-        # Assert
-        assert noisy_2d.shape == signal_2d.shape
-
-    def test_different_dimensions_noisy_3d_shape_equals_signal_3d_shape_noisy_3d_shape_equals_signal_3d_shape(self):
-        # Arrange
-        from scitex.dsp.add_noise import brown, gauss, pink
-        # 1D signal
-        signal_1d = torch.randn(1000)
-        # Act
-        noisy_1d = gauss(signal_1d, amp=0.1)
-        # Assert
-        assert noisy_1d.shape == signal_1d.shape
-        # 2D signal
-        signal_2d = torch.randn(4, 1000)
-        noisy_2d = gauss(signal_2d, amp=0.1)
-        assert noisy_2d.shape == signal_2d.shape
-        # 3D signal
+        from scitex.dsp.add_noise import gauss
         signal_3d = torch.randn(2, 4, 1000)
-        noisy_3d = gauss(signal_3d, amp=0.1)
         # Act
+        noisy_3d = gauss(signal_3d, amp=0.1)
         # Assert
         assert noisy_3d.shape == signal_3d.shape
 
-
-
-    def test_pink_noise_spectrum(self, clean_signal):
-        """Test that pink noise has appropriate spectral characteristics."""
+    def test_pink_noise_spectrum_low_power_greater_than_high(self, clean_signal):
         # Arrange
         from scitex.dsp.add_noise import pink
-
-        # Generate longer signal for better spectral analysis
         long_signal = np.zeros(10000, dtype=np.float32)
         noisy = pink(long_signal, amp=1.0)
-
-        # Pink noise should have 1/f spectrum
-        # Basic test: low frequencies should have more power
         noise = noisy - long_signal
         fft = np.abs(np.fft.rfft(noise))
-
-        # Compare power in low vs high frequency bands
         low_power = np.mean(fft[:100] ** 2)
         # Act
         high_power = np.mean(fft[-100:] ** 2)
-
-        # Low frequencies should have more power
         # Assert
         assert low_power > high_power
 
-    def test_brown_noise_integration(self, clean_signal):
-        """Test that brown noise is integrated white noise."""
+    def test_brown_noise_smoother_than_white(self, clean_signal):
         # Arrange
         from scitex.dsp.add_noise import brown
-
         noisy = brown(clean_signal, amp=0.1)
         noise = noisy - clean_signal
-
-        # Brown noise should be smoother than white noise
-        # Check that consecutive differences are smaller
         # Act
         diff_noise = np.diff(noise)
         # Assert
         assert np.std(diff_noise) < np.std(noise)
 
-    def test_device_handling_smoke_case(self):
-        """Test proper device handling for GPU tensors."""
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA unavailable")
+    @pytest.mark.parametrize("noise_type", ["gauss", "white", "pink", "brown"])
+    def test_device_handling_gpu_returns_cuda(self, noise_type):
         # Arrange
+        import scitex.dsp.add_noise as add_noise
+        noise_func = getattr(add_noise, noise_type)
+        signal_gpu = torch.randn(1000).cuda()
         # Act
+        noisy = noise_func(signal_gpu, amp=0.1)
         # Assert
-        from scitex.dsp.add_noise import brown, gauss, pink, white
+        assert noisy.is_cuda
 
-        if torch.cuda.is_available():
-            signal_gpu = torch.randn(1000).cuda()
-            noise_funcs = [gauss, white, pink, brown]
-
-            for noise_func in noise_funcs:
-                noisy = noise_func(signal_gpu, amp=0.1)
-                assert noisy.is_cuda
-                assert noisy.device == signal_gpu.device
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA unavailable")
+    @pytest.mark.parametrize("noise_type", ["gauss", "white", "pink", "brown"])
+    def test_device_handling_gpu_preserves_device(self, noise_type):
+        # Arrange
+        import scitex.dsp.add_noise as add_noise
+        noise_func = getattr(add_noise, noise_type)
+        signal_gpu = torch.randn(1000).cuda()
+        # Act
+        noisy = noise_func(signal_gpu, amp=0.1)
+        # Assert
+        assert noisy.device == signal_gpu.device
 
     @pytest.mark.parametrize(
         "noise_type,amp",
@@ -605,20 +373,14 @@ class TestAddNoise:
             ("brown", 0.1),
         ],
     )
-    def test_signal_to_noise_ratio(self, clean_signal, noise_type, amp):
-        """Test signal-to-noise ratio for different noise types and amplitudes."""
+    def test_signal_to_noise_ratio_in_reasonable_range(self, clean_signal, noise_type, amp):
         # Arrange
         import scitex.dsp.add_noise as add_noise
-
         noise_func = getattr(add_noise, noise_type)
         noisy = noise_func(clean_signal, amp=amp)
-
-        # Calculate SNR
         signal_power = np.mean(clean_signal**2)
         noise = noisy - clean_signal
         noise_power = np.mean(noise**2)
-
-        # SNR should be reasonable
         # Act
         snr_db = 10 * np.log10(signal_power / noise_power)
         # Assert

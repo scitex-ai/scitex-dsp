@@ -21,7 +21,6 @@ class TestCommonAverage:
         signal = np.random.randn(10, 100)  # 10 channels, 100 samples
         # Act
         result = scitex.dsp.reference.common_average(signal, dim=0)
-        # Act
         # Assert
         assert np.abs(np.mean(result, axis=0)).max() < 1e-5
 
@@ -30,65 +29,88 @@ class TestCommonAverage:
         signal = np.random.randn(10, 100)  # 10 channels, 100 samples
         # Act
         result = scitex.dsp.reference.common_average(signal, dim=0)
-        # Act
         # Assert
         assert np.abs(np.std(result, axis=0) - 1.0).max() < 0.15
 
 
     def test_basic_3d_result_shape_equals_signal_shape_3(self):
-        """Test common average on 3D signal (trials, channels, time)."""
+        """Test common average on 3D signal preserves shape."""
         # Arrange
         signal = np.random.randn(5, 10, 100)  # 5 trials, 10 channels, 100 samples
         # Act
         result = scitex.dsp.reference.common_average(signal, dim=-2)
-
-        # Check shape preserved
         # Assert
         assert result.shape == signal.shape
 
-        # Check each trial is properly referenced
-        for trial in range(5):
-            trial_result = result[trial]
-            assert np.abs(np.mean(trial_result, axis=0)).max() < 1e-5
-            # Allow for Bessel correction
-            assert np.abs(np.std(trial_result, axis=0) - 1.0).max() < 0.15
-
-    def test_different_dimensions_calls_randn(self):
-        """Test referencing along different dimensions."""
+    def test_basic_3d_each_trial_zero_mean(self):
+        """Test common average on 3D signal zeros each trial mean."""
         # Arrange
+        signal = np.random.randn(5, 10, 100)
         # Act
+        result = scitex.dsp.reference.common_average(signal, dim=-2)
         # Assert
+        max_abs_means = max(
+            np.abs(np.mean(result[trial], axis=0)).max() for trial in range(5)
+        )
+        assert max_abs_means < 1e-5
+
+    def test_basic_3d_each_trial_unit_std(self):
+        """Test common average on 3D signal yields unit std per trial."""
+        # Arrange
+        signal = np.random.randn(5, 10, 100)
+        # Act
+        result = scitex.dsp.reference.common_average(signal, dim=-2)
+        # Assert
+        max_std_diff = max(
+            np.abs(np.std(result[trial], axis=0) - 1.0).max() for trial in range(5)
+        )
+        assert max_std_diff < 0.15
+
+    @pytest.mark.parametrize("dim", [0, 1, 2, -2])
+    def test_different_dimensions_preserves_shape(self, dim):
+        """Test referencing along different dimensions preserves shape."""
+        # Arrange
         signal = np.random.randn(4, 5, 6, 100)
+        # Act
+        result = scitex.dsp.reference.common_average(signal, dim=dim)
+        # Assert
+        assert result.shape == signal.shape
 
-        # Test along different dims
-        for dim in [0, 1, 2, -2]:
-            result = scitex.dsp.reference.common_average(signal, dim=dim)
-            assert result.shape == signal.shape
+    @pytest.mark.parametrize("dim", [0, 1, 2, -2])
+    def test_different_dimensions_zero_mean(self, dim):
+        """Test referencing along different dimensions yields zero mean."""
+        # Arrange
+        signal = np.random.randn(4, 5, 6, 100)
+        # Act
+        result = scitex.dsp.reference.common_average(signal, dim=dim)
+        # Assert
+        assert np.abs(np.mean(result, axis=dim)).max() < 1e-5
 
-            # Check normalization along specified dimension (float32 tolerance)
-            mean_vals = np.mean(result, axis=dim)
-            std_vals = np.std(result, axis=dim)
-            assert np.abs(mean_vals).max() < 1e-5
-            # Allow for Bessel correction
-            assert np.abs(std_vals - 1.0).max() < 0.15
+    @pytest.mark.parametrize("dim", [0, 1, 2, -2])
+    def test_different_dimensions_unit_std(self, dim):
+        """Test referencing along different dimensions yields unit std."""
+        # Arrange
+        signal = np.random.randn(4, 5, 6, 100)
+        # Act
+        result = scitex.dsp.reference.common_average(signal, dim=dim)
+        # Assert
+        assert np.abs(np.std(result, axis=dim) - 1.0).max() < 0.15
 
-    def test_preserves_shape_smoke_case(self):
+    @pytest.mark.parametrize("shape", [(10, 100), (5, 10, 100), (2, 5, 10, 100)])
+    def test_preserves_shape_smoke_case(self, shape):
         """Test that function preserves input shape."""
         # Arrange
+        signal = np.random.randn(*shape)
         # Act
+        result = scitex.dsp.reference.common_average(signal)
         # Assert
-        shapes = [(10, 100), (5, 10, 100), (2, 5, 10, 100)]
-        for shape in shapes:
-            signal = np.random.randn(*shape)
-            result = scitex.dsp.reference.common_average(signal)
-            assert result.shape == signal.shape
+        assert result.shape == signal.shape
 
     def test_torch_input_result_is_torch_tensor(self):
         # Arrange
         signal = torch.randn(8, 64, 1000)
         # Act
         result = scitex.dsp.reference.common_average(signal, dim=1)
-        # Act
         # Assert
         assert isinstance(result, torch.Tensor)
 
@@ -97,78 +119,26 @@ class TestCommonAverage:
         signal = torch.randn(8, 64, 1000)
         # Act
         result = scitex.dsp.reference.common_average(signal, dim=1)
-        # Act
         # Assert
         assert result.shape == signal.shape
 
-    def test_torch_input_torch_abs_mean_vals_max_1e_05_result_is_torch_tensor(self):
+    def test_torch_input_torch_abs_mean_vals_max_1e_05(self):
         # Arrange
         signal = torch.randn(8, 64, 1000)
         # Act
         result = scitex.dsp.reference.common_average(signal, dim=1)
-        # Act
-        # Assert
-        assert isinstance(result, torch.Tensor)
-
-    def test_torch_input_torch_abs_mean_vals_max_1e_05_result_shape_equals_signal_shape(self):
-        # Arrange
-        signal = torch.randn(8, 64, 1000)
-        # Act
-        result = scitex.dsp.reference.common_average(signal, dim=1)
-        # Act
-        # Assert
-        assert result.shape == signal.shape
-
-    def test_torch_input_torch_abs_mean_vals_max_1e_05_torch_abs_mean_vals_max_1e_05(self):
-        # Arrange
-        signal = torch.randn(8, 64, 1000)
-        # Act
-        result = scitex.dsp.reference.common_average(signal, dim=1)
-        # Assert
-        assert isinstance(result, torch.Tensor)
-        assert result.shape == signal.shape
-        # Check normalization (float32 tolerance)
         mean_vals = torch.mean(result, dim=1)
-        std_vals = torch.std(result, dim=1)
-        # Act
         # Assert
         assert torch.abs(mean_vals).max() < 1e-5
 
-
-    def test_torch_input_torch_abs_std_vals_1_0_max_0_02_result_is_torch_tensor(self):
+    def test_torch_input_torch_abs_std_vals_1_0_max_0_02(self):
         # Arrange
         signal = torch.randn(8, 64, 1000)
         # Act
         result = scitex.dsp.reference.common_average(signal, dim=1)
-        # Act
-        # Assert
-        assert isinstance(result, torch.Tensor)
-
-    def test_torch_input_torch_abs_std_vals_1_0_max_0_02_result_shape_equals_signal_shape(self):
-        # Arrange
-        signal = torch.randn(8, 64, 1000)
-        # Act
-        result = scitex.dsp.reference.common_average(signal, dim=1)
-        # Act
-        # Assert
-        assert result.shape == signal.shape
-
-    def test_torch_input_torch_abs_std_vals_1_0_max_0_02_torch_abs_std_vals_1_0_max_0_02(self):
-        # Arrange
-        signal = torch.randn(8, 64, 1000)
-        # Act
-        result = scitex.dsp.reference.common_average(signal, dim=1)
-        # Assert
-        assert isinstance(result, torch.Tensor)
-        assert result.shape == signal.shape
-        # Check normalization (float32 tolerance)
-        mean_vals = torch.mean(result, dim=1)
         std_vals = torch.std(result, dim=1)
-        # Act
         # Assert
         assert torch.abs(std_vals - 1.0).max() < 0.02
-
-
 
     def test_constant_channels_np_all_np_isnan_result_or_np_all_np_isinf_result(self):
         """Test with constant values across channels."""
@@ -176,7 +146,6 @@ class TestCommonAverage:
         signal = np.ones((5, 100))
         # Act
         result = scitex.dsp.reference.common_average(signal, dim=0)
-        # Division by zero results in NaN values (std=0 for constant signal)
         # Assert
         assert np.all(np.isnan(result)) or np.all(np.isinf(result))
 
@@ -197,7 +166,6 @@ class TestRandom:
         signal = np.random.randn(10, 100)
         # Act
         result = scitex.dsp.reference.random(signal, dim=0)
-        # Act
         # Assert
         assert result.shape == signal.shape
 
@@ -207,7 +175,6 @@ class TestRandom:
         signal = np.random.randn(10, 100)
         # Act
         result = scitex.dsp.reference.random(signal, dim=0)
-        # Act
         # Assert
         assert not np.allclose(result, signal)
 
@@ -217,7 +184,6 @@ class TestRandom:
         signal = np.random.randn(5, 10, 100)
         # Act
         result = scitex.dsp.reference.random(signal, dim=1)
-        # Act
         # Assert
         assert result.shape == signal.shape
 
@@ -226,24 +192,29 @@ class TestRandom:
         signal = np.random.randn(5, 10, 100)
         # Act
         result = scitex.dsp.reference.random(signal, dim=1)
-        # Act
         # Assert
         assert not np.allclose(result, signal)
 
 
-    def test_different_dimensions_calls_randn(self):
-        """Test referencing along different dimensions."""
+    @pytest.mark.parametrize("dim", [0, 1, 2])
+    def test_different_dimensions_preserves_shape(self, dim):
+        """Test referencing along different dimensions preserves shape."""
         # Arrange
-        # Act
-        # Assert
         signal = np.random.randn(4, 5, 6)
+        # Act
+        result = scitex.dsp.reference.random(signal, dim=dim)
+        # Assert
+        assert result.shape == signal.shape
 
-        for dim in [0, 1, 2]:
-            result = scitex.dsp.reference.random(signal, dim=dim)
-            assert result.shape == signal.shape
-
-            # Check that result is different from original
-            assert not np.allclose(result, signal)
+    @pytest.mark.parametrize("dim", [0, 1, 2])
+    def test_different_dimensions_differs_from_signal(self, dim):
+        """Test referencing along different dimensions differs from input."""
+        # Arrange
+        signal = np.random.randn(4, 5, 6)
+        # Act
+        result = scitex.dsp.reference.random(signal, dim=dim)
+        # Assert
+        assert not np.allclose(result, signal)
 
     def test_torch_input_result_is_torch_tensor(self):
         # Arrange
@@ -251,7 +222,6 @@ class TestRandom:
         signal = torch.randn(8, 64, 1000)
         # Act
         result = scitex.dsp.reference.random(signal, dim=1)
-        # Act
         # Assert
         assert isinstance(result, torch.Tensor)
 
@@ -261,7 +231,6 @@ class TestRandom:
         signal = torch.randn(8, 64, 1000)
         # Act
         result = scitex.dsp.reference.random(signal, dim=1)
-        # Act
         # Assert
         assert result.shape == signal.shape
 
@@ -270,34 +239,27 @@ class TestRandom:
         """Test that function produces different results on different calls."""
         # Arrange
         signal = np.random.randn(10, 100)
-
-        # Get multiple results
-        results = []
-        for _ in range(5):
-            results.append(scitex.dsp.reference.random(signal, dim=0))
-
-        # Check that results are different
-        all_different = True
+        results = [
+            scitex.dsp.reference.random(signal, dim=0) for _ in range(5)
+        ]
         # Act
-        for i in range(len(results)):
-            for j in range(i + 1, len(results)):
-                if np.allclose(results[i], results[j]):
-                    all_different = False
-                    break
-
+        any_equal = any(
+            np.allclose(results[i], results[j])
+            for i in range(len(results))
+            for j in range(i + 1, len(results))
+        )
         # Assert
-        assert all_different, "Random reference should produce different results"
+        assert not any_equal, "Random reference should produce different results"
 
-    def test_preserves_shape_smoke_case(self):
+    @pytest.mark.parametrize("shape", [(10, 100), (5, 10, 100), (2, 5, 10, 100)])
+    def test_preserves_shape_smoke_case(self, shape):
         """Test that function preserves input shape."""
         # Arrange
+        signal = np.random.randn(*shape)
         # Act
+        result = scitex.dsp.reference.random(signal)
         # Assert
-        shapes = [(10, 100), (5, 10, 100), (2, 5, 10, 100)]
-        for shape in shapes:
-            signal = np.random.randn(*shape)
-            result = scitex.dsp.reference.random(signal)
-            assert result.shape == signal.shape
+        assert result.shape == signal.shape
 
 
 class TestTakeReference:
@@ -316,7 +278,6 @@ class TestTakeReference:
         ref_channel = 3
         # Act
         result = scitex.dsp.reference.take_reference(signal, ref_channel, dim=0)
-        # Act
         # Assert
         assert result.shape == signal.shape
 
@@ -326,112 +287,110 @@ class TestTakeReference:
         ref_channel = 3
         # Act
         result = scitex.dsp.reference.take_reference(signal, ref_channel, dim=0)
-        # Act
         # Assert
         assert np.allclose(result[ref_channel], 0)
 
 
     def test_basic_3d_result_shape_equals_signal_shape_3(self):
-        """Test reference to specific channel on 3D signal."""
+        """Test reference to specific channel on 3D signal preserves shape."""
         # Arrange
         signal = np.random.randn(5, 10, 100)
         ref_channel = 7
-
         # Act
         result = scitex.dsp.reference.take_reference(signal, ref_channel, dim=1)
-
         # Assert
         assert result.shape == signal.shape
 
-        # Check each trial
-        for trial in range(5):
-            # Reference channel should be zero
-            assert np.allclose(result[trial, ref_channel], 0)
-
-            # Other channels correctly referenced (float32 tolerance)
-            for ch in range(10):
-                if ch != ref_channel:
-                    expected = signal[trial, ch] - signal[trial, ref_channel]
-                    assert np.allclose(
-                        result[trial, ch], expected, rtol=1e-5, atol=1e-5
-                    )
-
-    def test_different_dimensions_calls_randn(self):
-        """Test referencing along different dimensions."""
+    def test_basic_3d_reference_channel_is_zero(self):
+        """Test reference channel becomes zero per trial."""
         # Arrange
+        signal = np.random.randn(5, 10, 100)
+        ref_channel = 7
         # Act
+        result = scitex.dsp.reference.take_reference(signal, ref_channel, dim=1)
         # Assert
+        assert all(
+            np.allclose(result[trial, ref_channel], 0) for trial in range(5)
+        )
+
+    def test_basic_3d_other_channels_correctly_referenced(self):
+        """Test non-reference channels equal signal minus reference."""
+        # Arrange
+        signal = np.random.randn(5, 10, 100)
+        ref_channel = 7
+        # Act
+        result = scitex.dsp.reference.take_reference(signal, ref_channel, dim=1)
+        # Assert
+        assert all(
+            np.allclose(
+                result[trial, ch],
+                signal[trial, ch] - signal[trial, ref_channel],
+                rtol=1e-5,
+                atol=1e-5,
+            )
+            for trial in range(5)
+            for ch in range(10)
+            if ch != ref_channel
+        )
+
+    @pytest.mark.parametrize("dim", [0, 1, 2, 3])
+    def test_different_dimensions_preserves_shape(self, dim):
+        """Test referencing along different dimensions preserves shape."""
+        # Arrange
         signal = np.random.randn(4, 5, 6, 7)
+        ref_idx = 2
+        # Act
+        result = scitex.dsp.reference.take_reference(signal, ref_idx, dim=dim)
+        # Assert
+        assert result.shape == signal.shape
 
-        # Test along each dimension
-        for dim in range(4):
-            ref_idx = 2
-            result = scitex.dsp.reference.take_reference(signal, ref_idx, dim=dim)
-
-            assert result.shape == signal.shape
-
-            # Create index to check reference slice is zero
-            idx = [slice(None)] * 4
-            idx[dim] = ref_idx
-            assert np.allclose(result[tuple(idx)], 0)
+    @pytest.mark.parametrize("dim", [0, 1, 2, 3])
+    def test_different_dimensions_ref_slice_zero(self, dim):
+        """Test referencing along different dimensions zeros reference slice."""
+        # Arrange
+        signal = np.random.randn(4, 5, 6, 7)
+        ref_idx = 2
+        idx = [slice(None)] * 4
+        idx[dim] = ref_idx
+        # Act
+        result = scitex.dsp.reference.take_reference(signal, ref_idx, dim=dim)
+        # Assert
+        assert np.allclose(result[tuple(idx)], 0)
 
     def test_negative_dimension_result_shape_equals_signal_shape(self):
         # Arrange
         signal = np.random.randn(3, 4, 5, 6)
-        # Test dim=-2 (equivalent to dim=2)
         ref_idx = 1
         # Act
         result = scitex.dsp.reference.take_reference(signal, ref_idx, dim=-2)
-        # Act
         # Assert
         assert result.shape == signal.shape
 
     def test_negative_dimension_np_allclose_result_ref_idx_0(self):
         # Arrange
         signal = np.random.randn(3, 4, 5, 6)
-        # Test dim=-2 (equivalent to dim=2)
         ref_idx = 1
         # Act
         result = scitex.dsp.reference.take_reference(signal, ref_idx, dim=-2)
-        # Act
         # Assert
         assert np.allclose(result[:, :, ref_idx, :], 0)
 
 
-    def test_edge_indices_np_allclose_result_0_0(self):
+    def test_edge_indices_first_channel_is_zero(self):
         # Arrange
         signal = np.random.randn(10, 100)
-        # First channel
         # Act
         result = scitex.dsp.reference.take_reference(signal, 0, dim=0)
-        # Act
         # Assert
         assert np.allclose(result[0], 0)
 
-    def test_edge_indices_np_allclose_result_9_0_np_allclose_result_0_0(self):
+    def test_edge_indices_last_channel_is_zero(self):
         # Arrange
         signal = np.random.randn(10, 100)
-        # First channel
         # Act
-        result = scitex.dsp.reference.take_reference(signal, 0, dim=0)
-        # Act
-        # Assert
-        assert np.allclose(result[0], 0)
-
-    def test_edge_indices_np_allclose_result_9_0_np_allclose_result_9_0(self):
-        # Arrange
-        signal = np.random.randn(10, 100)
-        # First channel
-        # Act
-        result = scitex.dsp.reference.take_reference(signal, 0, dim=0)
-        # Assert
-        assert np.allclose(result[0], 0)
-        # Last channel
         result = scitex.dsp.reference.take_reference(signal, 9, dim=0)
-        # Act
         # Assert
         assert np.allclose(result[9], 0)
-
 
 
     def test_torch_input_result_is_torch_tensor(self):
@@ -440,7 +399,6 @@ class TestTakeReference:
         ref_channel = 32
         # Act
         result = scitex.dsp.reference.take_reference(signal, ref_channel, dim=1)
-        # Act
         # Assert
         assert isinstance(result, torch.Tensor)
 
@@ -450,41 +408,36 @@ class TestTakeReference:
         ref_channel = 32
         # Act
         result = scitex.dsp.reference.take_reference(signal, ref_channel, dim=1)
-        # Act
         # Assert
         assert result.shape == signal.shape
 
-    def test_torch_input_torch_allclose_result_ref_channel_torch_zeros_like_result_re(self):
+    def test_torch_input_torch_allclose_result_ref_channel_torch_zeros_like(self):
         # Arrange
         signal = torch.randn(8, 64, 1000)
         ref_channel = 32
         # Act
         result = scitex.dsp.reference.take_reference(signal, ref_channel, dim=1)
-        # Act
         # Assert
         assert torch.allclose(
             result[:, ref_channel, :], torch.zeros_like(result[:, ref_channel, :])
         )
 
 
-    def test_preserves_shape_smoke_case(self):
+    @pytest.mark.parametrize("shape", [(10, 100), (5, 10, 100), (2, 5, 10, 100)])
+    def test_preserves_shape_smoke_case(self, shape):
         """Test that function preserves input shape."""
         # Arrange
+        signal = np.random.randn(*shape)
         # Act
+        result = scitex.dsp.reference.take_reference(signal, 0)
         # Assert
-        shapes = [(10, 100), (5, 10, 100), (2, 5, 10, 100)]
-        for shape in shapes:
-            signal = np.random.randn(*shape)
-            result = scitex.dsp.reference.take_reference(signal, 0)
-            assert result.shape == signal.shape
+        assert result.shape == signal.shape
 
     def test_invalid_index_raises_indexerror_runtimeerror_a(self):
         """Test with invalid reference index."""
         # Arrange
-        # Act
         signal = np.random.randn(10, 100)
-
-        # This should raise an error
+        # Act
         # Assert
         with pytest.raises((IndexError, RuntimeError, AssertionError)):
             scitex.dsp.reference.take_reference(signal, 10, dim=0)  # Out of bounds

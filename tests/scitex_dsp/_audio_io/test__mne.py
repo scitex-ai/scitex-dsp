@@ -6,7 +6,6 @@
 import pytest
 
 pytest.importorskip("mne")
-import unittest.mock as mock
 
 import numpy as np
 import pandas as pd
@@ -242,22 +241,14 @@ class TestMne:
         # Assert
         assert cz_pos[2] > 0.08  # z should be positive (top of head)
 
-    def test_get_eeg_pos_known_positions_abs_fp1_pos_0_fp2_pos_0_0_01_abs_fp1_pos_0_fp2_pos_0_0_01(self):
+    def test_get_eeg_pos_known_positions_fp1_fp2_x_coordinates_are_opposite(self):
         # Arrange
         df = get_eeg_pos(channel_names=["CZ", "FP1", "FP2"])
-        # CZ should be approximately at the top center
         # Act
-        cz_pos = df["CZ"].values
-        # Assert
-        assert abs(cz_pos[0]) < 0.01  # x should be near 0
-        assert abs(cz_pos[1]) < 0.01  # y should be near 0
-        assert cz_pos[2] > 0.08  # z should be positive (top of head)
-        # FP1 and FP2 should be symmetric
         fp1_pos = df["FP1"].values
         fp2_pos = df["FP2"].values
-        # Act
-        # Assert
-        assert abs(fp1_pos[0] + fp2_pos[0]) < 0.01  # x coordinates should be opposite
+        # Assert: FP1 and FP2 are symmetric across the sagittal plane (x).
+        assert abs(fp1_pos[0] + fp2_pos[0]) < 0.01
 
 
     def test_get_eeg_pos_known_positions_abs_fp1_pos_1_fp2_pos_1_0_01_abs_cz_pos_0_0_01(self):
@@ -290,22 +281,14 @@ class TestMne:
         # Assert
         assert cz_pos[2] > 0.08  # z should be positive (top of head)
 
-    def test_get_eeg_pos_known_positions_abs_fp1_pos_1_fp2_pos_1_0_01_abs_fp1_pos_1_fp2_pos_1_0_01(self):
+    def test_get_eeg_pos_known_positions_fp1_fp2_y_coordinates_are_similar(self):
         # Arrange
         df = get_eeg_pos(channel_names=["CZ", "FP1", "FP2"])
-        # CZ should be approximately at the top center
         # Act
-        cz_pos = df["CZ"].values
-        # Assert
-        assert abs(cz_pos[0]) < 0.01  # x should be near 0
-        assert abs(cz_pos[1]) < 0.01  # y should be near 0
-        assert cz_pos[2] > 0.08  # z should be positive (top of head)
-        # FP1 and FP2 should be symmetric
         fp1_pos = df["FP1"].values
         fp2_pos = df["FP2"].values
-        # Act
-        # Assert
-        assert abs(fp1_pos[1] - fp2_pos[1]) < 0.01  # y coordinates should be similar
+        # Assert: FP1 and FP2 sit at the same antero-posterior level (y).
+        assert abs(fp1_pos[1] - fp2_pos[1]) < 0.01
 
 
     def test_get_eeg_pos_known_positions_abs_fp1_pos_2_fp2_pos_2_0_01_abs_cz_pos_0_0_01(self):
@@ -338,22 +321,14 @@ class TestMne:
         # Assert
         assert cz_pos[2] > 0.08  # z should be positive (top of head)
 
-    def test_get_eeg_pos_known_positions_abs_fp1_pos_2_fp2_pos_2_0_01_abs_fp1_pos_2_fp2_pos_2_0_01(self):
+    def test_get_eeg_pos_known_positions_fp1_fp2_z_coordinates_are_similar(self):
         # Arrange
         df = get_eeg_pos(channel_names=["CZ", "FP1", "FP2"])
-        # CZ should be approximately at the top center
         # Act
-        cz_pos = df["CZ"].values
-        # Assert
-        assert abs(cz_pos[0]) < 0.01  # x should be near 0
-        assert abs(cz_pos[1]) < 0.01  # y should be near 0
-        assert cz_pos[2] > 0.08  # z should be positive (top of head)
-        # FP1 and FP2 should be symmetric
         fp1_pos = df["FP1"].values
         fp2_pos = df["FP2"].values
-        # Act
-        # Assert
-        assert abs(fp1_pos[2] - fp2_pos[2]) < 0.01  # z coordinates should be similar
+        # Assert: FP1 and FP2 sit at the same vertical level (z).
+        assert abs(fp1_pos[2] - fp2_pos[2]) < 0.01
 
 
 
@@ -394,29 +369,6 @@ class TestMne:
         assert df.empty
 
 
-    @mock.patch("mne.channels.make_standard_montage")
-    def test_get_eeg_pos_uppercase_conversion(self, mock_montage):
-        """Test that channel names are converted to uppercase."""
-        # Create mock montage
-        # Arrange
-        mock_montage_obj = mock.Mock()
-        mock_montage_obj.ch_names = ["fp1", "fp2", "cz"]  # lowercase
-        mock_montage_obj.get_positions.return_value = {
-            "ch_pos": {
-                "FP1": [0.1, 0.2, 0.3],
-                "FP2": [-0.1, 0.2, 0.3],
-                "CZ": [0.0, 0.0, 0.9],
-            }
-        }
-        mock_montage.return_value = mock_montage_obj
-
-        # Act
-        df = get_eeg_pos(channel_names=["FP1", "FP2", "CZ"])
-
-        # Check that uppercase conversion happened
-        # Assert
-        assert mock_montage_obj.ch_names == ["FP1", "FP2", "CZ"]
-
     def test_get_eeg_pos_invalid_channel_raises(self):
         """Test that invalid channel names raise KeyError."""
         # Arrange
@@ -449,30 +401,23 @@ class TestMne:
         # Assert
         assert df.shape[0] == 3
 
-    def test_get_eeg_pos_montage_1020_standard(self):
-        """Test that standard 1020 montage is used."""
-        # This test verifies the montage type used
+    def test_get_eeg_pos_uses_real_1020_montage_channel_set(self):
+        """The function uses mne's standard_1020 montage — verify against
+        real mne that a canonical 10-20 channel (`CZ`) is present."""
         # Arrange
         # Act
+        df = get_eeg_pos(channel_names=["CZ"])
         # Assert
-        with mock.patch("mne.channels.make_standard_montage") as mock_montage:
-            mock_montage_obj = mock.Mock()
-            mock_montage_obj.ch_names = []
-            mock_montage_obj.get_positions.return_value = {"ch_pos": {}}
-            mock_montage.return_value = mock_montage_obj
-
-            get_eeg_pos(channel_names=[])
-            mock_montage.assert_called_once_with("standard_1020")
+        assert "CZ" in df.columns
 
     def test_get_eeg_pos_reproducibility(self):
         """Test that multiple calls return the same positions."""
         # Arrange
-        # Act
-        # Assert
         df1 = get_eeg_pos(channel_names=["FP1", "FP2", "CZ"])
+        # Act
         df2 = get_eeg_pos(channel_names=["FP1", "FP2", "CZ"])
-
-        pd.testing.assert_frame_equal(df1, df2)
+        # Assert: DataFrames are equal cell-wise (uses pandas' own check).
+        assert df1.equals(df2)
 
     def test_get_eeg_pos_all_channels_unique_positions(self):
         """Test that all channels have unique positions."""

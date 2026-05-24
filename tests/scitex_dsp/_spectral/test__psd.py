@@ -140,7 +140,7 @@ class TestPsd:
         # Assert
         assert np.all(power >= 0)  # Power should be non-negative
 
-    def test_psd_basic_numpy_abs_peak_freq_freq_5_abs_peak_freq_freq_5(self):
+    def test_psd_basic_numpy_peak_near_signal_frequency(self):
         # Arrange
         fs = 256
         t = np.linspace(0, 2, 2 * fs)
@@ -148,18 +148,10 @@ class TestPsd:
         x = np.sin(2 * np.pi * freq * t).reshape(1, 1, -1).astype(np.float32)
         # Act
         power, freqs = psd(x, fs)
-        # Assert
-        assert isinstance(power, np.ndarray)
-        assert isinstance(freqs, np.ndarray)
-        assert power.shape == (1, 1, len(freqs))
-        assert len(freqs) > 0
-        assert np.all(power >= 0)  # Power should be non-negative
-        # Check that peak is near the signal frequency
         peak_idx = np.argmax(power[0, 0])
         peak_freq = freqs[peak_idx]
-        # Act
-        # Assert
-        assert abs(peak_freq - freq) < 5  # Within 5 Hz tolerance
+        # Assert: peak is within 5 Hz of the input frequency
+        assert abs(peak_freq - freq) < 5
 
 
 
@@ -338,18 +330,13 @@ class TestPsd:
         # Assert
         assert power1.shape[2] > 1  # Frequency dimension
 
-    def test_psd_dimension_parameter_power2_shape_equals_power1_shape_power2_shape_equals_power1_shape(self):
+    def test_psd_dimension_parameter_custom_dim_matches_default(self):
         # Arrange
         fs = 256
         x = np.random.randn(2, 3, 512).astype(np.float32)
-        # Default dim=-1 (along time axis)
-        # Act
         power1, _ = psd(x, fs, dim=-1)
-        # Assert
-        assert power1.shape[2] > 1  # Frequency dimension
-        # Custom dimension - should work the same for 3D input
+        # Act: custom positive-index dim on 3-D input should match default
         power2, _ = psd(x, fs, dim=2)
-        # Act
         # Assert
         assert power2.shape == power1.shape
 
@@ -478,48 +465,37 @@ class TestPsd:
         # Assert
         assert power_f32.dtype == np.float32
 
-    def test_psd_dtype_preservation_power_f64_dtype_in_np_float32_np_float64_power_f64_dtype_in_np_float32_np_float64(self):
+    def test_psd_dtype_preservation_float64_input(self):
         # Arrange
         fs = 256
         n_samples = 512
-        # Test float32
-        x_f32 = np.random.randn(1, 1, n_samples).astype(np.float32)
-        # Act
-        power_f32, _ = psd(x_f32, fs)
-        # Assert
-        assert power_f32.dtype == np.float32
-        # Test float64
         x_f64 = np.random.randn(1, 1, n_samples).astype(np.float64)
-        power_f64, _ = psd(x_f64, fs)
         # Act
+        power_f64, _ = psd(x_f64, fs)
         # Assert
         assert power_f64.dtype in [np.float32, np.float64]
 
 
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_psd_cuda_device_power_is_cuda(self):
         # Arrange
-        if not torch.cuda.is_available():
-            pytest.skip("CUDA not available")
         fs = 256
         n_samples = 512
         x = torch.randn(1, 2, n_samples).cuda()
         # Act
         power, freqs = psd(x, fs)
-        # Act
         # Assert
         assert power.is_cuda
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_psd_cuda_device_freqs_is_cuda(self):
         # Arrange
-        if not torch.cuda.is_available():
-            pytest.skip("CUDA not available")
         fs = 256
         n_samples = 512
         x = torch.randn(1, 2, n_samples).cuda()
         # Act
         power, freqs = psd(x, fs)
-        # Act
         # Assert
         assert freqs.is_cuda
 

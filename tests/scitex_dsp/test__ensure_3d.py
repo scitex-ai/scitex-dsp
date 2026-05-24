@@ -207,19 +207,12 @@ class TestEnsure3D:
         # Assert
         assert result.shape == (1, 1, 0)
 
-    def test_empty_arrays_result_shape_1_1_result_shape_1_1(self):
+    def test_empty_arrays_empty_2d_adds_channel_dimension(self):
         # Arrange
         from scitex.dsp import ensure_3d
-        # Empty 1D
-        x_empty_1d = np.array([])
-        # Act
-        result = ensure_3d(x_empty_1d)
-        # Assert
-        assert result.shape == (1, 1, 0)
-        # Empty 2D
         x_empty_2d = np.array([[], []])
-        result = ensure_3d(x_empty_2d)
         # Act
+        result = ensure_3d(x_empty_2d)
         # Assert
         assert result.shape[1] == 1  # Added channel dimension
 
@@ -270,19 +263,12 @@ class TestEnsure3D:
         # Assert
         assert result.shape == (1, 1, 10000)
 
-    def test_large_arrays_result_shape_equals_n_100_1_1000_result_shape_equals_n_100_1_1000(self):
+    def test_large_arrays_2d_inserts_channel_axis(self):
         # Arrange
         from scitex.dsp import ensure_3d
-        # Large 1D array
-        x_large_1d = np.random.rand(10000)
-        # Act
-        result = ensure_3d(x_large_1d)
-        # Assert
-        assert result.shape == (1, 1, 10000)
-        # Large 2D array
         x_large_2d = np.random.rand(100, 1000)
-        result = ensure_3d(x_large_2d)
         # Act
+        result = ensure_3d(x_large_2d)
         # Assert
         assert result.shape == (100, 1, 1000)
 
@@ -306,24 +292,26 @@ class TestEnsure3D:
             result = ensure_3d(x)
             assert result.dtype == dtype
 
-    def test_torch_device_preservation(self):
-        """Test that torch device is preserved."""
+    def test_torch_device_preservation_cpu(self):
+        """ensure_3d preserves CPU device on CPU tensors."""
         # Arrange
         from scitex.dsp import ensure_3d
-
-        if torch.cuda.is_available():
-            # Test GPU tensor
-            x_gpu = torch.tensor([1.0, 2.0, 3.0]).cuda()
-            result = ensure_3d(x_gpu)
-            assert result.is_cuda
-            assert result.device == x_gpu.device
-
-        # Test CPU tensor
         x_cpu = torch.tensor([1.0, 2.0, 3.0])
         # Act
         result = ensure_3d(x_cpu)
         # Assert
         assert result.device.type == "cpu"
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
+    def test_torch_device_preservation_cuda_device_equals_input(self):
+        """ensure_3d preserves CUDA device identity on CUDA tensors."""
+        # Arrange
+        from scitex.dsp import ensure_3d
+        x_gpu = torch.tensor([1.0, 2.0, 3.0]).cuda()
+        # Act
+        result = ensure_3d(x_gpu)
+        # Assert
+        assert result.device == x_gpu.device
 
     def test_gradient_preservation_result_requires_grad(self):
         # Arrange
@@ -347,19 +335,14 @@ class TestEnsure3D:
         # Assert
         assert result.requires_grad
 
-    def test_gradient_preservation_x_grad_is_not_none_x_grad_is_not_none(self):
+    def test_gradient_preservation_backward_populates_input_grad(self):
         # Arrange
         from scitex.dsp import ensure_3d
-        # Create tensor with gradient
         x = torch.tensor([1.0, 2.0, 3.0], requires_grad=True)
-        # Act
         result = ensure_3d(x)
-        # Assert
-        assert result.requires_grad
-        # Test gradient flow
+        # Act
         loss = result.sum()
         loss.backward()
-        # Act
         # Assert
         assert x.grad is not None
 
