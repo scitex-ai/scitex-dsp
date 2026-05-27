@@ -60,7 +60,7 @@ def pac(
     PyTorch tensors, NumPy arrays, or pandas DataFrames.
 
     Arguments:
-    - x (torch.Tensor | np.ndarray | pd.DataFrame): Input signal. Shape can be either (batch_size, n_chs, seq_len) or
+    - x (torch.Tensor | np.ndarray | pd.DataFrame): Input signal.
     - fs (float): Sampling frequency of the input signal.
     - pha_start_hz (float, optional): Start frequency for phase bands. Default is 2 Hz.
     - pha_end_hz (float, optional): End frequency for phase bands. Default is 20 Hz.
@@ -124,7 +124,6 @@ def pac(
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
-
     import scitex
 
     # Start
