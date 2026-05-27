@@ -56,35 +56,35 @@ def pac(
     amp_prob=False,
 ):
     """
-    Compute the phase-amplitude coupling (PAC) for signals. This function automatically handles inputs as
-    PyTorch tensors, NumPy arrays, or pandas DataFrames.
+    Compute the phase-amplitude coupling (PAC) for signals.
 
-    Arguments:
-    - x (torch.Tensor | np.ndarray | pd.DataFrame): Input signal.
-    - fs (float): Sampling frequency of the input signal.
-    - pha_start_hz (float, optional): Start frequency for phase bands. Default is 2 Hz.
-    - pha_end_hz (float, optional): End frequency for phase bands. Default is 20 Hz.
-    - pha_n_bands (int, optional): Number of phase bands. Default is 100.
-    - amp_start_hz (float, optional): Start frequency for amplitude bands. Default is 60 Hz.
-    - amp_end_hz (float, optional): End frequency for amplitude bands. Default is 160 Hz.
-    - amp_n_bands (int, optional): Number of amplitude bands. Default is 100.
+    Parameters
+    ----------
+    x : torch.Tensor | np.ndarray | pd.DataFrame
+        Input signal.
+    fs : float
+        Sampling frequency of the input signal.
+    pha_start_hz : float, optional
+        Start frequency for phase bands. Default is 2 Hz.
+    pha_end_hz : float, optional
+        End frequency for phase bands. Default is 20 Hz.
+    pha_n_bands : int, optional
+        Number of phase bands. Default is 100.
+    amp_start_hz : float, optional
+        Start frequency for amplitude bands. Default is 60 Hz.
+    amp_end_hz : float, optional
+        End frequency for amplitude bands. Default is 160 Hz.
+    amp_n_bands : int, optional
+        Number of amplitude bands. Default is 100.
 
-    Returns:
-    - torch.Tensor: PAC values. Shape: (batch_size, n_chs, pha_n_bands, amp_n_bands)
-    - numpy.ndarray: Phase bands used for the computation.
-    - numpy.ndarray: Amplitude bands used for the computation.
-
-    Example:
-
-    .. code-block:: python
-
-        FS = 512
-        T_SEC = 4
-        xx, tt, fs = scitex.dsp.demo_sig(
-            batch_size=1, n_chs=1, fs=FS, t_sec=T_SEC, sig_type="tensorpac"
-        )
-        pac, pha_mids_hz, amp_mids_hz = scitex.dsp.pac(xx, fs)
-
+    Returns
+    -------
+    torch.Tensor
+        PAC values. Shape: (batch_size, n_chs, pha_n_bands, amp_n_bands)
+    numpy.ndarray
+        Phase bands used for the computation.
+    numpy.ndarray
+        Amplitude bands used for the computation.
     """
     _check_torch()
 
