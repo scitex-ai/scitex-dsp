@@ -75,6 +75,9 @@ def pac(
     - numpy.ndarray: Amplitude bands used for the computation.
 
     Example:
+
+    .. code-block:: python
+
         FS = 512
         T_SEC = 4
         xx, tt, fs = scitex.dsp.demo_sig(
