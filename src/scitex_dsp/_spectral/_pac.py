@@ -81,6 +81,7 @@ def pac(
             batch_size=1, n_chs=1, fs=FS, t_sec=T_SEC, sig_type="tensorpac"
         )
         pac, pha_mids_hz, amp_mids_hz = scitex.dsp.pac(xx, fs)
+
     """
     _check_torch()
 
