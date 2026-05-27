@@ -1,6 +1,6 @@
 ---
 name: scitex-dsp
-description: Digital signal-processing utilities tuned for neuroscience workflows. `hilbert(x)` returns analytic signal; `psd(x, fs, ...)` and `band_powers(x, fs, bands)` compute spectral density. `pac(x, lo, hi, ...)` and `modulation_index(x, ...)` quantify phase-amplitude coupling. `detect_ripples(x, fs, ...)` runs the Buzsaki-style ripple detector with edge handling, find-events, and column sorting baked in. Pre-/post-processing: `crop`, `ensure_3d`, `resample`, `demo_sig` (synthetic test signal). Submodules: `filt` (Butterworth bandpass/bandstop), `norm` (z-score, min-max, robust), `reference` (CAR, bipolar, Laplacian), `add_noise` (white, pink, ar1), `params` (canonical band definitions), `example` (worked examples). All functions accept `(channels, samples)` or `(batch, channels, samples)`. Drop-in replacement for hand-rolled `scipy.signal.butter` + `lfilter` chains and bespoke ripple detectors.
+description: Digital signal-processing utilities tuned for neuroscience workflows. `hilbert(x)` returns analytic signal; `psd(x, fs, ...)` and `band_powers(x, fs, bands)` compute spectral density. `pac(x, lo, hi, ...)` and `modulation_index(x, ...)` quantify phase-amplitude coupling. `detect_ripples(x, fs, ...)` runs the Buzsaki-style ripple detector with edge handling, find-events, and column sorting baked in. Pre-/post-processing: `crop`, `ensure_3d`, `resample`, `demo_sig` (synthetic test signal). Submodules: `filt` (Butterworth bandpass/bandstop), `norm` (z-score, min-max), `reference` (common-average, random, Laplacian), `add_noise` (gauss, white, pink, brown), `params` (canonical band definitions), `example` (worked examples). All functions accept `(channels, samples)` or `(batch, channels, samples)`. Drop-in replacement for hand-rolled `scipy.signal.butter` + `lfilter` chains and bespoke ripple detectors.
 primary_interface: python
 interfaces:
   python: 3
@@ -59,8 +59,8 @@ ripples = dsp.detect_ripples(x, fs=1000, lo=150, hi=250, ...)
 
 ```python
 y = dsp.filt.bandpass(x, lo=4, hi=8, fs=1000)
-z = dsp.norm.zscore(x, axis=-1)
-ref = dsp.reference.car(x)                  # common-average reference
+z = dsp.norm.z(x, dim=-1)
+ref = dsp.reference.common_average(x)                  # common-average reference
 ```
 
 ## Pre-processing helpers
