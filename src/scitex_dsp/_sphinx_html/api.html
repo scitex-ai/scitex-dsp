@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API &mdash; scitex-dsp 0.1.8 documentation</title>
+  <title>API &mdash; scitex-dsp 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=22607128"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -22,7 +22,6 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="scitex_dsp" href="api/scitex_dsp.html" />
     <link rel="prev" title="scitex-dsp" href="index.html" /> 
 </head>
 
@@ -47,30 +46,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#functionalities">Functionalities</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#io">IO</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.band_powers"><code class="docutils literal notranslate"><span class="pre">band_powers()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.crop"><code class="docutils literal notranslate"><span class="pre">crop()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.demo_sig"><code class="docutils literal notranslate"><span class="pre">demo_sig()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.detect_ripples"><code class="docutils literal notranslate"><span class="pre">detect_ripples()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.ensure_3d"><code class="docutils literal notranslate"><span class="pre">ensure_3d()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.get_eeg_pos"><code class="docutils literal notranslate"><span class="pre">get_eeg_pos()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.hilbert"><code class="docutils literal notranslate"><span class="pre">hilbert()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.modulation_index"><code class="docutils literal notranslate"><span class="pre">modulation_index()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.pac"><code class="docutils literal notranslate"><span class="pre">pac()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.psd"><code class="docutils literal notranslate"><span class="pre">psd()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.resample"><code class="docutils literal notranslate"><span class="pre">resample()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.time"><code class="docutils literal notranslate"><span class="pre">time()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.to_segments"><code class="docutils literal notranslate"><span class="pre">to_segments()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.to_sktime_df"><code class="docutils literal notranslate"><span class="pre">to_sktime_df()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scitex_dsp.wavelet"><code class="docutils literal notranslate"><span class="pre">wavelet()</span></code></a></li>
-</ul>
-</li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="api/scitex_dsp.html">scitex_dsp</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a></li>
 </ul>
 
         </div>
@@ -97,217 +73,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-scitex_dsp">
-<span id="api"></span><h1>API<a class="headerlink" href="#module-scitex_dsp" title="Link to this heading"></a></h1>
-<p>scitex-dsp — Digital signal-processing primitives for neuroscience.</p>
-<section id="functionalities">
-<h2>Functionalities<a class="headerlink" href="#functionalities" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p><cite>hilbert(x)</cite> — analytic signal (phase + envelope).</p></li>
-<li><p><cite>psd(x, fs, …)</cite> / <cite>band_powers(x, fs, bands)</cite> — power spectral
-density and per-band integrated power.</p></li>
-<li><p><cite>pac(x, lo, hi, …)</cite> / <cite>modulation_index(x, …)</cite> — phase-amplitude
-coupling and the canonical MI estimator.</p></li>
-<li><p><cite>wavelet(…)</cite> — continuous wavelet transform.</p></li>
-<li><p><cite>detect_ripples(x, fs, …)</cite> — Buzsaki-style ripple detector with
-edge handling, find-events, and column sorting.</p></li>
-<li><p><cite>demo_sig(sig_type=…)</cite> — deterministic chirp / periodic / ripple
-/ noise test signals.</p></li>
-<li><p><cite>crop</cite>, <cite>ensure_3d</cite>, <cite>resample</cite>, <cite>time</cite>, <cite>add_noise</cite>,
-<cite>to_segments</cite>, <cite>to_sktime_df</cite> — pre-/post-processing utilities.</p></li>
-<li><p>Submodules: <cite>filt</cite> (Butterworth bandpass/bandstop), <cite>norm</cite>
-(z-score / min-max / robust), <cite>reference</cite> (CAR / bipolar /
-Laplacian), <cite>params</cite> (canonical band definitions), <cite>example</cite>
-(worked examples).</p></li>
-</ul>
-</section>
-<section id="io">
-<h2>IO<a class="headerlink" href="#io" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p>Reads: numeric arrays (<cite>numpy.ndarray</cite>, <cite>torch.Tensor</cite>,
-<cite>pandas.DataFrame</cite>) in <cite>(channels, samples)</cite> or
-<cite>(batch, channels, samples)</cite> shape; optional audio devices via
-PortAudio; optional EEG positions via MNE.</p></li>
-<li><p>Writes: nothing by default — pure functions returning new arrays.
-Audio playback via <cite>_audio_io._listen</cite> when PortAudio is present.</p></li>
-</ul>
-</section>
-<section id="dependencies">
-<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p>Hard: <cite>numpy</cite>, <cite>scipy</cite>, <cite>torch</cite>, <cite>pandas</cite>, <cite>mne</cite>.</p></li>
-<li><p>Optional: <cite>sounddevice</cite> + PortAudio (audio I/O), <cite>tensorpac</cite>
-(cross-check for PAC).</p></li>
-</ul>
-<p>Standalone import:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">scitex_dsp</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dsp</span>
-<span class="n">xx</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">dsp</span><span class="o">.</span><span class="n">demo_sig</span><span class="p">(</span><span class="n">sig_type</span><span class="o">=</span><span class="s2">&quot;chirp&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
-<span class="n">ana</span> <span class="o">=</span> <span class="n">dsp</span><span class="o">.</span><span class="n">hilbert</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<dl class="py function">
-<dt class="sig sig-object py" id="scitex_dsp.band_powers">
-<span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">band_powers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scitex_dsp/_spectral/_psd.html#band_powers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.band_powers" title="Link to this definition"></a></dt>
-<dd><p>Calculate the average power for specified frequency bands.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="scitex_dsp.crop">
-<span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">crop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig_2d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlap_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scitex_dsp/_crop.html#crop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.crop" title="Link to this definition"></a></dt>
-<dd><p>Crops the input signal into overlapping windows of a specified length,
-allowing for an arbitrary axis and considering a time vector.</p>
-<p>Parameters:
-- sig_2d (numpy.ndarray): The input sig_2d array to be cropped. Can be multi-dimensional.
-- window_length (int): The length of each window to crop the sig_2d into.
-- overlap_factor (float): The fraction of the window that consecutive windows overlap. For example, an overlap_factor of 0.5 means 50% overlap.
-- axis (int): The time axis along which to crop the sig_2d.</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>time (numpy.ndarray): The time vector associated with the signal. Its length should match the signal’s length along the cropping axis.</p></li>
-</ul>
-</div></blockquote>
-<p>Returns:
-- cropped_windows (numpy.ndarray): The cropped signal windows. The shape depends on the input shape and the specified axis.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="scitex_dsp.demo_sig">
-<span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">demo_sig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'periodic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_chs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">19</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_segments</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freqs_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scitex_dsp/_synthesis/_demo_sig.html#demo_sig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.demo_sig" title="Link to this definition"></a></dt>
-<dd><p>Generate demo signals for various signal types.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>sig_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Type of signal to generate. Options are “uniform”, “gauss”, “periodic”, “chirp”, “ripple”, “meg”, “tensorpac”, “pac”.
-Default is “periodic”.</p></li>
-<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Number of batches to generate. Default is 8.</p></li>
-<li><p><strong>n_chs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Number of channels. Default is 19.</p></li>
-<li><p><strong>n_segments</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Number of segments for tensorpac and pac signals. Default is 20.</p></li>
-<li><p><strong>t_sec</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Duration of the signal in seconds. Default is 4.</p></li>
-<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Sampling frequency in Hz. Default is 512.</p></li>
-<li><p><strong>freqs_hz</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – List of frequencies in Hz for periodic signals. If None, random frequencies will be used.</p></li>
-<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, print additional information. Default is False.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A tuple containing:
-- np.ndarray: Generated signal(s) with shape (batch_size, n_chs, time_samples) or (batch_size, n_chs, n_segments, time_samples) for tensorpac and pac signals.
-- np.ndarray: Time array.
-- int: Sampling frequency.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="scitex_dsp.detect_ripples">
-<span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">detect_ripples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_hz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_hz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_sigma_ms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_duration_ms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_preprocessed_signal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scitex_dsp/_detect_ripples.html#detect_ripples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.detect_ripples" title="Link to this definition"></a></dt>
-<dd><p>xx: 2-dimensional (n_chs, seq_len) or 3-dimensional (batch_size, n_chs, seq_len) wide-band signal.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="scitex_dsp.ensure_3d">
-<span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">ensure_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scitex_dsp/_ensure_3d.html#ensure_3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.ensure_3d" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="scitex_dsp.get_eeg_pos">
-<span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">get_eeg_pos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['FP1',</span> <span class="pre">'F3',</span> <span class="pre">'C3',</span> <span class="pre">'P3',</span> <span class="pre">'O1',</span> <span class="pre">'FP2',</span> <span class="pre">'F4',</span> <span class="pre">'C4',</span> <span class="pre">'P4',</span> <span class="pre">'O2',</span> <span class="pre">'F7',</span> <span class="pre">'T7',</span> <span class="pre">'P7',</span> <span class="pre">'F8',</span> <span class="pre">'T8',</span> <span class="pre">'P8',</span> <span class="pre">'FZ',</span> <span class="pre">'CZ',</span> <span class="pre">'PZ']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scitex_dsp/_audio_io/_mne.html#get_eeg_pos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.get_eeg_pos" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="scitex_dsp.hilbert">
-<span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">hilbert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scitex_dsp/_spectral/_hilbert.html#hilbert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.hilbert" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="scitex_dsp.modulation_index">
-<span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">modulation_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">18</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amp_prob</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scitex_dsp/_spectral/_modulation_index.html#modulation_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.modulation_index" title="Link to this definition"></a></dt>
-<dd><p>pha: (batch_size, n_chs, n_freqs_pha, n_segments, seq_len)
-amp: (batch_size, n_chs, n_freqs_amp, n_segments, seq_len)</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="scitex_dsp.pac">
-<span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">pac</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pha_start_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pha_end_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pha_n_bands</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amp_start_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">60</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amp_end_hz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">160</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amp_n_bands</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cuda'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size_ch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp16</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_perm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amp_prob</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scitex_dsp/_spectral/_pac.html#pac"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.pac" title="Link to this definition"></a></dt>
-<dd><p>Compute the phase-amplitude coupling (PAC) for signals. This function automatically handles inputs as
-PyTorch tensors, NumPy arrays, or pandas DataFrames.</p>
-<p>Arguments:
-- x (torch.Tensor | np.ndarray | pd.DataFrame): Input signal. Shape can be either (batch_size, n_chs, seq_len) or
-- fs (float): Sampling frequency of the input signal.
-- pha_start_hz (float, optional): Start frequency for phase bands. Default is 2 Hz.
-- pha_end_hz (float, optional): End frequency for phase bands. Default is 20 Hz.
-- pha_n_bands (int, optional): Number of phase bands. Default is 100.
-- amp_start_hz (float, optional): Start frequency for amplitude bands. Default is 60 Hz.
-- amp_end_hz (float, optional): End frequency for amplitude bands. Default is 160 Hz.
-- amp_n_bands (int, optional): Number of amplitude bands. Default is 100.</p>
-<p>Returns:
-- torch.Tensor: PAC values. Shape: (batch_size, n_chs, pha_n_bands, amp_n_bands)
-- numpy.ndarray: Phase bands used for the computation.
-- numpy.ndarray: Amplitude bands used for the computation.</p>
-<p class="rubric">Example</p>
-<p>FS = 512
-T_SEC = 4
-xx, tt, fs = scitex.dsp.demo_sig(</p>
-<blockquote>
-<div><p>batch_size=1, n_chs=1, fs=FS, t_sec=T_SEC, sig_type=”tensorpac”</p>
-</div></blockquote>
-<p>)
-pac, pha_mids_hz, amp_mids_hz = scitex.dsp.pac(xx, fs)</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="scitex_dsp.psd">
-<span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">psd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prob</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scitex_dsp/_spectral/_psd.html#psd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.psd" title="Link to this definition"></a></dt>
-<dd><p>import matplotlib.pyplot as plt</p>
-<p>x, t, fs = scitex.dsp.demo_sig()  # (batch_size, n_chs, seq_len)
-pp, ff = psd(x, fs)</p>
-<p># Plots
-plt, CC = scitex.plt.configure_mpl(plt)
-fig, ax = scitex.plt.subplots()
-ax.plot(fs, pp[0, 0])
-ax.xlabel(“Frequency [Hz]”)
-ax.ylabel(“log(Power [uV^2 / Hz]) [a.u.]”)
-plt.show()</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="scitex_dsp.resample">
-<span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tgt_fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scitex_dsp/_resample.html#resample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.resample" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="scitex_dsp.time">
-<span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_sec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_sec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scitex_dsp/_time.html#time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.time" title="Link to this definition"></a></dt>
-<dd><p>Linearly spaced time samples between [start_sec, end_sec) at sample rate fs.</p>
-<p>Replaces the prior <code class="docutils literal notranslate"><span class="pre">scitex.gen.float_linspace</span></code> call so this module
-doesn’t pull the umbrella <code class="docutils literal notranslate"><span class="pre">scitex</span></code> distribution at import time. The
-behaviour matches np.linspace(endpoint=False) which is also what the
-legacy float_linspace returned.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="scitex_dsp.to_segments">
-<span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">to_segments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlap_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scitex_dsp/_transform.html#to_segments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.to_segments" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="scitex_dsp.to_sktime_df">
-<span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">to_sktime_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scitex_dsp/_transform.html#to_sktime_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.to_sktime_df" title="Link to this definition"></a></dt>
-<dd><p>Convert a 3D numpy array into a DataFrame suitable for sktime.</p>
-<p>Parameters:
-arr (numpy.ndarray): A 3D numpy array with shape (n_samples, n_channels, seq_len)</p>
-<p>Returns:
-pandas.DataFrame: A DataFrame in sktime format</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="scitex_dsp.wavelet">
-<span class="sig-prename descclassname"><span class="pre">scitex_dsp.</span></span><span class="sig-name descname"><span class="pre">wavelet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cuda'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scitex_dsp/_spectral/_wavelet.html#wavelet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_dsp.wavelet" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
+  <section id="api">
+<h1>API<a class="headerlink" href="#api" title="Link to this heading"></a></h1>
 </section>
 
 
@@ -315,7 +82,6 @@ pandas.DataFrame: A DataFrame in sktime format</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="scitex-dsp" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="api/scitex_dsp.html" class="btn btn-neutral float-right" title="scitex_dsp" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

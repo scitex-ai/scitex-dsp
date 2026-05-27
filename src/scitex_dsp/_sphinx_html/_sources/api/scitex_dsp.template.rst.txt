@@ -1,6 +1,0 @@
-scitex\_dsp.template
-====================
-
-.. automodule:: scitex_dsp.template
-
-   
