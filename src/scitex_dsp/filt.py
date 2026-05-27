@@ -4,6 +4,10 @@
 
 import numpy as np
 
+<<<<<<< Updated upstream
+=======
+# import scitex  # lazy-loaded in __main__ block
+>>>>>>> Stashed changes
 from scitex_decorators import signal_fn
 
 # No top-level imports from nn module to avoid circular dependency
@@ -60,6 +64,7 @@ def _custom_print(x):
 
 
 if __name__ == "__main__":
+    import scitex
     import sys
 
     import scitex  # noqa: E402  — script-only

@@ -1,0 +1,11 @@
+ID: 2026Y-05M-15D-22h57m28s_pIL8
+PID: 1632373
+START_DATETIME: 2026-05-15 22:57:29.127783
+FILE: /home/ywatanabe/proj/scitex-dsp/src/scitex_dsp/_synthesis/_demo_sig.py
+SDIR_OUT: 
+    /home/ywatanabe/proj/scitex-dsp/src/scitex_dsp/_synthesis/_demo_sig_out
+SDIR_RUN: 
+    /home/ywatanabe/proj/scitex-dsp/src/scitex_dsp/_synthesis/_demo_sig_out/RUNNING/2026Y-05M-15D-22h57m28s_pIL8
+EXIT_STATUS:
+END_DATETIME: 2026-05-15 22:58:07.392045
+RUN_DURATION: 00:00:38

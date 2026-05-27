@@ -5,6 +5,10 @@
 
 """scitex.dsp.wavelet function"""
 
+<<<<<<< Updated upstream:src/scitex_dsp/_spectral/_wavelet.py
+=======
+# import scitex  # lazy-loaded in __main__ block
+>>>>>>> Stashed changes:src/scitex_dsp/_wavelet.py
 from scitex_decorators import batch_fn, signal_fn
 from scitex_nn._Wavelet import Wavelet
 
@@ -118,6 +122,7 @@ def wavelet(
 
 
 if __name__ == "__main__":
+    import scitex
     import sys
 
     import matplotlib.pyplot as plt

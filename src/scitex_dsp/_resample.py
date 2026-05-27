@@ -14,6 +14,10 @@ from scitex_dev import try_import_optional
 T = try_import_optional("torchaudio.transforms", pkg="scitex-dsp")
 TORCHAUDIO_AVAILABLE = T is not None
 
+<<<<<<< Updated upstream
+=======
+# import scitex  # lazy-loaded in __main__ block
+>>>>>>> Stashed changes
 from scitex_decorators import signal_fn
 
 
@@ -36,6 +40,7 @@ def resample(x, src_fs, tgt_fs, t=None):
 
 
 if __name__ == "__main__":
+    import scitex
     import sys
 
     import matplotlib.pyplot as plt

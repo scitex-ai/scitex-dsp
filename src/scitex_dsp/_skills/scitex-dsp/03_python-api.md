@@ -4,6 +4,8 @@ description: |
   [DETAILS] Public Python API of scitex-dsp — exported functions, signatures,
   return types, and minimal usage examples per function.
 tags: [scitex-dsp-python-api]
+version: 0.1.6
+exported_via: installed
 ---
 
 # Python API

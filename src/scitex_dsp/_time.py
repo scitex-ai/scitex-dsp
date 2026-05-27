@@ -6,6 +6,7 @@
 
 import numpy as np
 
+<<<<<<< Updated upstream
 
 def time(start_sec, end_sec, fs):
     """Linearly spaced time samples between [start_sec, end_sec) at sample rate fs.
@@ -17,6 +18,14 @@ def time(start_sec, end_sec, fs):
     """
     n = int((end_sec - start_sec) * fs)
     return np.linspace(start_sec, end_sec, n, endpoint=False)
+=======
+# import scitex  # lazy-loaded in __main__ block
+
+
+def time(start_sec, end_sec, fs):
+    # return np.linspace(start_sec, end_sec, (end_sec - start_sec) * fs)
+    return __import__("scitex_gen").float_linspace(start_sec, end_sec, (end_sec - start_sec) * fs)
+>>>>>>> Stashed changes
 
 
 def main():
@@ -25,6 +34,7 @@ def main():
 
 
 if __name__ == "__main__":
+    import scitex
     import sys
 
     import matplotlib.pyplot as plt

@@ -22,6 +22,12 @@ import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
+<<<<<<< Updated upstream
+=======
+import tensorpac
+
+# import scitex  # lazy-loaded in __main__ block
+>>>>>>> Stashed changes
 
 
 # Functions
@@ -144,6 +150,12 @@ def plot_pac_scitex_vs_tensorpac(pac_scitex, pac_tp, freqs_pha, freqs_amp):
 
 
 if __name__ == "__main__":
+<<<<<<< Updated upstream
+=======
+    import scitex
+    import torch
+
+>>>>>>> Stashed changes
     # Start
     CONFIG, sys.stdout, sys.stderr, plt, CC = scitex.session.start(sys, plt)
 

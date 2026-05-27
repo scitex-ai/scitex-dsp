@@ -7,6 +7,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 
+<<<<<<< Updated upstream
+=======
+# import scitex  # lazy-loaded in __main__ block
+
+>>>>>>> Stashed changes
 # Module-level constants (defaults for example functions)
 TGT_FS = 512
 LOW_HZ = 20
@@ -215,8 +220,12 @@ def plot_psd(plt, sigs, sig_col, sig_type):
 
 
 if __name__ == "__main__":
+<<<<<<< Updated upstream
     import scitex  # __main__-scoped: PA304 exempt
 
+=======
+    import scitex
+>>>>>>> Stashed changes
     # Parameters
     T_SEC = 4
     SIG_TYPES = [

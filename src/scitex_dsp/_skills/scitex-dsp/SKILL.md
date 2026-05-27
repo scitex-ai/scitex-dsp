@@ -11,6 +11,8 @@ interfaces:
   http: 0
 canonical-location: scitex-dsp/src/scitex_dsp/_skills/scitex-dsp/SKILL.md
 tags: [scitex-dsp, scitex-package, signal-processing, neuroscience, ripples]
+version: 0.1.6
+exported_via: installed
 ---
 
 # scitex-dsp
