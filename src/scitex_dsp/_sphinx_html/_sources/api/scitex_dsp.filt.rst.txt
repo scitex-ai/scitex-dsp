@@ -1,0 +1,16 @@
+scitex\_dsp.filt
+================
+
+.. automodule:: scitex_dsp.filt
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      bandpass
+      bandstop
+      gauss
+      highpass
+      lowpass
+   

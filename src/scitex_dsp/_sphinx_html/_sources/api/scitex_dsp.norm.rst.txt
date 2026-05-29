@@ -1,0 +1,13 @@
+scitex\_dsp.norm
+================
+
+.. automodule:: scitex_dsp.norm
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      minmax
+      z
+   

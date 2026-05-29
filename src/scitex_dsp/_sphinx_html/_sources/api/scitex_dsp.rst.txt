@@ -1,0 +1,19 @@
+﻿scitex\_dsp
+===========
+
+.. automodule:: scitex_dsp
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   example
+   filt
+   norm
+   params
+   reference
+   template
+   utils
