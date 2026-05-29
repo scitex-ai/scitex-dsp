@@ -29,15 +29,28 @@ extensions = [
 autodoc_default_options = {
     "members": True,
     "member-order": "bysource",
-    "undoc-members": False,
+    "undoc-members": True,
     "private-members": False,
     "exclude-members": "__weakref__,__init__,__dict__,__module__",
 }
 
-# Heavy/optional deps mocked so RTD can build without installing them.
-# scitex-* peer packages are not yet on PyPI, so RTD's `pip install .` cannot
-# resolve them — mock them at autodoc time.
-autodoc_mock_imports = []  # peer deps installable from PyPI now
+# Heavy/optional deps mocked so RTD can build without installing them and so
+# autodoc documents signatures without paying the import cost (parity with the
+# sibling scitex-io docs config). The PEP 562 lazy ``__getattr__`` still
+# resolves each public name for its docstring; the mock only stands in for the
+# heavy modules those functions import internally.
+autodoc_mock_imports = [
+    "torch",
+    "scipy",
+    "pandas",
+    "mne",
+    "matplotlib",
+    "sounddevice",
+    "tensorpac",
+    "sktime",
+    "scitex_nn",
+    "scitex_gen",
+]
 
 autosummary_generate = True
 
