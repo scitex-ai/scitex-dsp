@@ -40,6 +40,13 @@ Standalone import::
     import scitex_dsp as dsp
     xx, tt, fs = dsp.demo_sig(sig_type="chirp", fs=1024)
     ana = dsp.hilbert(xx)
+
+Performance
+-----------
+All heavy dependencies (`torch`, `pandas`, `mne`, `matplotlib`,
+`scitex_nn`, `scitex_gen`) are imported lazily on first attribute
+access via PEP 562 ``__getattr__``. ``import scitex_dsp`` therefore
+costs only a few milliseconds and does *not* pull in torch.
 """
 
 from __future__ import annotations
@@ -56,133 +63,179 @@ try:
 except ImportError:  # pragma: no cover — only on ancient Pythons
     __version__ = "0.0.0+local"
 
-# Backwards-compatibility submodule aliases — files moved into
-# topical subpackages (PS108b refactor) but downstream code still
-# imports them by the old flat path. Register the moved submodules
-# under their pre-refactor names so `import scitex_dsp.add_noise`,
-# `from scitex_dsp._hilbert import …` etc. keep working.
-import sys as _sys
-import warnings
 
-# Submodules: example/params/norm/reference/filt at root,
-# add_noise re-exported from _synthesis for backwards compatibility.
-from . import example, filt, norm, params, reference
+# ---------------------------------------------------------------------------
+# PEP 562 lazy attribute map: public-name → submodule (relative).
+# Keep the LHS == the public symbol, the RHS == the submodule that defines it.
+# Importing any of these is what pulls in torch/pandas/mne — so we defer the
+# import to first access instead of paying it at ``import scitex_dsp``.
+# ---------------------------------------------------------------------------
+_LAZY_ATTRS: dict[str, str] = {
+    # Submodules re-exported at the top level.
+    "example": ".example",
+    "filt": ".filt",
+    "norm": ".norm",
+    "params": ".params",
+    "reference": ".reference",
+    "add_noise": "._synthesis.add_noise",
+    # Spectral primitives.
+    "hilbert": "._spectral",
+    "psd": "._spectral",
+    "band_powers": "._spectral",
+    "pac": "._spectral",
+    "wavelet": "._spectral",
+    "modulation_index": "._spectral",
+    "_reshape": "._spectral",
+    # Pre-/post-processing utilities.
+    "crop": "._crop",
+    "ensure_3d": "._ensure_3d",
+    "resample": "._resample",
+    "time": "._time",
+    "demo_sig": "._synthesis",
+    "to_segments": "._transform",
+    "to_sktime_df": "._transform",
+    "detect_ripples": "._detect_ripples",
+    # Ripple-detection internals kept in the public namespace for
+    # backwards compatibility (downstream/tests import them by name).
+    "_calc_relative_peak_position": "._detect_ripples",
+    "_drop_ripples_at_edges": "._detect_ripples",
+    "_find_events": "._detect_ripples",
+    "_preprocess": "._detect_ripples",
+    "_sort_columns": "._detect_ripples",
+}
 
-# Optional audio submodules — wrapped because _listen imports
-# sounddevice (needs PortAudio) and _mne imports mne.
-try:
-    from ._audio_io import _listen as _bc_listen
-except (ImportError, OSError):
-    _bc_listen = None
-try:
-    from ._audio_io import _mne as _bc_mne
-except Exception:  # mne import path may raise misc runtime errors
-    _bc_mne = None
+# Optional public names that may not be importable (need PortAudio / MNE).
+# Resolve once, lazily; ``None`` if the optional dependency is missing.
+_OPTIONAL_ATTRS: dict[str, tuple[str, str]] = {
+    "list_and_select_device": ("._audio_io._listen", "list_and_select_device"),
+    "get_eeg_pos": ("._audio_io._mne", "get_eeg_pos"),
+}
 
-# Core imports that should always work
-from ._crop import crop
-from ._detect_ripples import (
-    _calc_relative_peak_position,
-    _drop_ripples_at_edges,
-    _find_events,
-    _preprocess,
-    _sort_columns,
-    detect_ripples,
-)
-from ._ensure_3d import ensure_3d
-from ._resample import resample
-from ._spectral import (
-    _hilbert as _bc_hilbert,
-)
-from ._spectral import (
-    _modulation_index as _bc_modulation_index,
-)
-from ._spectral import (
-    _pac as _bc_pac,
-)
-from ._spectral import (
-    _psd as _bc_psd,
-)
-from ._spectral import (
-    _reshape,
-    band_powers,
-    hilbert,
-    modulation_index,
-    pac,
-    psd,
-    wavelet,
-)
-from ._spectral import (
-    _wavelet as _bc_wavelet,
-)
-from ._synthesis import _demo_sig as _bc_demo_sig
-from ._synthesis import add_noise, demo_sig
-from ._time import time
-from ._transform import to_segments, to_sktime_df
+# ---------------------------------------------------------------------------
+# Backwards-compatibility submodule aliases — files moved into topical
+# subpackages (PS108b refactor) but downstream code may still import them by
+# the old flat path. We register the moved submodules under their pre-refactor
+# names *lazily* via a meta-path finder so that ``import scitex_dsp._hilbert``
+# keeps working without eagerly importing torch at ``import scitex_dsp`` time.
+# name (full module path) → relative target module that actually defines it.
+# ---------------------------------------------------------------------------
+_BC_ALIASES: dict[str, str] = {
+    "scitex_dsp.add_noise": "._synthesis.add_noise",
+    "scitex_dsp._demo_sig": "._synthesis._demo_sig",
+    "scitex_dsp._hilbert": "._spectral._hilbert",
+    "scitex_dsp._modulation_index": "._spectral._modulation_index",
+    "scitex_dsp._pac": "._spectral._pac",
+    "scitex_dsp._psd": "._spectral._psd",
+    "scitex_dsp._wavelet": "._spectral._wavelet",
+    "scitex_dsp._listen": "._audio_io._listen",
+    "scitex_dsp._mne": "._audio_io._mne",
+}
 
-for _old, _mod in {
-    "scitex_dsp.add_noise": add_noise,
-    "scitex_dsp._demo_sig": _bc_demo_sig,
-    "scitex_dsp._hilbert": _bc_hilbert,
-    "scitex_dsp._listen": _bc_listen,
-    "scitex_dsp._mne": _bc_mne,
-    "scitex_dsp._modulation_index": _bc_modulation_index,
-    "scitex_dsp._pac": _bc_pac,
-    "scitex_dsp._psd": _bc_psd,
-    "scitex_dsp._wavelet": _bc_wavelet,
-}.items():
-    _sys.modules.setdefault(_old, _mod)
-del _sys
 
-# Try to import audio-related functions that require PortAudio
-try:
-    from ._audio_io._listen import list_and_select_device
+def _load_lazy_attr(name: str):
+    """Resolve a `_LAZY_ATTRS` name, cache it in globals, and return it."""
+    from importlib import import_module
 
-    _audio_available = True
-except (ImportError, OSError):
-    warnings.warn(
-        "Audio functionality unavailable: PortAudio library not found. "
-        "Install PortAudio to use audio features (e.g., sudo apt-get install portaudio19-dev)",
-        ImportWarning,
-    )
-    list_and_select_device = None
-    _audio_available = False
+    mod_name = _LAZY_ATTRS.get(name)
+    if mod_name is None:
+        return None
+    mod = import_module(mod_name, __name__)
+    # Submodules whose RHS *is* the target (e.g. ``add_noise`` →
+    # ``._synthesis.add_noise``, ``filt`` → ``.filt``) resolve to the module
+    # object itself; everything else is an attribute on the imported module.
+    attr = mod if mod.__name__.rsplit(".", 1)[-1] == name else getattr(mod, name)
+    globals()[name] = attr
+    return attr
 
-# Try to import MNE-related functions
-try:
-    from ._audio_io._mne import get_eeg_pos
 
-    _mne_available = True
-except ImportError:
-    warnings.warn(
-        "MNE functionality unavailable. Install MNE-Python to use EEG position features.",
-        ImportWarning,
-    )
-    get_eeg_pos = None
-    _mne_available = False
+def _load_optional_attr(name: str):
+    """Resolve an `_OPTIONAL_ATTRS` name and cache it (None on failure)."""
+    from importlib import import_module
 
+    spec = _OPTIONAL_ATTRS.get(name)
+    if spec is None:
+        return None
+    mod_name, attr_name = spec
+    try:
+        mod = import_module(mod_name, __name__)
+        attr = getattr(mod, attr_name, None)
+    except (ImportError, OSError):
+        attr = None
+    globals()[name] = attr
+    return attr
+
+
+def __getattr__(name: str):
+    """PEP 562 lazy-loader: import on first access, cache, return."""
+    if name in _LAZY_ATTRS:
+        return _load_lazy_attr(name)
+    if name in _OPTIONAL_ATTRS:
+        return _load_optional_attr(name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __dir__() -> list[str]:
+    return sorted(set(_LAZY_ATTRS) | set(_OPTIONAL_ATTRS) | set(globals()))
+
+
+# ---------------------------------------------------------------------------
+# Lazy backwards-compat alias finder. Installing a light meta-path finder lets
+# ``import scitex_dsp._hilbert`` (and friends) succeed by transparently
+# importing the relocated module, *without* importing anything heavy at
+# ``import scitex_dsp`` time.
+# ---------------------------------------------------------------------------
+class _BCAliasFinder:
+    """importlib meta-path finder for relocated backward-compat modules."""
+
+    def find_module(self, fullname, path=None):  # legacy API (py<3.4 compat)
+        return self if fullname in _BC_ALIASES else None
+
+    def load_module(self, fullname):  # pragma: no cover — legacy path
+        import sys as _sys
+
+        if fullname in _sys.modules:
+            return _sys.modules[fullname]
+        return self._import(fullname)
+
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname not in _BC_ALIASES:
+            return None
+        from importlib.machinery import ModuleSpec
+
+        return ModuleSpec(fullname, self)
+
+    def create_module(self, spec):
+        return self._import(spec.name)
+
+    def exec_module(self, module):
+        # Module is already fully initialised (it's the real target module);
+        # nothing further to execute.
+        return None
+
+    @staticmethod
+    def _import(fullname):
+        import sys as _sys
+        from importlib import import_module
+
+        target = import_module(_BC_ALIASES[fullname], __name__)
+        _sys.modules[fullname] = target
+        return target
+
+
+def _install_bc_finder() -> None:
+    import sys as _sys
+
+    if not any(isinstance(f, _BCAliasFinder) for f in _sys.meta_path):
+        _sys.meta_path.append(_BCAliasFinder())
+
+
+_install_bc_finder()
+
+
+# Public API: every non-underscore lazy/optional name (underscore-prefixed
+# entries are backwards-compat internals that stay importable but private).
 __all__ = [
     "__version__",
-    "add_noise",
-    "band_powers",
-    "crop",
-    "demo_sig",
-    "detect_ripples",
-    "ensure_3d",
-    "example",
-    "filt",
-    "get_eeg_pos",
-    "hilbert",
-    "list_and_select_device",
-    "modulation_index",
-    "norm",
-    "pac",
-    "params",
-    "psd",
-    "reference",
-    "resample",
-    "time",
-    "to_segments",
-    "to_sktime_df",
-    "wavelet",
+    *(n for n in _LAZY_ATTRS if not n.startswith("_")),
+    *(n for n in _OPTIONAL_ATTRS if not n.startswith("_")),
 ]
