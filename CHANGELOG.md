@@ -5,6 +5,12 @@ All notable changes to `scitex-dsp` are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.1.10]
+
+- fix(deps): repoint `scitex_gen` imports to the public API (`from scitex_gen import to_z/to_even/to_odd`) after scitex-gen's `_numeric` reorg, which broke the old private `scitex_gen._norm`/`._to_even`/`._to_odd` paths against scitex-gen 0.1.10
+- deps: raise floors to `scitex-gen>=0.1.10` and `scitex-nn>=0.1.13` (the versions carrying the fixes)
+- test(gate): replace stale `scitex_gen._numeric._*` cross-package gate entries with the public `scitex_gen` (PS-140)
+
 ## [Unreleased]
 
 ### Fixed
