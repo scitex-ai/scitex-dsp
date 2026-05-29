@@ -120,7 +120,10 @@ _OPTIONAL_ATTRS: dict[str, tuple[str, str]] = {
 # name (full module path) → relative target module that actually defines it.
 # ---------------------------------------------------------------------------
 _BC_ALIASES: dict[str, str] = {
-    "scitex_dsp.add_noise": "._synthesis.add_noise",
+    # NOTE: ``scitex_dsp.add_noise`` is now a *physical* re-export module
+    # (src/scitex_dsp/add_noise.py), so it resolves via normal import
+    # machinery under both ``scitex_dsp.add_noise`` and the umbrella alias
+    # ``scitex.dsp.add_noise``; no meta-path entry is needed here.
     "scitex_dsp._demo_sig": "._synthesis._demo_sig",
     "scitex_dsp._hilbert": "._spectral._hilbert",
     "scitex_dsp._modulation_index": "._spectral._modulation_index",
