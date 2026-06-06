@@ -5,6 +5,15 @@ All notable changes to `scitex-dsp` are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+- refactor: migrate `to_z` from `scitex_gen` to `scitex_math` in
+  `_detect_ripples.py`. Part of Phase B of the scitex-gen full
+  retirement wave. After both this PR and #16 (to_even/to_odd
+  migration) land, `scitex_gen` will no longer be imported anywhere
+  in this repo — the `scitex-gen` dependency entry can then be
+  dropped in a follow-up.
+
 ## [0.1.10]
 
 - fix(deps): repoint `scitex_gen` imports to the public API (`from scitex_gen import to_z/to_even/to_odd`) after scitex-gen's `_numeric` reorg, which broke the old private `scitex_gen._norm`/`._to_even`/`._to_odd` paths against scitex-gen 0.1.10

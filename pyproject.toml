@@ -27,6 +27,7 @@ dependencies = [
     "xarray",
     "scitex-decorators>=0.1.1",
     "scitex-gen>=0.1.10",
+    "scitex-math>=0.2.0",
     "scitex-nn>=0.1.13",
 ]
 
