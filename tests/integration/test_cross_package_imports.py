@@ -24,6 +24,7 @@ CROSS_PACKAGE_IMPORTS = [
     "scitex_decorators",
     "scitex_dev",
     "scitex_gen",
+    "scitex_math",
     "scitex_nn._Filters",
     "scitex_nn._Hilbert",
     "scitex_nn._ModulationIndex",

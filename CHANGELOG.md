@@ -5,6 +5,15 @@ All notable changes to `scitex-dsp` are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+- refactor: migrate `to_even` / `to_odd` from `scitex_gen` to the new
+  `scitex_math` package. `utils/filter.py` and
+  `utils/_differential_bandpass_filters.py` now do
+  `from scitex_math import to_even, to_odd`. `scitex-gen` remains a
+  runtime dep because `_detect_ripples.py` still imports `to_z` from
+  it. Adds `scitex-math>=0.1.0` to `[project] dependencies`.
+
 ## [0.1.10]
 
 - fix(deps): repoint `scitex_gen` imports to the public API (`from scitex_gen import to_z/to_even/to_odd`) after scitex-gen's `_numeric` reorg, which broke the old private `scitex_gen._norm`/`._to_even`/`._to_odd` paths against scitex-gen 0.1.10
