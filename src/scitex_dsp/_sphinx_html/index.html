@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>scitex-dsp &mdash; scitex-dsp 0.1.8 documentation</title>
+  <title>scitex-dsp &mdash; scitex-dsp 0.1.11 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=22607128"></script>
+      <script src="_static/documentation_options.js?v=1e825a29"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -48,9 +48,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 </ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="api/scitex_dsp.html">scitex_dsp</a></li>
-</ul>
 
         </div>
       </div>
@@ -78,8 +75,18 @@
              
   <section id="scitex-dsp">
 <h1>scitex-dsp<a class="headerlink" href="#scitex-dsp" title="Link to this heading"></a></h1>
-<p>Small linear-algebra helpers (distance, geometric median, cosine, nannorm)
-extracted from the SciTeX ecosystem as a standalone package.</p>
+<p>Digital signal-processing primitives for neuroscience — Hilbert analytic
+signal, power spectral density / band powers, phase-amplitude coupling and
+the modulation index, continuous wavelet transform, Buzsaki-style ripple
+detection, deterministic demo signals, and pre-/post-processing utilities
+(crop, resample, noise synthesis, segmentation). Extracted from the SciTeX
+ecosystem as a standalone package.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">scitex_dsp</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dsp</span>
+
+<span class="n">xx</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">dsp</span><span class="o">.</span><span class="n">demo_sig</span><span class="p">(</span><span class="n">sig_type</span><span class="o">=</span><span class="s2">&quot;chirp&quot;</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+<span class="n">ana</span> <span class="o">=</span> <span class="n">dsp</span><span class="o">.</span><span class="n">hilbert</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span>
+</pre></div>
+</div>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
@@ -87,35 +94,39 @@ extracted from the SciTeX ecosystem as a standalone package.</p>
 <li class="toctree-l2"><a class="reference internal" href="api.html#functionalities">Functionalities</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#io">IO</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#dependencies">Dependencies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.band_powers"><code class="docutils literal notranslate"><span class="pre">band_powers()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.crop"><code class="docutils literal notranslate"><span class="pre">crop()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.demo_sig"><code class="docutils literal notranslate"><span class="pre">demo_sig()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.detect_ripples"><code class="docutils literal notranslate"><span class="pre">detect_ripples()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.ensure_3d"><code class="docutils literal notranslate"><span class="pre">ensure_3d()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.get_eeg_pos"><code class="docutils literal notranslate"><span class="pre">get_eeg_pos()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#performance">Performance</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.hilbert"><code class="docutils literal notranslate"><span class="pre">hilbert()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.modulation_index"><code class="docutils literal notranslate"><span class="pre">modulation_index()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.pac"><code class="docutils literal notranslate"><span class="pre">pac()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.psd"><code class="docutils literal notranslate"><span class="pre">psd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.band_powers"><code class="docutils literal notranslate"><span class="pre">band_powers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.pac"><code class="docutils literal notranslate"><span class="pre">pac()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.wavelet"><code class="docutils literal notranslate"><span class="pre">wavelet()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.modulation_index"><code class="docutils literal notranslate"><span class="pre">modulation_index()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.crop"><code class="docutils literal notranslate"><span class="pre">crop()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.ensure_3d"><code class="docutils literal notranslate"><span class="pre">ensure_3d()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.resample"><code class="docutils literal notranslate"><span class="pre">resample()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.time"><code class="docutils literal notranslate"><span class="pre">time()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.demo_sig"><code class="docutils literal notranslate"><span class="pre">demo_sig()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.to_segments"><code class="docutils literal notranslate"><span class="pre">to_segments()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.to_sktime_df"><code class="docutils literal notranslate"><span class="pre">to_sktime_df()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.wavelet"><code class="docutils literal notranslate"><span class="pre">wavelet()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.detect_ripples"><code class="docutils literal notranslate"><span class="pre">detect_ripples()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#scitex_dsp.get_eeg_pos"><code class="docutils literal notranslate"><span class="pre">get_eeg_pos()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#spectral-primitives">Spectral Primitives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#pre-post-processing">Pre-/Post-processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#ripple-detection">Ripple Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#signal-synthesis">Signal Synthesis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#audio-eeg-i-o">Audio / EEG I/O</a></li>
 </ul>
 </li>
 </ul>
 </div>
-<section id="api-reference">
-<h2>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h2>
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api/scitex_dsp.html#module-scitex_dsp" title="scitex_dsp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scitex_dsp</span></code></a></p></td>
-<td><p>scitex-dsp — Digital signal-processing primitives for neuroscience.</p></td>
-</tr>
-</tbody>
-</table>
 </section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
 </section>
 
 

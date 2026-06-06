@@ -9,7 +9,7 @@ import warnings
 import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
-from scitex_gen._norm import to_z
+from scitex_gen import to_z
 
 from ._resample import resample
 from ._spectral._hilbert import hilbert

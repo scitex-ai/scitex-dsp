@@ -8,12 +8,15 @@
 import pytest
 
 pytest.importorskip("mne")
+# plot_filter_responses delegates to scitex.plt (optional, heavy umbrella
+# stack). Skip the whole module when it is absent rather than fail — the
+# plotting path is an optional integration, not a core-dsp requirement.
+pytest.importorskip("scitex.plt")
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.signal import freqz
-
 import scitex
+from scipy.signal import freqz
 from scitex.dsp.utils.filter import design_filter, plot_filter_responses
 
 
@@ -50,7 +53,6 @@ class TestDesignFilter:
         # Assert
         assert filter_coeffs.dtype in [np.float32, np.float64]
 
-
     def test_design_filter_highpass_filter_coeffs_is_np_ndarray(self):
         # Arrange
         sig_len = 1000
@@ -80,7 +82,6 @@ class TestDesignFilter:
         filter_coeffs = design_filter(sig_len, fs, high_hz=high_hz)
         # Assert
         assert filter_coeffs.dtype in [np.float32, np.float64]
-
 
     def test_design_filter_bandpass_filter_coeffs_is_np_ndarray(self):
         # Arrange
@@ -114,7 +115,6 @@ class TestDesignFilter:
         filter_coeffs = design_filter(sig_len, fs, low_hz=low_hz, high_hz=high_hz)
         # Assert
         assert filter_coeffs.dtype in [np.float32, np.float64]
-
 
     def test_design_filter_bandstop_filter_coeffs_is_np_ndarray(self):
         # Arrange
@@ -154,7 +154,6 @@ class TestDesignFilter:
         )
         # Assert
         assert filter_coeffs.dtype in [np.float32, np.float64]
-
 
     @pytest.mark.parametrize(
         "kwargs",
@@ -273,15 +272,12 @@ class TestDesignFilter:
         # Assert
         assert isinstance(high_fs_filter, np.ndarray)
 
-
     def test_design_filter_edge_cases_low_freq_filter_is_np_ndarray(self):
         # Arrange
         # Act
         low_freq_filter = design_filter(sig_len=2000, fs=250, low_hz=1.0)
         # Assert
         assert isinstance(low_freq_filter, np.ndarray)
-
-
 
     def test_design_filter_parameter_validation_raises_exception(self):
         # Arrange
@@ -318,7 +314,6 @@ class TestDesignFilter:
         # Assert
         with pytest.raises(Exception):
             design_filter(sig_len, fs, low_hz=50.0, high_hz=10.0)
-
 
     @pytest.mark.parametrize(
         "args,kwargs",
@@ -441,9 +436,7 @@ class TestFilterIntegration:
         fs = 250
         filter_coeffs = design_filter(sig_len, fs, low_hz=8.0, high_hz=30.0)
         # Act
-        fig = plot_filter_responses(
-            filter_coeffs, fs, title="Alpha-Beta Band Filter"
-        )
+        fig = plot_filter_responses(filter_coeffs, fs, title="Alpha-Beta Band Filter")
         self._close_after(fig)
         # Assert
         assert hasattr(fig, "savefig")

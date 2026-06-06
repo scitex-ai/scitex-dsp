@@ -16,7 +16,7 @@ def crop(sig_2d, window_length, overlap_factor=0.0, axis=-1, time=None):
     - window_length (int): The length of each window to crop the sig_2d into.
     - overlap_factor (float): The fraction of the window that consecutive windows overlap. For example, an overlap_factor of 0.5 means 50% overlap.
     - axis (int): The time axis along which to crop the sig_2d.
-        - time (numpy.ndarray): The time vector associated with the signal. Its length should match the signal's length along the cropping axis.
+    - time (numpy.ndarray): The time vector associated with the signal. Its length should match the signal's length along the cropping axis.
 
     Returns:
     - cropped_windows (numpy.ndarray): The cropped signal windows. The shape depends on the input shape and the specified axis.

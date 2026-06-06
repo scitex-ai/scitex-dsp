@@ -1,6 +1,0 @@
-scitex\_dsp.params
-==================
-
-.. automodule:: scitex_dsp.params
-
-   
