@@ -28,6 +28,14 @@ dependencies = [
     "scitex-decorators>=0.1.1",
     "scitex-gen>=0.1.10",
     "scitex-nn>=0.1.13",
+    # scitex-dsp calls `scitex_dev.try_import_optional` at module-load in
+    # four src/ modules — _resample.py:12, _audio_io/_mne.py:6,
+    # _synthesis/_demo_sig.py:12, utils/_differential_bandpass_filters.py:23.
+    # scitex-dev is therefore a HARD core dep, not [dev]-only. Pin floor
+    # v0.17.10 = first release with the PS-213
+    # console-script-deps-must-be-core audit rule + hardened import-smoke.
+    # See scitex-dev PR #151 / dep-hygiene wave.
+    "scitex-dev>=0.17.10",
 ]
 
 [project.optional-dependencies]
@@ -50,7 +58,10 @@ dev = [
     "pytest",
     "pytest-cov",
     "ruff",
-    "scitex-dev>=0.11.7",
+    # scitex-dev moved to core (see above); kept here too so
+    # `pip install scitex-dsp[dev]` resolves cleanly and PS-210
+    # dev-extras-completeness stays happy.
+    "scitex-dev>=0.17.10",
 ]
 docs = [
     "sphinx>=7.0",
