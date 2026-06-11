@@ -26,7 +26,8 @@ dependencies = [
     "torch",
     "xarray",
     "scitex-decorators>=0.1.1",
-    "scitex-gen>=0.1.10",
+    "scitex-gen>=0.1.10",  # still owns to_z (._numeric._norm) used by _detect_ripples.py
+    "scitex-math>=0.1.0",  # owns to_even / to_odd since their standalonization out of scitex_gen
     "scitex-nn>=0.1.13",
     # scitex-dsp calls `scitex_dev.try_import_optional` at module-load in
     # four src/ modules — _resample.py:12, _audio_io/_mne.py:6,
