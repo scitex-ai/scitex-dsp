@@ -332,11 +332,26 @@ def _demo_sig_ripple_1d(t_sec=10, fs=512, **kwargs):
 
 
 if __name__ == "__main__":
-    import scitex
+    # The umbrella `scitex` is an OPTIONAL convenience for this demo —
+    # it bundles plt config (CONFIG/CC), automatic figure save paths,
+    # and the `scitex.session.start/close` decorators. None of that is
+    # required for the signal-generation that scitex_dsp owns. When the
+    # umbrella isn't installed (standalone CI, lean image, scitex-dsp
+    # used without the SciTeX ecosystem), gracefully fall back to plain
+    # matplotlib + a local PNG save, so this demo still produces a
+    # `traces.png` artifact and exits 0 — which is what
+    # `tests/integration/test_demos.py::test_demo_module_runs_to_zero_exit_code[_demo_sig]`
+    # asserts.
+    try:
+        import scitex
+    except ImportError:
+        scitex = None
 
-    # Start
-    CONFIG, sys.stdout, sys.stderr, plt, CC = scitex.session.start(sys, plt)
-    import scitex
+    if scitex is not None:
+        # Start (umbrella-managed session — sets up CONFIG, redirects
+        # stdout/stderr to the SciTeX run-dir, returns a session-aware
+        # plt wrapper).
+        CONFIG, sys.stdout, sys.stderr, plt, CC = scitex.session.start(sys, plt)
 
     SIG_TYPES = [
         "uniform",
@@ -350,7 +365,10 @@ if __name__ == "__main__":
     ]
 
     i_batch, i_ch, i_segment = 0, 0, 0
-    fig, axes = scitex.plt.subplots(nrows=len(SIG_TYPES))
+    if scitex is not None:
+        fig, axes = scitex.plt.subplots(nrows=len(SIG_TYPES))
+    else:
+        fig, axes = plt.subplots(nrows=len(SIG_TYPES))
     for ax, (i_sig_type, sig_type) in zip(axes, enumerate(SIG_TYPES)):
         xx, tt, fs = demo_sig(sig_type=sig_type)
         if sig_type not in ["tensorpac", "pac"]:
@@ -361,10 +379,14 @@ if __name__ == "__main__":
     fig.suptitle("Demo signals")
     fig.supxlabel("Time [s]")
     fig.supylabel("Amplitude [?V]")
-    scitex.io.save(fig, "traces.png")
+    if scitex is not None:
+        scitex.io.save(fig, "traces.png")
+    else:
+        fig.savefig("traces.png")
 
-    # Close
-    scitex.session.close(CONFIG)
+    # Close (umbrella-managed; only needed when scitex.session.start was used)
+    if scitex is not None:
+        scitex.session.close(CONFIG)
 
 # EOF
 
