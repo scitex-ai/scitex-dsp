@@ -12,6 +12,10 @@ Functionalities
 - `pac_features(pac_z, phase=None, ...)` — canonical PAC-summary
   feature set returning a flat `{names, values}` descriptor, plus
   `PAC_FEATURE_REGISTRY` / `feature_registry()` for provenance.
+- `extract_all(x, fs=None, sets=..., ...)` — multi-backend feature
+  facade emitting a single flat `{names, values}` vector over many
+  engines (`"pac"` delegate + `"catch22"` wrap), with
+  `extract_all_registry()` / `AVAILABLE_BACKENDS` for provenance.
 - `detect_ripples(x, fs, ...)` — Buzsaki-style ripple detector with
   edge handling, find-events, and column sorting.
 - `demo_sig(sig_type=...)` — deterministic chirp / periodic / ripple
@@ -93,6 +97,10 @@ _LAZY_ATTRS: dict[str, str] = {
     "pac_features": "._features",
     "feature_registry": "._features",
     "PAC_FEATURE_REGISTRY": "._features",
+    # Multi-backend feature facade (single flat named vector over engines).
+    "extract_all": "._features",
+    "extract_all_registry": "._features",
+    "AVAILABLE_BACKENDS": "._features",
     # Pre-/post-processing utilities.
     "crop": "._crop",
     "ensure_3d": "._ensure_3d",
