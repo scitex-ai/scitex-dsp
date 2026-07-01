@@ -5,6 +5,8 @@
 
 """scitex.dsp.wavelet function"""
 
+import torch
+
 from scitex_decorators import batch_fn, signal_fn
 from scitex_nn._Wavelet import Wavelet
 
@@ -17,9 +19,12 @@ def wavelet(
     fs,
     freq_scale="linear",
     out_scale="linear",
-    device="cuda",
+    device="auto",
     batch_size=32,
 ):
+    if device == "auto":
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+
     m = Wavelet(fs, freq_scale=freq_scale, out_scale="linear").to(device).eval()
     pha, amp, freqs = m(x.to(device))
 
@@ -147,7 +152,7 @@ if __name__ == "__main__":
         xx = xx[:, :, i_segment, :]
 
     # Main
-    pha, amp, freqs = wavelet(xx, fs, device="cuda")
+    pha, amp, freqs = wavelet(xx, fs)
     freqs = freqs[0, 0]
 
     # Plots
