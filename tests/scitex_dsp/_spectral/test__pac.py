@@ -5,14 +5,22 @@
 import pytest
 
 torch = pytest.importorskip("torch")
-# pac requires CUDA via tensorpac/julius — skip on CPU-only runners
-if not torch.cuda.is_available():
-    pytest.skip("CUDA unavailable; pac is GPU-only", allow_module_level=True)
 
 import numpy as np
-from scitex.dsp import pac
+from scitex_dsp import pac
+
+# The scitex_nn default backend has historically only been exercised on CUDA
+# runners (its permutation/degenerate-band edge cases differ on CPU). Keep that
+# contract for the pre-existing scitex_nn test classes below via a class-level
+# skip, so their behaviour is unchanged. The gpac-backend classes at the bottom
+# run on CPU and are deliberately NOT skipped.
+_requires_cuda = pytest.mark.skipif(
+    not torch.cuda.is_available(),
+    reason="scitex_nn pac backend exercised on CUDA runners only",
+)
 
 
+@_requires_cuda
 class TestPacAvailableFlags:
     """Test _AVAILABLE flags for optional dependencies."""
 
@@ -20,7 +28,7 @@ class TestPacAvailableFlags:
         """Test that TORCH_AVAILABLE flag is exported."""
         # Arrange
         # Act
-        from scitex.dsp._pac import TORCH_AVAILABLE
+        from scitex_dsp._pac import TORCH_AVAILABLE
 
         # Assert
         assert isinstance(TORCH_AVAILABLE, bool)
@@ -29,7 +37,7 @@ class TestPacAvailableFlags:
         """Test that _check_torch function is exported."""
         # Arrange
         # Act
-        from scitex.dsp._pac import _check_torch
+        from scitex_dsp._pac import _check_torch
 
         # Assert
         assert callable(_check_torch)
@@ -38,7 +46,7 @@ class TestPacAvailableFlags:
         """Test that TORCH_AVAILABLE is True when torch is installed."""
         # Arrange
         # Act
-        from scitex.dsp._pac import TORCH_AVAILABLE
+        from scitex_dsp._pac import TORCH_AVAILABLE
 
         # Assert
         assert TORCH_AVAILABLE is True
@@ -46,13 +54,14 @@ class TestPacAvailableFlags:
     def test_check_torch_does_not_raise_when_available(self):
         """Test that _check_torch doesn't raise when torch is available."""
         # Arrange
-        from scitex.dsp._pac import _check_torch
+        from scitex_dsp._pac import _check_torch
         # Act
         result = _check_torch()
         # Assert
         assert result is None
 
 
+@_requires_cuda
 class TestPac:
     """Test cases for phase-amplitude coupling (PAC) calculation."""
 
@@ -628,6 +637,134 @@ class TestPac:
 
         # Assert
         assert np.allclose(pac1, pac2, rtol=1e-5)
+
+
+class TestPacBackendResolution:
+    """Test the backend= selector resolves as documented."""
+
+    def test_resolve_backend_auto_maps_to_scitex_nn(self):
+        # Arrange
+        from scitex_dsp._pac import _resolve_backend
+        # Act
+        resolved = _resolve_backend("auto")
+        # Assert
+        assert resolved == "scitex_nn"
+
+    def test_resolve_backend_scitex_nn_passes_through(self):
+        # Arrange
+        from scitex_dsp._pac import _resolve_backend
+        # Act
+        resolved = _resolve_backend("scitex_nn")
+        # Assert
+        assert resolved == "scitex_nn"
+
+    def test_resolve_backend_gpac_passes_through(self):
+        # Arrange
+        from scitex_dsp._pac import _resolve_backend
+        # Act
+        resolved = _resolve_backend("gpac")
+        # Assert
+        assert resolved == "gpac"
+
+    def test_resolve_backend_unknown_raises_value_error(self):
+        # Arrange
+        from scitex_dsp._pac import _resolve_backend
+        # Act / Assert
+        with pytest.raises(ValueError):
+            _resolve_backend("nonexistent")
+
+
+class TestPacScitexNnBackendExplicit:
+    """Test the explicit backend='scitex_nn' path stays valid on CPU."""
+
+    def test_scitex_nn_backend_returns_tuple_of_three(self):
+        # Arrange
+        fs = 512
+        x = np.random.randn(1, 2, 1024).astype(np.float32)
+        # Act
+        result = pac(x, fs, pha_n_bands=5, amp_n_bands=4, device="cpu",
+                     backend="scitex_nn")
+        # Assert
+        assert len(result) == 3
+
+    def test_scitex_nn_backend_values_shape_matches_bands(self):
+        # Arrange
+        fs = 512
+        x = np.random.randn(1, 2, 1024).astype(np.float32)
+        # Act
+        pac_values, _, _ = pac(x, fs, pha_n_bands=5, amp_n_bands=4,
+                               device="cpu", backend="scitex_nn")
+        # Assert
+        assert pac_values.shape == (1, 2, 5, 4)
+
+    def test_default_backend_values_shape_matches_scitex_nn(self):
+        # Arrange
+        fs = 512
+        x = np.random.randn(1, 2, 1024).astype(np.float32)
+        # Act
+        pac_values, _, _ = pac(x, fs, pha_n_bands=5, amp_n_bands=4,
+                               device="cpu")
+        # Assert
+        assert pac_values.shape == (1, 2, 5, 4)
+
+
+class TestPacGpacBackend:
+    """Test the third-party gpac (gpu-pac) backend on CPU."""
+
+    def test_gpac_backend_returns_tuple_of_three(self):
+        # Arrange
+        pytest.importorskip("gpac")
+        fs = 512
+        x = np.random.randn(2, 3, 2048).astype(np.float32)
+        # Act
+        result = pac(x, fs, pha_n_bands=5, amp_n_bands=4, device="cpu",
+                     backend="gpac")
+        # Assert
+        assert len(result) == 3
+
+    def test_gpac_backend_values_shape_matches_bands(self):
+        # Arrange
+        pytest.importorskip("gpac")
+        fs = 512
+        x = np.random.randn(2, 3, 2048).astype(np.float32)
+        # Act
+        pac_values, _, _ = pac(x, fs, pha_n_bands=5, amp_n_bands=4,
+                               device="cpu", backend="gpac")
+        # Assert
+        assert tuple(pac_values.shape) == (2, 3, 5, 4)
+
+    def test_gpac_backend_pha_mids_length_matches_pha_n_bands(self):
+        # Arrange
+        pytest.importorskip("gpac")
+        fs = 512
+        x = np.random.randn(2, 3, 2048).astype(np.float32)
+        # Act
+        _, pha_mids, _ = pac(x, fs, pha_n_bands=5, amp_n_bands=4,
+                             device="cpu", backend="gpac")
+        # Assert
+        assert len(pha_mids) == 5
+
+    def test_gpac_backend_amp_mids_length_matches_amp_n_bands(self):
+        # Arrange
+        pytest.importorskip("gpac")
+        fs = 512
+        x = np.random.randn(2, 3, 2048).astype(np.float32)
+        # Act
+        _, _, amp_mids = pac(x, fs, pha_n_bands=5, amp_n_bands=4,
+                             device="cpu", backend="gpac")
+        # Assert
+        assert len(amp_mids) == 4
+
+    def test_gpac_backend_pha_mids_is_np_ndarray(self):
+        # Arrange
+        pytest.importorskip("gpac")
+        fs = 512
+        x = np.random.randn(2, 3, 2048).astype(np.float32)
+        # Act
+        _, pha_mids, _ = pac(x, fs, pha_n_bands=5, amp_n_bands=4,
+                             device="cpu", backend="gpac")
+        # Assert
+        assert isinstance(pha_mids, np.ndarray)
 
 
 if __name__ == "__main__":

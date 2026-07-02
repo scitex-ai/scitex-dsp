@@ -51,6 +51,10 @@ audio = [
 ]
 pac = [
     "tensorpac",
+    # Real GPU-PAC engine behind pac(..., backend="gpac"). Distribution name
+    # is gpu-pac; import name is gpac. Installed from git until PyPI release.
+    # (NOT the unrelated PyPI package literally named "gpac".)
+    "gpu-pac @ git+https://github.com/ywatanabe1989/gpac",
 ]
 features = [
     # Optional/lazy dep for the PROVISIONAL pac_z_gmm feature family
@@ -67,6 +71,10 @@ dev = [
     "joblib",
     "flask",
     "tensorpac",
+    # Real GPU-PAC engine exercised by the gpac backend tests in
+    # tests/scitex_dsp/_spectral/test__pac.py (importorskip'd). Mirrors the
+    # [pac] extra so `pip install scitex-dsp[dev]` resolves it.
+    "gpu-pac @ git+https://github.com/ywatanabe1989/gpac",
     "sounddevice",
     "ripple_detection",
     # exercises the PROVISIONAL GMM feature family in
