@@ -5,10 +5,10 @@
 
 """scitex.dsp.wavelet function"""
 
-import torch
-
 from scitex_decorators import batch_fn, signal_fn
 from scitex_nn._Wavelet import Wavelet
+
+from ._device import resolve_device
 
 
 # Functions
@@ -22,8 +22,7 @@ def wavelet(
     device="auto",
     batch_size=32,
 ):
-    if device == "auto":
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = resolve_device(device)
 
     m = Wavelet(fs, freq_scale=freq_scale, out_scale="linear").to(device).eval()
     pha, amp, freqs = m(x.to(device))

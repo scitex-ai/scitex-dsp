@@ -20,6 +20,8 @@ except ImportError:
 
 from scitex_decorators import signal_fn
 
+from ._device import resolve_device
+
 if TORCH_AVAILABLE:
     from scitex_nn._PAC import PAC
 
@@ -87,8 +89,7 @@ def pac(
     """
     _check_torch()
 
-    if device == "auto":
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = resolve_device(device)
 
     def process_ch_batching(m, x, batch_size_ch, device):
         n_chs = x.shape[1]

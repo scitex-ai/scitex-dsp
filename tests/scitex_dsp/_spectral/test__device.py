@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Tests for the CPU-safe ``device="auto"`` default in ``pac`` and ``wavelet``.
+"""Tests for scitex_dsp._spectral._device.resolve_device and the CPU-safe
+``device="auto"`` default it powers in ``pac`` and ``wavelet``.
 
-These verify that both functions run on a CPU-only environment (torch present,
-no CUDA) via the new ``device="auto"`` default, that explicit ``device="cpu"``
-keeps working, and — when CUDA is present — that ``"auto"`` resolves to cuda.
-The auto/cpu paths deliberately do NOT skip on CPU-only runners: that is the
-whole point of this change (unblocking neurovista's CPU feature-extraction).
+resolve_device turns ``"auto"`` into cuda-if-available-else-cpu and passes
+explicit values through unchanged. The pac/wavelet ``"auto"``/``"cpu"`` paths
+deliberately do NOT skip on CPU-only runners: that is the whole point of the
+change (unblocking neurovista's CPU feature-extraction).
 """
 
 import numpy as np
@@ -15,6 +15,7 @@ import pytest
 torch = pytest.importorskip("torch")
 
 from scitex_dsp import pac, wavelet
+from scitex_dsp._spectral._device import resolve_device
 
 
 def _wavelet_sig():
@@ -29,6 +30,49 @@ def _pac_sig():
     n_samples = int(fs * 2)
     x = np.random.randn(1, 2, n_samples).astype(np.float32)
     return x, fs
+
+
+class TestResolveDevice:
+    def test_explicit_cpu_passthrough(self):
+        # Arrange
+        # Act
+        got = resolve_device("cpu")
+        # Assert
+        assert got == "cpu"
+
+    def test_explicit_cuda_passthrough(self):
+        # Arrange
+        # Act
+        got = resolve_device("cuda")
+        # Assert
+        assert got == "cuda"
+
+    def test_auto_resolves_to_valid_device(self):
+        # Arrange
+        # Act
+        got = resolve_device("auto")
+        # Assert
+        assert got in ("cuda", "cpu")
+
+    @pytest.mark.skipif(
+        torch.cuda.is_available(), reason="CUDA available — auto resolves to cuda"
+    )
+    def test_auto_is_cpu_without_cuda(self):
+        # Arrange
+        # Act
+        got = resolve_device("auto")
+        # Assert
+        assert got == "cpu"
+
+    @pytest.mark.skipif(
+        not torch.cuda.is_available(), reason="CUDA not available"
+    )
+    def test_auto_is_cuda_with_cuda(self):
+        # Arrange
+        # Act
+        got = resolve_device("auto")
+        # Assert
+        assert got == "cuda"
 
 
 class TestWaveletDeviceAuto:
