@@ -20,6 +20,8 @@ except ImportError:
 
 from scitex_decorators import signal_fn
 
+from ._device import resolve_device
+
 if TORCH_AVAILABLE:
     from scitex_nn._PAC import PAC
 
@@ -47,7 +49,7 @@ def pac(
     amp_start_hz=60,
     amp_end_hz=160,
     amp_n_bands=100,
-    device="cuda",
+    device="auto",
     batch_size=1,
     batch_size_ch=-1,
     fp16=False,
@@ -86,6 +88,8 @@ def pac(
         pac, pha_mids_hz, amp_mids_hz = scitex.dsp.pac(xx, fs)
     """
     _check_torch()
+
+    device = resolve_device(device)
 
     def process_ch_batching(m, x, batch_size_ch, device):
         n_chs = x.shape[1]
