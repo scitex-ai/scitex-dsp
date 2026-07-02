@@ -310,22 +310,10 @@ def test_unknown_backend_in_registry_raises():
         extract_all_registry(sets=["nope"])
 
 
-def test_catch22_missing_pycatch22_raises(monkeypatch, x):
-    # Arrange
-    import builtins
-
-    real_import = builtins.__import__
-
-    def fake_import(name, *args, **kwargs):
-        if name == "pycatch22" or name.startswith("pycatch22."):
-            raise ImportError("No module named 'pycatch22'")
-        return real_import(name, *args, **kwargs)
-
-    monkeypatch.setattr(builtins, "__import__", fake_import)
-    # Act
-    # Assert
-    with pytest.raises(ImportError, match="catch22"):
-        extract_all(x, sets=["catch22"])
+# NOTE: the "missing pycatch22 raises a clear ImportError" path is intentionally
+# NOT unit-tested — simulating an absent dependency requires import mocking,
+# which the ecosystem forbids (PA-306 no-mocks). The error path itself lives in
+# the catch22 backend and names the `scitex-dsp[catch22]` extra.
 
 
 # ---------------------------------------------------------------------------
