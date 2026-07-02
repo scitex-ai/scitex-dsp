@@ -101,6 +101,11 @@ _LAZY_ATTRS: dict[str, str] = {
     "extract_all": "._features",
     "extract_all_registry": "._features",
     "AVAILABLE_BACKENDS": "._features",
+    # Registry-driven feature-redundancy audit.
+    "feature_correlation": "._features",
+    "redundancy_summary": "._features",
+    "pca_loadings": "._features",
+    "correlation_by_group": "._features",
     # Pre-/post-processing utilities.
     "crop": "._crop",
     "ensure_3d": "._ensure_3d",

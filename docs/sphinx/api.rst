@@ -27,6 +27,21 @@ Spectral Primitives
 .. autofunction:: scitex_dsp.modulation_index
    :no-index:
 
+Feature Extraction
+------------------
+
+.. autofunction:: scitex_dsp.feature_correlation
+   :no-index:
+
+.. autofunction:: scitex_dsp.redundancy_summary
+   :no-index:
+
+.. autofunction:: scitex_dsp.pca_loadings
+   :no-index:
+
+.. autofunction:: scitex_dsp.correlation_by_group
+   :no-index:
+
 Pre-/Post-processing
 --------------------
 
