@@ -669,7 +669,8 @@ class TestPacBackendResolution:
     def test_resolve_backend_unknown_raises_value_error(self):
         # Arrange
         from scitex_dsp._pac import _resolve_backend
-        # Act / Assert
+        # Act
+        # Assert
         with pytest.raises(ValueError):
             _resolve_backend("nonexistent")
 
