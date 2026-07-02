@@ -1,0 +1,445 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scitex_dsp._features._extract_all &mdash; scitex-dsp 0.1.11 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=1e825a29"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            scitex-dsp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">scitex-dsp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scitex_dsp._features._extract_all</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scitex_dsp._features._extract_all</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;Multi-backend feature facade — one flat named vector over many engines.</span>
+
+<span class="sd">``extract_all`` is the single entry point a downstream consumer (neurovista&#39;s</span>
+<span class="sd">iEEG pipeline) calls to obtain a ``catch22_all``-style ``{names, values}``</span>
+<span class="sd">descriptor *regardless of which engine computed each feature*. It runs one or</span>
+<span class="sd">more pluggable backends, concatenates their per-backend ``{names, values}`` in</span>
+<span class="sd">a STABLE, documented order, and merges every backend&#39;s registry entries so that</span>
+<span class="sd">each emitted name is self-documenting (``family``, ``engine``,</span>
+<span class="sd">``interpretation``, and the two-flag provenance semantics from P1a:</span>
+<span class="sd">``provisional`` / ``input_provisional``).</span>
+
+<span class="sd">Backends (shipped)</span>
+<span class="sd">------------------</span>
+<span class="sd">- ``&quot;pac&quot;``     — delegates to :func:`scitex_dsp._features.pac_features`. It</span>
+<span class="sd">  needs a precomputed ``pac_z`` (and optional ``phase``), which are supplied</span>
+<span class="sd">  via kwargs (``extract_all(pac_z=..., phase=..., sets=[&quot;pac&quot;])``). Computing</span>
+<span class="sd">  ``pac_z`` from a raw signal is deliberately *not* done here — that requires</span>
+<span class="sd">  unpinned PAC params and is future work; requesting ``&quot;pac&quot;`` without</span>
+<span class="sd">  ``pac_z`` raises a clear error. Reuses ``pac_features``&#39; registry entries.</span>
+<span class="sd">- ``&quot;catch22&quot;`` — wraps :mod:`pycatch22` (``catch22_all`` on the 1-D time</span>
+<span class="sd">  series ``x``). Lazy import; missing -&gt; clear ImportError naming the</span>
+<span class="sd">  ``catch22`` extra. Registers its 22 canonical names into the merged registry</span>
+<span class="sd">  (``family=&quot;catch22&quot;``, ``engine=&quot;pycatch22&quot;``, ``provisional=False``).</span>
+
+<span class="sd">Deferred backends</span>
+<span class="sd">-----------------</span>
+<span class="sd">- ``gpac`` — a future backend that would compute PAC from a raw signal via</span>
+<span class="sd">  ``scitex_nn.PAC`` (gpac). Not implemented here: gpac is not installed and</span>
+<span class="sd">  wrapping it is speculative. Adding it later is a one-liner (register a</span>
+<span class="sd">  callable in ``_BACKENDS``); see the extension-point note below.</span>
+
+<span class="sd">Stable ordering guarantee</span>
+<span class="sd">-------------------------</span>
+<span class="sd">Output order is deterministic: backends run in the order given by ``sets``</span>
+<span class="sd">(default: all available backends in ``_DEFAULT_SETS`` order), and within each</span>
+<span class="sd">backend its own canonical order is preserved. Names are globally unique — the</span>
+<span class="sd">pac and catch22 families already use non-colliding, family-prefixed names</span>
+<span class="sd">(``pac_z_nanmean`` etc. vs the ``DN_``/``CO_``/``SB_`` catch22 short names), so</span>
+<span class="sd">no re-prefixing is needed; a collision across backends is treated as an error.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._pac_features</span><span class="w"> </span><span class="kn">import</span> <span class="n">pac_features</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">feature_registry</span> <span class="k">as</span> <span class="n">_pac_feature_registry</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;extract_all&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;extract_all_registry&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AVAILABLE_BACKENDS&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># catch22 canonical names + short interpretations.</span>
+<span class="c1">#</span>
+<span class="c1"># These are the 22 features pycatch22.catch22_all emits, in its canonical</span>
+<span class="c1"># order. We hardcode the names/interpretations so the registry is populated</span>
+<span class="c1"># *without* needing pycatch22 importable (registry queries must work even when</span>
+<span class="c1"># the optional engine is absent); the actual VALUES still come from pycatch22</span>
+<span class="c1"># and we assert name-agreement at call time.</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="n">_CATCH22_NAMES</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;DN_HistogramMode_5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DN_HistogramMode_10&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CO_f1ecac&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CO_FirstMin_ac&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CO_HistogramAMI_even_2_5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CO_trev_1_num&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MD_hrv_classic_pnn40&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SB_BinaryStats_mean_longstretch1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SB_TransitionMatrix_3ac_sumdiagcov&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PD_PeriodicityWang_th0_01&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CO_Embed2_Dist_tau_d_expfit_meandiff&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IN_AutoMutualInfoStats_40_gaussian_fmmi&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FC_LocalSimple_mean1_tauresrat&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DN_OutlierInclude_p_001_mdrmd&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DN_OutlierInclude_n_001_mdrmd&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SP_Summaries_welch_rect_area_5_1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SB_BinaryStats_diff_longstretch0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SB_MotifThree_quantile_hh&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SC_FluctAnal_2_rsrangefit_50_1_logi_prop_r1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SC_FluctAnal_2_dfa_50_1_2_logi_prop_r1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SP_Summaries_welch_rect_centroid&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FC_LocalSimple_mean3_stderr&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">_CATCH22_INTERP</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;DN_HistogramMode_5&quot;</span><span class="p">:</span> <span class="s2">&quot;Mode of z-scored distribution (5-bin histogram).&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DN_HistogramMode_10&quot;</span><span class="p">:</span> <span class="s2">&quot;Mode of z-scored distribution (10-bin histogram).&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CO_f1ecac&quot;</span><span class="p">:</span> <span class="s2">&quot;First 1/e crossing of the autocorrelation function.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CO_FirstMin_ac&quot;</span><span class="p">:</span> <span class="s2">&quot;First minimum of the autocorrelation function.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CO_HistogramAMI_even_2_5&quot;</span><span class="p">:</span> <span class="s2">&quot;Automutual information, m=2, 5 bins.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CO_trev_1_num&quot;</span><span class="p">:</span> <span class="s2">&quot;Time-reversibility statistic (trev), lag 1.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MD_hrv_classic_pnn40&quot;</span><span class="p">:</span> <span class="s2">&quot;Proportion of successive diffs exceeding 40 (pNN40).&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SB_BinaryStats_mean_longstretch1&quot;</span><span class="p">:</span> <span class="s2">&quot;Longest stretch above the mean (binary).&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SB_TransitionMatrix_3ac_sumdiagcov&quot;</span><span class="p">:</span> <span class="s2">&quot;Transition-matrix diagonal covariance.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PD_PeriodicityWang_th0_01&quot;</span><span class="p">:</span> <span class="s2">&quot;Wang periodicity measure (threshold 0.01).&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CO_Embed2_Dist_tau_d_expfit_meandiff&quot;</span><span class="p">:</span> <span class="s2">&quot;Exp-fit residual of embedding distances.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IN_AutoMutualInfoStats_40_gaussian_fmmi&quot;</span><span class="p">:</span> <span class="s2">&quot;First min of Gaussian automutual info.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FC_LocalSimple_mean1_tauresrat&quot;</span><span class="p">:</span> <span class="s2">&quot;Change in correlation length after forecasting.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DN_OutlierInclude_p_001_mdrmd&quot;</span><span class="p">:</span> <span class="s2">&quot;Positive-outlier timing distribution.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DN_OutlierInclude_n_001_mdrmd&quot;</span><span class="p">:</span> <span class="s2">&quot;Negative-outlier timing distribution.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SP_Summaries_welch_rect_area_5_1&quot;</span><span class="p">:</span> <span class="s2">&quot;Power in the lowest 20</span><span class="si">% o</span><span class="s2">f frequencies.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SB_BinaryStats_diff_longstretch0&quot;</span><span class="p">:</span> <span class="s2">&quot;Longest stretch of decreasing values.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SB_MotifThree_quantile_hh&quot;</span><span class="p">:</span> <span class="s2">&quot;Entropy of 3-letter symbolic motifs.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SC_FluctAnal_2_rsrangefit_50_1_logi_prop_r1&quot;</span><span class="p">:</span> <span class="s2">&quot;Rescaled-range fluctuation slope.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SC_FluctAnal_2_dfa_50_1_2_logi_prop_r1&quot;</span><span class="p">:</span> <span class="s2">&quot;Detrended fluctuation-analysis slope.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SP_Summaries_welch_rect_centroid&quot;</span><span class="p">:</span> <span class="s2">&quot;Centroid of the Welch power spectrum.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FC_LocalSimple_mean3_stderr&quot;</span><span class="p">:</span> <span class="s2">&quot;Mean error from a 3-point rolling forecast.&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_catch22_registry</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Registry entries for the 22 catch22 features (engine present or not).&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">name</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;family&quot;</span><span class="p">:</span> <span class="s2">&quot;catch22&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;engine&quot;</span><span class="p">:</span> <span class="s2">&quot;pycatch22&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;interpretation&quot;</span><span class="p">:</span> <span class="n">_CATCH22_INTERP</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
+            <span class="s2">&quot;provisional&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;input_provisional&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;note&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_CATCH22_NAMES</span>
+    <span class="p">}</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Backend implementations. Each backend is a callable</span>
+<span class="c1"># ``(x, fs, **kwargs) -&gt; {&quot;names&quot;: [...], &quot;values&quot;: np.ndarray}`` that also</span>
+<span class="c1"># knows how to describe itself via a paired ``*_registry`` provider.</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_backend_pac</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PAC backend — delegate to ``pac_features`` on a precomputed ``pac_z``.</span>
+
+<span class="sd">    ``pac_z`` (and optional ``phase``) must be supplied via kwargs; this</span>
+<span class="sd">    backend does NOT derive ``pac_z`` from the raw signal ``x`` (that needs</span>
+<span class="sd">    unpinned PAC params and is future work — see the ``gpac`` extension point).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;pac_z&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">or</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pac_z&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;extract_all(sets=[...&#39;pac&#39;...]) requires a precomputed &#39;pac_z&#39; &quot;</span>
+            <span class="s2">&quot;array passed as a keyword (e.g. extract_all(pac_z=..., &quot;</span>
+            <span class="s2">&quot;phase=..., sets=[&#39;pac&#39;])). Computing pac_z from the raw signal &quot;</span>
+            <span class="s2">&quot;&#39;x&#39; is future work (it needs unpinned PAC params); pass the &quot;</span>
+            <span class="s2">&quot;precomputed comodulogram instead.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">pac_z</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pac_z&quot;</span><span class="p">]</span>
+    <span class="n">phase</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;phase&quot;</span><span class="p">)</span>
+    <span class="n">include_gmm</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;include_gmm&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pac_features</span><span class="p">(</span><span class="n">pac_z</span><span class="p">,</span> <span class="n">phase</span><span class="p">,</span> <span class="n">include_gmm</span><span class="o">=</span><span class="n">include_gmm</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_backend_catch22</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;catch22 backend — wrap ``pycatch22.catch22_all`` on the 1-D series ``x``.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;extract_all(sets=[...&#39;catch22&#39;...]) requires the time series &#39;x&#39; &quot;</span>
+            <span class="s2">&quot;(the first positional argument) — got None.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pycatch22</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># pragma: no cover - exercised via importorskip</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;The &#39;catch22&#39; backend requires pycatch22. Install it via &quot;</span>
+            <span class="s2">&quot;`pip install scitex-dsp[catch22]` (or `pip install pycatch22`).&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+    <span class="n">series</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">pycatch22</span><span class="o">.</span><span class="n">catch22_all</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;names&quot;</span><span class="p">])</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;names&quot;</span><span class="p">:</span> <span class="n">names</span><span class="p">,</span> <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="n">values</span><span class="p">}</span>
+
+
+<span class="c1"># name -&gt; (compute callable, registry-provider callable)</span>
+<span class="n">_BACKENDS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;pac&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">_backend_pac</span><span class="p">,</span> <span class="n">_pac_feature_registry</span><span class="p">),</span>
+    <span class="s2">&quot;catch22&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">_backend_catch22</span><span class="p">,</span> <span class="n">_catch22_registry</span><span class="p">),</span>
+    <span class="c1"># Extension point: add a future backend by registering a</span>
+    <span class="c1">#   &quot;name&quot;: (compute_fn, registry_provider_fn)</span>
+    <span class="c1"># pair here, e.g. &quot;gpac&quot;: (_backend_gpac, _gpac_registry) once</span>
+    <span class="c1"># scitex_nn.PAC (gpac) is available and its params are pinned. DEFERRED.</span>
+<span class="p">}</span>
+
+<span class="c1">#: Backend names available to :func:`extract_all`, in canonical order.</span>
+<span class="n">AVAILABLE_BACKENDS</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">_BACKENDS</span><span class="p">)</span>
+
+<span class="c1">#: Default ``sets`` when the caller passes ``sets=None`` — all available</span>
+<span class="c1">#: backends, in canonical order. Documented so downstream ordering is stable.</span>
+<span class="n">_DEFAULT_SETS</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">AVAILABLE_BACKENDS</span>
+
+
+<div class="viewcode-block" id="extract_all">
+<a class="viewcode-back" href="../../../api.html#scitex_dsp.extract_all">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_all</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">fs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run one or more feature backends and emit a single flat named vector.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : array-like, optional</span>
+<span class="sd">        The 1-D time series. Required by the ``&quot;catch22&quot;`` backend. The</span>
+<span class="sd">        ``&quot;pac&quot;`` backend ignores ``x`` and instead consumes ``pac_z``/``phase``</span>
+<span class="sd">        from ``**kwargs`` (see below).</span>
+<span class="sd">    fs : float, optional</span>
+<span class="sd">        Sampling frequency. Currently unused by the shipped backends (catch22</span>
+<span class="sd">        is sampling-rate-agnostic; pac consumes a precomputed ``pac_z``) but</span>
+<span class="sd">        threaded through for future backends (e.g. a raw-signal PAC backend).</span>
+<span class="sd">    sets : list[str], optional</span>
+<span class="sd">        Backend names to run, e.g. ``[&quot;pac&quot;, &quot;catch22&quot;]``. Defaults to all</span>
+<span class="sd">        available backends (``AVAILABLE_BACKENDS``: ``(&quot;pac&quot;, &quot;catch22&quot;)``) in</span>
+<span class="sd">        that canonical order. Unknown names raise ``ValueError``.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Backend-specific inputs. The ``&quot;pac&quot;`` backend accepts ``pac_z``</span>
+<span class="sd">        (required), ``phase`` (optional), and ``include_gmm`` (default True).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        ``{&quot;names&quot;: list[str], &quot;values&quot;: np.ndarray}`` — the concatenation of</span>
+<span class="sd">        each backend&#39;s ``{names, values}`` in a STABLE order: backends in the</span>
+<span class="sd">        order of ``sets``, and within each backend its own canonical order.</span>
+<span class="sd">        ``values`` is a 1-D float array aligned to ``names``; ``names`` is</span>
+<span class="sd">        globally unique.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``sets`` names an unknown backend, if two backends emit the same</span>
+<span class="sd">        name (a collision), or if a required backend input is missing (e.g.</span>
+<span class="sd">        ``&quot;pac&quot;`` without ``pac_z``).</span>
+<span class="sd">    ImportError</span>
+<span class="sd">        If a requested backend&#39;s optional engine is absent (e.g. ``&quot;catch22&quot;``</span>
+<span class="sd">        without pycatch22 — install the ``catch22`` extra).</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The returned registry (queryable via :func:`extract_all_registry`) is</span>
+<span class="sd">      merged from every run backend so each emitted name is documented.</span>
+<span class="sd">    - ``gpac`` (raw-signal PAC via ``scitex_nn.PAC``) is a DEFERRED backend;</span>
+<span class="sd">      see the module docstring and the ``_BACKENDS`` extension point.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_DEFAULT_SETS</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sets</span><span class="p">)</span>
+
+    <span class="n">unknown</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sets</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_BACKENDS</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;extract_all: unknown backend(s) </span><span class="si">{</span><span class="n">unknown</span><span class="si">!r}</span><span class="s2">. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Available backends: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">AVAILABLE_BACKENDS</span><span class="p">)</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">values_parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">seen</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sets</span><span class="p">:</span>
+        <span class="n">compute_fn</span><span class="p">,</span> <span class="n">_registry_fn</span> <span class="o">=</span> <span class="n">_BACKENDS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">compute_fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">b_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;names&quot;</span><span class="p">])</span>
+        <span class="n">b_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">collisions</span> <span class="o">=</span> <span class="n">seen</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">b_names</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">collisions</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;extract_all: backend </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> emits name(s) &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">collisions</span><span class="p">)</span><span class="si">!r}</span><span class="s2"> that collide with an earlier backend. &quot;</span>
+                <span class="s2">&quot;Backend feature names must be globally unique.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">seen</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">b_names</span><span class="p">)</span>
+        <span class="n">names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">b_names</span><span class="p">)</span>
+        <span class="n">values_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">b_values</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">values_parts</span><span class="p">:</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">values_parts</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;names&quot;</span><span class="p">:</span> <span class="n">names</span><span class="p">,</span> <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="n">values</span><span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="extract_all_registry">
+<a class="viewcode-back" href="../../../api.html#scitex_dsp.extract_all_registry">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_all_registry</span><span class="p">(</span><span class="n">sets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the merged feature registry for the given backend ``sets``.</span>
+
+<span class="sd">    Merges each backend&#39;s registry entries (name -&gt; record) so every name that</span>
+<span class="sd">    :func:`extract_all` can emit is documented (``family``, ``engine``,</span>
+<span class="sd">    ``interpretation``, ``provisional``, ``input_provisional``, ``note``).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sets : list[str], optional</span>
+<span class="sd">        Backends whose registries to merge. Defaults to all available backends.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        ``name -&gt; record`` for every feature the selected backends emit.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_DEFAULT_SETS</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sets</span><span class="p">)</span>
+
+    <span class="n">unknown</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sets</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_BACKENDS</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;extract_all_registry: unknown backend(s) </span><span class="si">{</span><span class="n">unknown</span><span class="si">!r}</span><span class="s2">. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Available backends: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">AVAILABLE_BACKENDS</span><span class="p">)</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">merged</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">sets</span><span class="p">:</span>
+        <span class="n">_compute_fn</span><span class="p">,</span> <span class="n">registry_fn</span> <span class="o">=</span> <span class="n">_BACKENDS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">feat_name</span><span class="p">,</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">registry_fn</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">feat_name</span> <span class="ow">in</span> <span class="n">merged</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;extract_all_registry: name </span><span class="si">{</span><span class="n">feat_name</span><span class="si">!r}</span><span class="s2"> is documented by &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;more than one backend — registry entries must be unique.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">merged</span><span class="p">[</span><span class="n">feat_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">merged</span></div>
+
+
+
+<span class="c1"># EOF</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Yusuke Watanabe.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

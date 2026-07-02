@@ -1,0 +1,589 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scitex_dsp._spectral._pac &mdash; scitex-dsp 0.1.11 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=1e825a29"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            scitex-dsp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">scitex-dsp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scitex_dsp._spectral._pac</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scitex_dsp._spectral._pac</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># Time-stamp: &quot;2024-11-26 22:24:40 (ywatanabe)&quot;</span>
+<span class="c1"># File: ./scitex_repo/src/scitex/dsp/_pac.py</span>
+
+<span class="n">THIS_FILE</span> <span class="o">=</span> <span class="s2">&quot;/home/ywatanabe/proj/scitex_repo/src/scitex/dsp/_pac.py&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+    <span class="n">TORCH_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">TORCH_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">torch</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">scitex_decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">signal_fn</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_device</span>
+
+<span class="k">if</span> <span class="n">TORCH_AVAILABLE</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scitex_nn._PAC</span><span class="w"> </span><span class="kn">import</span> <span class="n">PAC</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_torch</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">TORCH_AVAILABLE</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;PyTorch is not installed. Please install with: pip install torch&quot;</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve ``backend=&quot;auto&quot;`` to a concrete backend name.</span>
+
+<span class="sd">    ``&quot;auto&quot;`` maps to ``&quot;scitex_nn&quot;`` so that the default behaviour is</span>
+<span class="sd">    byte-for-byte identical to previous releases (see the note in ``pac``).</span>
+<span class="sd">    Explicit ``&quot;scitex_nn&quot;`` / ``&quot;gpac&quot;`` pass through unchanged; anything</span>
+<span class="sd">    else is rejected early with a clear error.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;scitex_nn&quot;</span>
+    <span class="k">if</span> <span class="n">backend</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;scitex_nn&quot;</span><span class="p">,</span> <span class="s2">&quot;gpac&quot;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Unknown pac backend </span><span class="si">{</span><span class="n">backend</span><span class="si">!r}</span><span class="s2">; &quot;</span>
+            <span class="s2">&quot;expected one of &#39;auto&#39;, &#39;scitex_nn&#39;, &#39;gpac&#39;.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">backend</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pac_scitex_nn</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="n">fs</span><span class="p">,</span>
+    <span class="n">pha_start_hz</span><span class="p">,</span>
+    <span class="n">pha_end_hz</span><span class="p">,</span>
+    <span class="n">pha_n_bands</span><span class="p">,</span>
+    <span class="n">amp_start_hz</span><span class="p">,</span>
+    <span class="n">amp_end_hz</span><span class="p">,</span>
+    <span class="n">amp_n_bands</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">,</span>
+    <span class="n">batch_size_ch</span><span class="p">,</span>
+    <span class="n">fp16</span><span class="p">,</span>
+    <span class="n">trainable</span><span class="p">,</span>
+    <span class="n">n_perm</span><span class="p">,</span>
+    <span class="n">amp_prob</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute PAC with the in-tree ``scitex_nn._PAC.PAC`` engine.</span>
+
+<span class="sd">    This is the historical default path; its output is unchanged.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_ch_batching</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">batch_size_ch</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+        <span class="n">n_chs</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">n_batches</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_chs</span> <span class="o">+</span> <span class="n">batch_size_ch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">batch_size_ch</span>
+
+        <span class="n">agg</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_batches</span><span class="p">):</span>
+            <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">batch_size_ch</span> <span class="o">*</span> <span class="n">ii</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">batch_size_ch</span> <span class="o">*</span> <span class="p">(</span><span class="n">ii</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">n_chs</span><span class="p">)</span>
+            <span class="n">_pac</span> <span class="o">=</span> <span class="n">m</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span> <span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">))</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="n">agg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_pac</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">agg</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="n">PAC</span><span class="p">(</span>
+        <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">fs</span><span class="p">,</span>
+        <span class="n">pha_start_hz</span><span class="o">=</span><span class="n">pha_start_hz</span><span class="p">,</span>
+        <span class="n">pha_end_hz</span><span class="o">=</span><span class="n">pha_end_hz</span><span class="p">,</span>
+        <span class="n">pha_n_bands</span><span class="o">=</span><span class="n">pha_n_bands</span><span class="p">,</span>
+        <span class="n">amp_start_hz</span><span class="o">=</span><span class="n">amp_start_hz</span><span class="p">,</span>
+        <span class="n">amp_end_hz</span><span class="o">=</span><span class="n">amp_end_hz</span><span class="p">,</span>
+        <span class="n">amp_n_bands</span><span class="o">=</span><span class="n">amp_n_bands</span><span class="p">,</span>
+        <span class="n">fp16</span><span class="o">=</span><span class="n">fp16</span><span class="p">,</span>
+        <span class="n">trainable</span><span class="o">=</span><span class="n">trainable</span><span class="p">,</span>
+        <span class="n">n_perm</span><span class="o">=</span><span class="n">n_perm</span><span class="p">,</span>
+        <span class="n">amp_prob</span><span class="o">=</span><span class="n">amp_prob</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">batch_size_ch</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">m</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)),</span> <span class="n">m</span><span class="o">.</span><span class="n">PHA_MIDS_HZ</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">AMP_MIDS_HZ</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">process_ch_batching</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">batch_size_ch</span><span class="p">,</span> <span class="n">device</span><span class="p">),</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">PHA_MIDS_HZ</span><span class="p">,</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">AMP_MIDS_HZ</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pac_gpac</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="n">fs</span><span class="p">,</span>
+    <span class="n">pha_start_hz</span><span class="p">,</span>
+    <span class="n">pha_end_hz</span><span class="p">,</span>
+    <span class="n">pha_n_bands</span><span class="p">,</span>
+    <span class="n">amp_start_hz</span><span class="p">,</span>
+    <span class="n">amp_end_hz</span><span class="p">,</span>
+    <span class="n">amp_n_bands</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">,</span>
+    <span class="n">fp16</span><span class="p">,</span>
+    <span class="n">trainable</span><span class="p">,</span>
+    <span class="n">n_perm</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute PAC with the third-party ``gpac`` (gpu-pac) GPU engine.</span>
+
+<span class="sd">    ``gpac.PAC.forward`` returns a dict; this adapter maps it onto the same</span>
+<span class="sd">    ``(pac_values, pha_mids_hz, amp_mids_hz)`` 3-tuple contract as the</span>
+<span class="sd">    ``scitex_nn`` path. ``gpac`` reports frequency bands as ``(n_bands, 2)``</span>
+<span class="sd">    ``[low, high]`` edges, so the 1-D band mids are the row-wise means.</span>
+
+<span class="sd">    Device placement is via ``gpac``&#39;s own ``device_ids`` argument (``gpac``</span>
+<span class="sd">    does not honour ``nn.Module.to``): a CUDA device maps to ``device_ids=[i]``</span>
+<span class="sd">    (or ``&quot;all&quot;`` for plain ``&quot;cuda&quot;``); anything else runs on CPU</span>
+<span class="sd">    (``device_ids=[]``).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">gpac</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># pragma: no cover - exercised only when absent</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;The &#39;gpac&#39; backend requires the gpu-pac package. &quot;</span>
+            <span class="s2">&quot;Install it with: pip install &#39;scitex-dsp[pac]&#39;&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+    <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;:&quot;</span> <span class="ow">in</span> <span class="n">device</span><span class="p">:</span>
+            <span class="n">device_ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">])]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">device_ids</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">device_ids</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="n">gpac</span><span class="o">.</span><span class="n">PAC</span><span class="p">(</span>
+        <span class="n">seq_len</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span>
+        <span class="n">pha_range_hz</span><span class="o">=</span><span class="p">(</span><span class="n">pha_start_hz</span><span class="p">,</span> <span class="n">pha_end_hz</span><span class="p">),</span>
+        <span class="n">amp_range_hz</span><span class="o">=</span><span class="p">(</span><span class="n">amp_start_hz</span><span class="p">,</span> <span class="n">amp_end_hz</span><span class="p">),</span>
+        <span class="n">pha_n_bands</span><span class="o">=</span><span class="n">pha_n_bands</span><span class="p">,</span>
+        <span class="n">amp_n_bands</span><span class="o">=</span><span class="n">amp_n_bands</span><span class="p">,</span>
+        <span class="n">n_perm</span><span class="o">=</span><span class="n">n_perm</span><span class="p">,</span>
+        <span class="n">fp16</span><span class="o">=</span><span class="n">fp16</span><span class="p">,</span>
+        <span class="n">trainable</span><span class="o">=</span><span class="n">trainable</span><span class="p">,</span>
+        <span class="n">device_ids</span><span class="o">=</span><span class="n">device_ids</span><span class="p">,</span>
+        <span class="n">compile_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">m</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+
+    <span class="n">pac_values</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;pac&quot;</span><span class="p">]</span>
+    <span class="n">pha_mids_hz</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;phase_bands_hz&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">amp_mids_hz</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;amplitude_bands_hz&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">pac_values</span><span class="p">,</span> <span class="n">pha_mids_hz</span><span class="p">,</span> <span class="n">amp_mids_hz</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">scitex.dsp.pac function</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="c1"># @batch_fn</span>
+<div class="viewcode-block" id="pac">
+<a class="viewcode-back" href="../../../api.html#scitex_dsp.pac">[docs]</a>
+<span class="nd">@signal_fn</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">pac</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="n">fs</span><span class="p">,</span>
+    <span class="n">pha_start_hz</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">pha_end_hz</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">pha_n_bands</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">amp_start_hz</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+    <span class="n">amp_end_hz</span><span class="o">=</span><span class="mi">160</span><span class="p">,</span>
+    <span class="n">amp_n_bands</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">batch_size_ch</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">fp16</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">trainable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">n_perm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">amp_prob</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the phase-amplitude coupling (PAC) for signals. This function automatically handles inputs as</span>
+<span class="sd">    PyTorch tensors, NumPy arrays, or pandas DataFrames.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    - x (torch.Tensor | np.ndarray | pd.DataFrame): Input signal. Shape can be either (batch_size, n_chs, seq_len) or</span>
+<span class="sd">    - fs (float): Sampling frequency of the input signal.</span>
+<span class="sd">    - pha_start_hz (float, optional): Start frequency for phase bands. Default is 2 Hz.</span>
+<span class="sd">    - pha_end_hz (float, optional): End frequency for phase bands. Default is 20 Hz.</span>
+<span class="sd">    - pha_n_bands (int, optional): Number of phase bands. Default is 100.</span>
+<span class="sd">    - amp_start_hz (float, optional): Start frequency for amplitude bands. Default is 60 Hz.</span>
+<span class="sd">    - amp_end_hz (float, optional): End frequency for amplitude bands. Default is 160 Hz.</span>
+<span class="sd">    - amp_n_bands (int, optional): Number of amplitude bands. Default is 100.</span>
+<span class="sd">    - backend (str, optional): PAC engine. &quot;auto&quot; (default) and &quot;scitex_nn&quot; use the in-tree scitex_nn._PAC.PAC engine; &quot;gpac&quot; uses the third-party gpac (gpu-pac) GPU engine, installed via the scitex-dsp[pac] extra. &quot;auto&quot; resolves to &quot;scitex_nn&quot;, so default behaviour is unchanged.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    - torch.Tensor: PAC values. Shape: (batch_size, n_chs, pha_n_bands, amp_n_bands)</span>
+<span class="sd">    - numpy.ndarray: Phase bands used for the computation.</span>
+<span class="sd">    - numpy.ndarray: Amplitude bands used for the computation.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        FS = 512</span>
+<span class="sd">        T_SEC = 4</span>
+<span class="sd">        xx, tt, fs = scitex.dsp.demo_sig(</span>
+<span class="sd">            batch_size=1, n_chs=1, fs=FS, t_sec=T_SEC, sig_type=&quot;tensorpac&quot;</span>
+<span class="sd">        )</span>
+<span class="sd">        pac, pha_mids_hz, amp_mids_hz = scitex.dsp.pac(xx, fs)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_check_torch</span><span class="p">()</span>
+
+    <span class="n">device</span> <span class="o">=</span> <span class="n">resolve_device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">_resolve_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;gpac&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_pac_gpac</span><span class="p">(</span>
+            <span class="n">x</span><span class="p">,</span>
+            <span class="n">fs</span><span class="p">,</span>
+            <span class="n">pha_start_hz</span><span class="p">,</span>
+            <span class="n">pha_end_hz</span><span class="p">,</span>
+            <span class="n">pha_n_bands</span><span class="p">,</span>
+            <span class="n">amp_start_hz</span><span class="p">,</span>
+            <span class="n">amp_end_hz</span><span class="p">,</span>
+            <span class="n">amp_n_bands</span><span class="p">,</span>
+            <span class="n">device</span><span class="p">,</span>
+            <span class="n">fp16</span><span class="p">,</span>
+            <span class="n">trainable</span><span class="p">,</span>
+            <span class="n">n_perm</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_pac_scitex_nn</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">,</span>
+        <span class="n">fs</span><span class="p">,</span>
+        <span class="n">pha_start_hz</span><span class="p">,</span>
+        <span class="n">pha_end_hz</span><span class="p">,</span>
+        <span class="n">pha_n_bands</span><span class="p">,</span>
+        <span class="n">amp_start_hz</span><span class="p">,</span>
+        <span class="n">amp_end_hz</span><span class="p">,</span>
+        <span class="n">amp_n_bands</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">,</span>
+        <span class="n">batch_size_ch</span><span class="p">,</span>
+        <span class="n">fp16</span><span class="p">,</span>
+        <span class="n">trainable</span><span class="p">,</span>
+        <span class="n">n_perm</span><span class="p">,</span>
+        <span class="n">amp_prob</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scitex</span>
+
+    <span class="c1"># Start</span>
+    <span class="n">CONFIG</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">plt</span><span class="p">,</span> <span class="n">CC</span> <span class="o">=</span> <span class="n">scitex</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="n">plt</span><span class="p">)</span>
+
+    <span class="n">pac</span><span class="p">,</span> <span class="n">freqs_pha</span><span class="p">,</span> <span class="n">freqs_amp</span> <span class="o">=</span> <span class="n">scitex</span><span class="o">.</span><span class="n">dsp</span><span class="o">.</span><span class="n">pac</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">24000</span><span class="p">),</span>
+        <span class="mi">400</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">batch_size_ch</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+        <span class="n">fp16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">n_perm</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="c1">#     # Parameters</span>
+<span class="c1">#     FS = 512</span>
+<span class="c1">#     T_SEC = 4</span>
+<span class="c1">#     # IS_TRAINABLE = False</span>
+<span class="c1">#     # FP16 = True</span>
+
+<span class="c1">#     for IS_TRAINABLE in [True, False]:</span>
+<span class="c1">#         for FP16 in [True, False]:</span>
+
+<span class="c1">#             # Demo signal</span>
+<span class="c1">#             xx, tt, fs = scitex.dsp.demo_sig(</span>
+<span class="c1">#                 batch_size=1, n_chs=1, fs=FS, t_sec=T_SEC, sig_type=&quot;pac&quot;</span>
+<span class="c1">#             )</span>
+
+
+<span class="c1">#             # scitex.str.print_debug()</span>
+<span class="c1">#             # xx = np.random.rand(1,16,24000)</span>
+<span class="c1">#             # fs = 400</span>
+
+<span class="c1">#             # scitex calculation</span>
+<span class="c1">#             pac_scitex, pha_mids_scitex, amp_mids_scitex = scitex.dsp.pac(</span>
+<span class="c1">#                 xx,</span>
+<span class="c1">#                 fs,</span>
+<span class="c1">#                 pha_n_bands=50,</span>
+<span class="c1">#                 amp_n_bands=30,</span>
+<span class="c1">#                 trainable=IS_TRAINABLE,</span>
+<span class="c1">#                 fp16=FP16,</span>
+<span class="c1">#             )</span>
+<span class="c1">#             i_batch, i_ch = 0, 0</span>
+<span class="c1">#             pac_scitex = pac_scitex[i_batch, i_ch]</span>
+
+<span class="c1">#             printc(type(pac_scitex))</span>
+
+<span class="c1">#             # Tensorpac calculation</span>
+<span class="c1">#             (</span>
+<span class="c1">#                 _,</span>
+<span class="c1">#                 _,</span>
+<span class="c1">#                 _pha_mids_tp,</span>
+<span class="c1">#                 _amp_mids_tp,</span>
+<span class="c1">#                 pac_tp,</span>
+<span class="c1">#             ) = scitex.dsp.utils.pac.calc_pac_with_tensorpac(xx, fs, T_SEC)</span>
+
+<span class="c1">#             # Validates the consitency in frequency definitions</span>
+<span class="c1">#             assert np.allclose(</span>
+<span class="c1">#                 pha_mids_scitex, _pha_mids_tp</span>
+<span class="c1">#             )</span>
+<span class="c1">#             assert np.allclose(</span>
+<span class="c1">#                 amp_mids_scitex, _amp_mids_tp</span>
+<span class="c1">#             )</span>
+
+<span class="c1">#             scitex.io.save(</span>
+<span class="c1">#                 (pac_scitex, pac_tp, pha_mids_scitex, amp_mids_scitex),</span>
+<span class="c1">#                 &quot;./data/cache.npz&quot;,</span>
+<span class="c1">#             )</span>
+
+<span class="c1">#             # ################################################################################</span>
+<span class="c1">#             # # cache</span>
+<span class="c1">#             # pac_scitex, pac_tp, pha_mids_scitex, amp_mids_scitex = scitex.io.load(</span>
+<span class="c1">#             #     &quot;./data/cache.npz&quot;</span>
+<span class="c1">#             # )</span>
+<span class="c1">#             # ################################################################################</span>
+
+<span class="c1">#             # Plots</span>
+<span class="c1">#             fig = scitex.dsp.utils.pac.plot_PAC_scitex_vs_tensorpac(</span>
+<span class="c1">#                 pac_scitex, pac_tp, pha_mids_scitex, amp_mids_scitex</span>
+<span class="c1">#             )</span>
+<span class="c1">#             fig.suptitle(</span>
+<span class="c1">#                 &quot;Phase-Amplitude Coupling calculation\n\n(Bandpass Filtering -&gt; Hilbert Transformation-&gt; Modulation Index)&quot;</span>
+<span class="c1">#             )</span>
+<span class="c1">#             plt.show()</span>
+
+<span class="c1">#             scitex.gen.reload(scitex.dsp)</span>
+
+<span class="c1">#             # Saves the figure</span>
+<span class="c1">#             trainable_str = &quot;trainable&quot; if IS_TRAINABLE else &quot;static&quot;</span>
+<span class="c1">#             fp_str = &quot;fp16&quot; if FP16 else &quot;fp32&quot;</span>
+<span class="c1">#             scitex.io.save(</span>
+<span class="c1">#                 fig, f&quot;pac_with_{trainable_str}_bandpass_{fp_str}.png&quot;</span>
+<span class="c1">#             )</span>
+
+
+<span class="c1"># def run_method_tests():</span>
+<span class="c1">#     import scitex</span>
+
+<span class="c1">#     # Test parameters</span>
+<span class="c1">#     FS = 512</span>
+<span class="c1">#     T_SEC = 4</span>
+
+<span class="c1">#     class PACProcessor:</span>
+<span class="c1">#         @batch_torch_fn</span>
+<span class="c1">#         def process_pac(self, x, fs, **kwargs):</span>
+<span class="c1">#             return pac(x, fs, **kwargs)</span>
+
+<span class="c1">#         @signal_fn</span>
+<span class="c1">#         def process_signal(self, x):</span>
+<span class="c1">#             return x * 2</span>
+
+<span class="c1">#     def run_method_basic_tests():</span>
+<span class="c1">#         processor = PACProcessor()</span>
+
+<span class="c1">#         # Generate test signal</span>
+<span class="c1">#         xx, tt, fs = scitex.dsp.demo_sig(</span>
+<span class="c1">#             batch_size=1, n_chs=1, fs=FS, t_sec=T_SEC, sig_type=&quot;pac&quot;</span>
+<span class="c1">#         )</span>
+
+<span class="c1">#         try:</span>
+<span class="c1">#             # Test method with batch processing</span>
+<span class="c1">#             result_batch, pha_mids, amp_mids = processor.process_pac(</span>
+<span class="c1">#                 xx, fs, pha_n_bands=50, amp_n_bands=30, batch_size=1</span>
+<span class="c1">#             )</span>
+<span class="c1">#             assert torch.is_tensor(result_batch)</span>
+
+<span class="c1">#             # Test basic torch method</span>
+<span class="c1">#             result_torch = processor.process_signal(xx)</span>
+<span class="c1">#             assert torch.is_tensor(result_torch)</span>
+
+<span class="c1">#             scitex.str.printc(&quot;Passed: Basic method tests&quot;, &quot;yellow&quot;)</span>
+<span class="c1">#         except Exception as err:</span>
+<span class="c1">#             scitex.str.printc(f&quot;Failed: Basic method tests - {str(err)}&quot;, &quot;red&quot;)</span>
+
+<span class="c1">#     def run_method_cuda_tests():</span>
+<span class="c1">#         if not torch.cuda.is_available():</span>
+<span class="c1">#             scitex.str.printc(</span>
+<span class="c1">#                 &quot;CUDA method tests skipped: No GPU available&quot;, &quot;yellow&quot;</span>
+<span class="c1">#             )</span>
+<span class="c1">#             return</span>
+
+<span class="c1">#         processor = PACProcessor()</span>
+<span class="c1">#         xx, tt, fs = scitex.dsp.demo_sig(</span>
+<span class="c1">#             batch_size=1, n_chs=1, fs=FS, t_sec=T_SEC, sig_type=&quot;pac&quot;</span>
+<span class="c1">#         )</span>
+
+<span class="c1">#         try:</span>
+<span class="c1">#             # Test with CUDA</span>
+<span class="c1">#             result_cuda, _, _ = processor.process_pac(xx, fs, device=&quot;cuda&quot;)</span>
+<span class="c1">#             assert result_cuda.device.type == &quot;cuda&quot;</span>
+
+<span class="c1">#             result_torch = processor.process_signal(xx, device=&quot;cuda&quot;)</span>
+<span class="c1">#             assert result_torch.device.type == &quot;cuda&quot;</span>
+
+<span class="c1">#             scitex.str.printc(&quot;Passed: CUDA method tests&quot;, &quot;yellow&quot;)</span>
+<span class="c1">#         except Exception as err:</span>
+<span class="c1">#             scitex.str.printc(f&quot;Failed: CUDA method tests - {str(err)}&quot;, &quot;red&quot;)</span>
+
+<span class="c1">#     def run_method_batch_size_tests():</span>
+<span class="c1">#         processor = PACProcessor()</span>
+<span class="c1">#         batch_sizes = [1, 2, 4]</span>
+
+<span class="c1">#         for batch_size in batch_sizes:</span>
+<span class="c1">#             try:</span>
+<span class="c1">#                 xx, tt, fs = scitex.dsp.demo_sig(</span>
+<span class="c1">#                     batch_size=batch_size,</span>
+<span class="c1">#                     n_chs=1,</span>
+<span class="c1">#                     fs=FS,</span>
+<span class="c1">#                     t_sec=T_SEC,</span>
+<span class="c1">#                     sig_type=&quot;pac&quot;,</span>
+<span class="c1">#                 )</span>
+
+<span class="c1">#                 result, _, _ = processor.process_pac(</span>
+<span class="c1">#                     xx, fs, batch_size=batch_size</span>
+<span class="c1">#                 )</span>
+<span class="c1">#                 assert result.shape[0] == batch_size</span>
+
+<span class="c1">#                 scitex.str.printc(</span>
+<span class="c1">#                     f&quot;Passed: Method batch size test with size={batch_size}&quot;,</span>
+<span class="c1">#                     &quot;yellow&quot;,</span>
+<span class="c1">#                 )</span>
+<span class="c1">#             except Exception as err:</span>
+<span class="c1">#                 scitex.str.printc(</span>
+<span class="c1">#                     f&quot;Failed: Method batch size test with size={batch_size} - {str(err)}&quot;,</span>
+<span class="c1">#                     &quot;red&quot;,</span>
+<span class="c1">#                 )</span>
+
+<span class="c1">#     # Execute method test suites</span>
+<span class="c1">#     test_suites = [</span>
+<span class="c1">#         (&quot;Method Basic Tests&quot;, run_method_basic_tests),</span>
+<span class="c1">#         (&quot;Method CUDA Tests&quot;, run_method_cuda_tests),</span>
+<span class="c1">#         (&quot;Method Batch Size Tests&quot;, run_method_batch_size_tests),</span>
+<span class="c1">#     ]</span>
+
+<span class="c1">#     for test_name, test_func in test_suites:</span>
+<span class="c1">#         test_func()</span>
+
+
+<span class="c1"># if __name__ == &quot;__main__&quot;:</span>
+<span class="c1">#     run_method_tests()</span>
+
+<span class="c1"># # EOF</span>
+
+<span class="c1"># &quot;&quot;&quot;</span>
+<span class="c1"># python -m scitex.dsp._pac</span>
+<span class="c1"># &quot;&quot;&quot;</span>
+
+<span class="c1">#</span>
+
+<span class="c1"># EOF</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Yusuke Watanabe.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
