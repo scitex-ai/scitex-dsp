@@ -31,6 +31,10 @@ versions follow [Semantic Versioning](https://semver.org/).
   (mermaid tutorial-flow + gallery table) sections.
 
 ### Changed
+- Raised `requires-python` to `>=3.11` (was `>=3.9`) to match the tested
+  matrix (3.11/3.12/3.13) and the `scitex-stats>=0.2.0` core-dep floor, so pip
+  fails early and clearly on unsupported interpreters instead of late in
+  dependency resolution.
 - Consolidated the optional-dependency extras into a single `[all]`
   (`tensorpac`, `sounddevice`, `pycatch22`, `scikit-learn`, `gpu-pac>=0.3.4`);
   the old `[audio]` / `[pac]` / `[catch22]` / `[features]` extras were removed.
