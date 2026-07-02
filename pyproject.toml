@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scitex-dsp"
-version = "0.1.11"
+version = "0.2.0"
 description = "Digital signal processing (PAC, Hilbert, Wavelet, filters, demo signals, …) — standalone module from the SciTeX ecosystem"
 readme = "README.md"
 license = "AGPL-3.0-only"
@@ -46,43 +46,46 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-audio = [
-    "sounddevice",
-]
-pac = [
+# Single consolidated extra of the pip-installable runtime optionals
+# (scitex convention: extras are "nothing" or "[all]").
+#   - tensorpac      : cross-check PAC engine (utils.pac) + tensorpac path
+#   - sounddevice    : audio I/O (PortAudio playback / device selection)
+#   - pycatch22      : the "catch22" backend of extract_all
+#   - scikit-learn   : PROVISIONAL GMM PAC-feature family + PCA redundancy audit
+#   - gpu-pac>=0.3.4 : real GPU-PAC engine behind pac(..., backend="gpac")
+# NOTE: the GPU-PAC engine is the distribution `gpu-pac` (import name `gpac`),
+# published on PyPI since 0.3.4 with clean metadata (no direct/URL deps).
+# Pin a plain version specifier — NEVER a `git+https` / `@ git` URL — because a
+# direct URL under ANY extra makes PyPI reject the whole upload (400 "Can't
+# have direct dependency"). The unrelated PyPI package literally named "gpac"
+# is a different project; the import name `gpac` here comes from `gpu-pac`.
+all = [
     "tensorpac",
-    # Real GPU-PAC engine behind pac(..., backend="gpac"). Distribution name
-    # is gpu-pac; import name is gpac. Installed from git until PyPI release.
-    # (NOT the unrelated PyPI package literally named "gpac".)
-    "gpu-pac @ git+https://github.com/ywatanabe1989/gpac",
-]
-features = [
-    # Optional/lazy dep for the PROVISIONAL pac_z_gmm feature family
-    # (pac_features(..., include_gmm=True)). Absent -> clear ImportError.
-    "scikit-learn",
-]
-catch22 = [
-    # Optional/lazy engine for the "catch22" backend of extract_all
-    # (wraps pycatch22.catch22_all). Absent -> clear ImportError naming
-    # this extra.
+    "sounddevice",
     "pycatch22",
+    "scikit-learn",
+    "gpu-pac>=0.3.4",
 ]
 dev = [
     "joblib",
     "flask",
+    # All pip-installable runtime optionals whose tests live in the suite
+    # (PS-210 dev-extras-completeness) — mirrors [all]:
     "tensorpac",
-    # Real GPU-PAC engine exercised by the gpac backend tests in
-    # tests/scitex_dsp/_spectral/test__pac.py (importorskip'd). Mirrors the
-    # [pac] extra so `pip install scitex-dsp[dev]` resolves it.
-    "gpu-pac @ git+https://github.com/ywatanabe1989/gpac",
     "sounddevice",
-    "ripple_detection",
-    # exercises the PROVISIONAL GMM feature family in
-    # tests/scitex_dsp/_features/test__pac_features.py (importorskip'd).
-    "scikit-learn",
+    # Real GPU-PAC engine behind pac(..., backend="gpac"), now on PyPI
+    # (>=0.3.4). Present here so the gpac-backend tests in
+    # tests/scitex_dsp/_spectral/test__pac.py RUN in CI (they importorskip
+    # "gpac", so absent -> skip; present -> execute).
+    "gpu-pac>=0.3.4",
     # exercises the "catch22" backend of extract_all in
     # tests/scitex_dsp/_features/test__extract_all.py (importorskip'd).
     "pycatch22",
+    # exercises the PROVISIONAL GMM feature family in
+    # tests/scitex_dsp/_features/test__pac_features.py and the PCA redundancy
+    # audit in test__redundancy.py (importorskip'd).
+    "scikit-learn",
+    "ripple_detection",
     # tests/scitex_dsp/_audio_io/test__mne.py,
     # tests/scitex_dsp/utils/test_filter.py,
     # tests/scitex_dsp/test__time.py — all importorskip("mne")
@@ -101,12 +104,6 @@ docs = [
     "myst-parser>=2.0",
     "sphinx-copybutton>=0.5",
     "sphinx-autodoc-typehints>=1.25",
-]
-all = [
-    "scitex-dsp[audio]",
-    "scitex-dsp[pac]",
-    "scitex-dsp[features]",
-    "scitex-dsp[catch22]",
 ]
 
 [project.urls]

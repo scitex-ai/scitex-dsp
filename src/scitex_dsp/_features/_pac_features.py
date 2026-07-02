@@ -226,7 +226,7 @@ def _gmm_features(pac_z: np.ndarray) -> dict:
     Raises
     ------
     ImportError
-        If scikit-learn is not installed (install the ``[features]`` extra).
+        If scikit-learn is not installed (install the ``[all]`` extra).
     """
     try:
         from sklearn.mixture import GaussianMixture
@@ -234,7 +234,7 @@ def _gmm_features(pac_z: np.ndarray) -> dict:
         raise ImportError(
             "pac_features(..., include_gmm=True) requires scikit-learn for the "
             "PROVISIONAL GMM feature family. Install it via "
-            "`pip install scitex-dsp[features]` (or `pip install scikit-learn`), "
+            "`pip install scitex-dsp[all]` (or `pip install scikit-learn`), "
             "or call pac_features(..., include_gmm=False) to skip the GMM block."
         ) from exc
 
