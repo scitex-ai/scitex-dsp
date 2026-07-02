@@ -13,6 +13,7 @@ See ``scitex_dev/_skills/general/05_development_07_demo-smoke-tests.md``.
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 
@@ -68,9 +69,17 @@ def test_demo_module_runs_to_zero_exit_code(module, tmp_path):
     for optional_mod in DEMO_OPTIONAL_IMPORTS.get(module, ()):
         pytest.importorskip(optional_mod)
     # Act
+    # Hermetic env: pin MNE_DATA to the disposable tmp dir so a demo whose
+    # import chain touches MNE (e.g. via the scitex_plt/figrecipe plotting
+    # path) does not fail on a stale host `MNE_DATA` pointing at a
+    # nonexistent directory — seen on the self-hosted CI runner, where the SIF
+    # inherits the host env (no --cleanenv). tmp_path exists and is writable,
+    # so MNE's data-dir validation passes without any download.
+    env = {**os.environ, "MNE_DATA": str(tmp_path)}
     result = subprocess.run(
         [sys.executable, "-m", module],
         cwd=tmp_path,
+        env=env,
         check=False,
         timeout=180,
         capture_output=True,
