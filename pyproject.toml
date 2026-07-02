@@ -29,6 +29,12 @@ dependencies = [
     "scitex-gen>=0.1.10",  # still owns to_z (._numeric._norm) used by _detect_ripples.py
     "scitex-math>=0.1.0",  # owns to_even / to_odd since their standalonization out of scitex_gen
     "scitex-nn>=0.1.13",
+    # scitex-stats owns the descriptive nan-/circular-stats engines reused
+    # 1:1 by scitex_dsp._features.pac_features (P1a). Core dep, not [dev]-only,
+    # because pac_features imports it at module load. Floor >=0.2.0 = first
+    # series shipping the descriptive._nan / descriptive._circular public
+    # surface (nanq25/50/75, circular_mean/concentration/skewness/kurtosis).
+    "scitex-stats>=0.2.0",
     # scitex-dsp calls `scitex_dev.try_import_optional` at module-load in
     # four src/ modules — _resample.py:12, _audio_io/_mne.py:6,
     # _synthesis/_demo_sig.py:12, utils/_differential_bandpass_filters.py:23.
@@ -46,12 +52,20 @@ audio = [
 pac = [
     "tensorpac",
 ]
+features = [
+    # Optional/lazy dep for the PROVISIONAL pac_z_gmm feature family
+    # (pac_features(..., include_gmm=True)). Absent -> clear ImportError.
+    "scikit-learn",
+]
 dev = [
     "joblib",
     "flask",
     "tensorpac",
     "sounddevice",
     "ripple_detection",
+    # exercises the PROVISIONAL GMM feature family in
+    # tests/scitex_dsp/_features/test__pac_features.py (importorskip'd).
+    "scikit-learn",
     # tests/scitex_dsp/_audio_io/test__mne.py,
     # tests/scitex_dsp/utils/test_filter.py,
     # tests/scitex_dsp/test__time.py — all importorskip("mne")
@@ -74,6 +88,7 @@ docs = [
 all = [
     "scitex-dsp[audio]",
     "scitex-dsp[pac]",
+    "scitex-dsp[features]",
 ]
 
 [project.urls]

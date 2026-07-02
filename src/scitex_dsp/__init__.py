@@ -9,6 +9,9 @@ Functionalities
 - `pac(x, lo, hi, ...)` / `modulation_index(x, ...)` — phase-amplitude
   coupling and the canonical MI estimator.
 - `wavelet(...)` — continuous wavelet transform.
+- `pac_features(pac_z, phase=None, ...)` — canonical PAC-summary
+  feature set returning a flat `{names, values}` descriptor, plus
+  `PAC_FEATURE_REGISTRY` / `feature_registry()` for provenance.
 - `detect_ripples(x, fs, ...)` — Buzsaki-style ripple detector with
   edge handling, find-events, and column sorting.
 - `demo_sig(sig_type=...)` — deterministic chirp / periodic / ripple
@@ -86,6 +89,10 @@ _LAZY_ATTRS: dict[str, str] = {
     "wavelet": "._spectral",
     "modulation_index": "._spectral",
     "_reshape": "._spectral",
+    # Feature-extraction primitives (named scalar-feature vectors).
+    "pac_features": "._features",
+    "feature_registry": "._features",
+    "PAC_FEATURE_REGISTRY": "._features",
     # Pre-/post-processing utilities.
     "crop": "._crop",
     "ensure_3d": "._ensure_3d",
