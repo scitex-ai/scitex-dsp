@@ -32,76 +32,137 @@ def _pac_sig():
 
 
 class TestWaveletDeviceAuto:
-    def test_wavelet_auto_runs_on_cpu(self):
-        """wavelet(..., device="auto") returns 3 arrays on a CPU-only box."""
+    def test_wavelet_auto_pha_is_ndarray(self):
+        # Arrange
         x, fs = _wavelet_sig()
+        # Act
         pha, amp, freqs = wavelet(x, fs, device="auto")
+        # Assert
         assert isinstance(pha, np.ndarray)
+
+    def test_wavelet_auto_amp_is_ndarray(self):
+        # Arrange
+        x, fs = _wavelet_sig()
+        # Act
+        pha, amp, freqs = wavelet(x, fs, device="auto")
+        # Assert
         assert isinstance(amp, np.ndarray)
+
+    def test_wavelet_auto_freqs_is_ndarray(self):
+        # Arrange
+        x, fs = _wavelet_sig()
+        # Act
+        pha, amp, freqs = wavelet(x, fs, device="auto")
+        # Assert
         assert isinstance(freqs, np.ndarray)
 
     def test_wavelet_auto_batch_dim_preserved(self):
+        # Arrange
         x, fs = _wavelet_sig()
+        # Act
         pha, amp, freqs = wavelet(x, fs, device="auto")
+        # Assert
         assert pha.shape[0] == 1  # batch size
 
-    def test_wavelet_auto_default_matches_explicit_cpu(self):
-        """The default (auto) and explicit cpu produce the same shapes."""
+    def test_wavelet_auto_matches_cpu_pha_shape(self):
+        # Arrange
         x, fs = _wavelet_sig()
-        pha_auto, amp_auto, _ = wavelet(x, fs)  # default device="auto"
-        pha_cpu, amp_cpu, _ = wavelet(x, fs, device="cpu")
+        # Act
+        pha_auto, _, _ = wavelet(x, fs)  # default device="auto"
+        pha_cpu, _, _ = wavelet(x, fs, device="cpu")
+        # Assert
         assert pha_auto.shape == pha_cpu.shape
+
+    def test_wavelet_auto_matches_cpu_amp_shape(self):
+        # Arrange
+        x, fs = _wavelet_sig()
+        # Act
+        _, amp_auto, _ = wavelet(x, fs)  # default device="auto"
+        _, amp_cpu, _ = wavelet(x, fs, device="cpu")
+        # Assert
         assert amp_auto.shape == amp_cpu.shape
 
-    def test_wavelet_explicit_cpu_still_works(self):
+    def test_wavelet_explicit_cpu_amp_is_ndarray(self):
+        # Arrange
         x, fs = _wavelet_sig()
+        # Act
         pha, amp, freqs = wavelet(x, fs, device="cpu")
+        # Assert
         assert isinstance(amp, np.ndarray)
 
     @pytest.mark.skipif(
         not torch.cuda.is_available(), reason="CUDA not available"
     )
     def test_wavelet_auto_picks_cuda_when_available(self):
+        # Arrange
         x, fs = _wavelet_sig()
         xt = torch.from_numpy(x)
+        # Act
         pha, amp, freqs = wavelet(xt, fs, device="auto")
-        # Output device follows the resolved compute device (cuda here).
+        # Assert
         assert pha.device.type == "cuda"
 
 
 class TestPacDeviceAuto:
-    def test_pac_auto_runs_on_cpu(self):
-        """pac(..., device="auto") returns PAC values on a CPU-only box."""
+    def test_pac_auto_values_is_ndarray(self):
+        # Arrange
         x, fs = _pac_sig()
+        # Act
         pac_values, pha_mids, amp_mids = pac(x, fs, device="auto")
+        # Assert
         assert isinstance(pac_values, np.ndarray)
+
+    def test_pac_auto_pha_mids_is_ndarray(self):
+        # Arrange
+        x, fs = _pac_sig()
+        # Act
+        pac_values, pha_mids, amp_mids = pac(x, fs, device="auto")
+        # Assert
         assert isinstance(pha_mids, np.ndarray)
+
+    def test_pac_auto_amp_mids_is_ndarray(self):
+        # Arrange
+        x, fs = _pac_sig()
+        # Act
+        pac_values, pha_mids, amp_mids = pac(x, fs, device="auto")
+        # Assert
         assert isinstance(amp_mids, np.ndarray)
 
     def test_pac_auto_shape(self):
+        # Arrange
         x, fs = _pac_sig()
+        # Act
         pac_values, _, _ = pac(x, fs, device="auto")
-        # (batch, n_chs, pha_n_bands, amp_n_bands) with defaults 100 x 100.
+        # Assert
         assert pac_values.shape == (1, 2, 100, 100)
 
-    def test_pac_auto_default_matches_explicit_cpu(self):
+    def test_pac_auto_matches_cpu_shape(self):
+        # Arrange
         x, fs = _pac_sig()
+        # Act
         pac_auto, _, _ = pac(x, fs)  # default device="auto"
         pac_cpu, _, _ = pac(x, fs, device="cpu")
+        # Assert
         assert pac_auto.shape == pac_cpu.shape
 
-    def test_pac_explicit_cpu_still_works(self):
+    def test_pac_explicit_cpu_values_is_ndarray(self):
+        # Arrange
         x, fs = _pac_sig()
+        # Act
         pac_values, _, _ = pac(x, fs, device="cpu")
+        # Assert
         assert isinstance(pac_values, np.ndarray)
 
     @pytest.mark.skipif(
         not torch.cuda.is_available(), reason="CUDA not available"
     )
     def test_pac_auto_picks_cuda_when_available(self):
+        # Arrange
         x, fs = _pac_sig()
         xt = torch.from_numpy(x)
+        # Act
         pac_values, _, _ = pac(xt, fs, device="auto")
+        # Assert
         assert pac_values.device.type == "cuda"
 
 
