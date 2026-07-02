@@ -319,7 +319,7 @@ def test_unknown_backend_in_registry_raises():
 # ---------------------------------------------------------------------------
 # defaults + introspection
 # ---------------------------------------------------------------------------
-def test_available_backends():
+def test_available_backends_are_pac_then_catch22():
     # Arrange
     # Act
     # Assert
