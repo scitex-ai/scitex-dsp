@@ -26,7 +26,7 @@ import numpy as np
 
 # Functions
 def calc_pac_with_tensorpac(xx, fs, t_sec, i_batch=0, i_ch=0):
-    # Lazy import — tensorpac is an optional dep (`scitex-dsp[pac]`).
+    # Lazy import — tensorpac is an optional dep (`scitex-dsp[all]`).
     # Importing at module top would break `scitex_dsp.utils` for users
     # who don't need this cross-check helper.
     import tensorpac

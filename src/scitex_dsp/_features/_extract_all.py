@@ -169,7 +169,7 @@ def _backend_catch22(x, fs, **kwargs) -> dict:
     except ImportError as exc:  # pragma: no cover - exercised via importorskip
         raise ImportError(
             "The 'catch22' backend requires pycatch22. Install it via "
-            "`pip install scitex-dsp[catch22]` (or `pip install pycatch22`)."
+            "`pip install scitex-dsp[all]` (or `pip install pycatch22`)."
         ) from exc
 
     series = np.asarray(x, dtype=float).reshape(-1).tolist()

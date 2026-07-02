@@ -329,15 +329,15 @@ def pca_loadings(
     Raises
     ------
     ImportError
-        If scikit-learn is not installed; install the ``[features]`` extra via ``pip install scitex-dsp[features]``.
+        If scikit-learn is not installed; install the ``[all]`` extra via ``pip install scitex-dsp[all]``.
     """
     arr, names = _validate_X_names(X, names)
     try:
         from sklearn.decomposition import PCA
     except ImportError as exc:  # pragma: no cover - exercised via importorskip
         raise ImportError(
-            "pca_loadings requires scikit-learn. Install the features extra: "
-            "`pip install scitex-dsp[features]` (or `pip install scikit-learn`)."
+            "pca_loadings requires scikit-learn. Install the optional extra: "
+            "`pip install scitex-dsp[all]` (or `pip install scikit-learn`)."
         ) from exc
 
     data = arr

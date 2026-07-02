@@ -138,8 +138,9 @@ def _pac_gpac(
         import gpac
     except ImportError as exc:  # pragma: no cover - exercised only when absent
         raise ImportError(
-            "The 'gpac' backend requires the gpu-pac package. "
-            "Install it with: pip install 'scitex-dsp[pac]'"
+            "The 'gpac' backend requires the gpu-pac package (import name "
+            "'gpac'). Install it via `pip install scitex-dsp[all]` "
+            "(or `pip install gpu-pac`)."
         ) from exc
 
     if device.startswith("cuda"):
