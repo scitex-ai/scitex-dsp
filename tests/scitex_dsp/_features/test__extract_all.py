@@ -47,109 +47,239 @@ def phase():
 # ---------------------------------------------------------------------------
 # catch22 backend parity with a direct pycatch22 call
 # ---------------------------------------------------------------------------
-def test_catch22_matches_direct_pycatch22(x):
+def test_catch22_names_match_pycatch22(x):
+    # Arrange
     pycatch22 = pytest.importorskip("pycatch22")
-
-    out = extract_all(x, sets=["catch22"])
     direct = pycatch22.catch22_all(np.asarray(x, dtype=float).reshape(-1).tolist())
-
+    # Act
+    out = extract_all(x, sets=["catch22"])
+    # Assert
     assert out["names"] == list(direct["names"])
+
+
+def test_catch22_names_count_22(x):
+    # Arrange
+    pytest.importorskip("pycatch22")
+    # Act
+    out = extract_all(x, sets=["catch22"])
+    # Assert
     assert len(out["names"]) == 22
+
+
+def test_catch22_values_shape(x):
+    # Arrange
+    pytest.importorskip("pycatch22")
+    # Act
+    out = extract_all(x, sets=["catch22"])
+    # Assert
     assert out["values"].shape == (22,)
-    np.testing.assert_allclose(
-        out["values"], np.asarray(direct["values"], dtype=float)
-    )
 
 
-def test_catch22_every_name_has_registry_entry(x):
+def test_catch22_values_match_pycatch22(x):
+    # Arrange
+    pycatch22 = pytest.importorskip("pycatch22")
+    direct = pycatch22.catch22_all(np.asarray(x, dtype=float).reshape(-1).tolist())
+    # Act
+    out = extract_all(x, sets=["catch22"])
+    # Assert
+    assert np.allclose(out["values"], np.asarray(direct["values"], dtype=float))
+
+
+def test_catch22_names_in_registry(x):
+    # Arrange
     pytest.importorskip("pycatch22")
     out = extract_all(x, sets=["catch22"])
     reg = extract_all_registry(sets=["catch22"])
-    for name in out["names"]:
-        assert name in reg
-        assert reg[name]["family"] == "catch22"
-        assert reg[name]["engine"] == "pycatch22"
-        assert reg[name]["provisional"] is False
+    # Act
+    missing = [n for n in out["names"] if n not in reg]
+    # Assert
+    assert missing == []
+
+
+def test_catch22_registry_family(x):
+    # Arrange
+    pytest.importorskip("pycatch22")
+    reg = extract_all_registry(sets=["catch22"])
+    # Act
+    bad = [n for n, r in reg.items() if r["family"] != "catch22"]
+    # Assert
+    assert bad == []
+
+
+def test_catch22_registry_engine(x):
+    # Arrange
+    pytest.importorskip("pycatch22")
+    reg = extract_all_registry(sets=["catch22"])
+    # Act
+    bad = [n for n, r in reg.items() if r["engine"] != "pycatch22"]
+    # Assert
+    assert bad == []
+
+
+def test_catch22_registry_not_provisional(x):
+    # Arrange
+    pytest.importorskip("pycatch22")
+    reg = extract_all_registry(sets=["catch22"])
+    # Act
+    bad = [n for n, r in reg.items() if r["provisional"] is not False]
+    # Assert
+    assert bad == []
 
 
 # ---------------------------------------------------------------------------
 # pac backend == pac_features delegate parity
 # ---------------------------------------------------------------------------
-def test_pac_backend_equals_pac_features(pac_z, phase):
+def test_pac_backend_names_equal_pac_features(pac_z, phase):
+    # Arrange
     pytest.importorskip("sklearn")
-    out = extract_all(pac_z=pac_z, phase=phase, sets=["pac"])
     ref = pac_features(pac_z, phase)
-
+    # Act
+    out = extract_all(pac_z=pac_z, phase=phase, sets=["pac"])
+    # Assert
     assert out["names"] == ref["names"]
-    np.testing.assert_allclose(out["values"], ref["values"])
 
 
-def test_pac_backend_include_gmm_false(pac_z, phase):
-    out = extract_all(pac_z=pac_z, phase=phase, sets=["pac"], include_gmm=False)
+def test_pac_backend_values_equal_pac_features(pac_z, phase):
+    # Arrange
+    pytest.importorskip("sklearn")
+    ref = pac_features(pac_z, phase)
+    # Act
+    out = extract_all(pac_z=pac_z, phase=phase, sets=["pac"])
+    # Assert
+    assert np.allclose(out["values"], ref["values"])
+
+
+def test_pac_backend_include_gmm_false_names(pac_z, phase):
+    # Arrange
     ref = pac_features(pac_z, phase, include_gmm=False)
+    # Act
+    out = extract_all(pac_z=pac_z, phase=phase, sets=["pac"], include_gmm=False)
+    # Assert
     assert out["names"] == ref["names"]
-    np.testing.assert_allclose(out["values"], ref["values"])
+
+
+def test_pac_backend_include_gmm_false_values(pac_z, phase):
+    # Arrange
+    ref = pac_features(pac_z, phase, include_gmm=False)
+    # Act
+    out = extract_all(pac_z=pac_z, phase=phase, sets=["pac"], include_gmm=False)
+    # Assert
+    assert np.allclose(out["values"], ref["values"])
 
 
 # ---------------------------------------------------------------------------
 # concatenation of both backends
 # ---------------------------------------------------------------------------
-def test_concat_pac_and_catch22_stable_order(x, pac_z, phase):
+def test_concat_names_are_pac_then_catch22(x, pac_z, phase):
+    # Arrange
     pytest.importorskip("pycatch22")
     pytest.importorskip("sklearn")
-
-    out = extract_all(x, pac_z=pac_z, phase=phase, sets=["pac", "catch22"])
     pac_ref = pac_features(pac_z, phase)
     cat_ref = extract_all(x, sets=["catch22"])
-
-    # Stable order: pac's canonical order first, then catch22's canonical order.
+    # Act
+    out = extract_all(x, pac_z=pac_z, phase=phase, sets=["pac", "catch22"])
+    # Assert
     assert out["names"] == pac_ref["names"] + cat_ref["names"]
-    # Unique names.
+
+
+def test_concat_names_unique(x, pac_z, phase):
+    # Arrange
+    pytest.importorskip("pycatch22")
+    pytest.importorskip("sklearn")
+    # Act
+    out = extract_all(x, pac_z=pac_z, phase=phase, sets=["pac", "catch22"])
+    # Assert
     assert len(out["names"]) == len(set(out["names"]))
-    # Length = sum of parts.
+
+
+def test_concat_length_is_sum(x, pac_z, phase):
+    # Arrange
+    pytest.importorskip("pycatch22")
+    pytest.importorskip("sklearn")
+    pac_ref = pac_features(pac_z, phase)
+    cat_ref = extract_all(x, sets=["catch22"])
+    # Act
+    out = extract_all(x, pac_z=pac_z, phase=phase, sets=["pac", "catch22"])
+    # Assert
     assert len(out["names"]) == len(pac_ref["names"]) + len(cat_ref["names"])
+
+
+def test_concat_values_shape_matches_names(x, pac_z, phase):
+    # Arrange
+    pytest.importorskip("pycatch22")
+    pytest.importorskip("sklearn")
+    # Act
+    out = extract_all(x, pac_z=pac_z, phase=phase, sets=["pac", "catch22"])
+    # Assert
     assert out["values"].shape == (len(out["names"]),)
-    # Values are the concatenation.
-    np.testing.assert_allclose(
-        out["values"],
-        np.concatenate([pac_ref["values"], cat_ref["values"]]),
+
+
+def test_concat_values_are_concatenation(x, pac_z, phase):
+    # Arrange
+    pytest.importorskip("pycatch22")
+    pytest.importorskip("sklearn")
+    pac_ref = pac_features(pac_z, phase)
+    cat_ref = extract_all(x, sets=["catch22"])
+    # Act
+    out = extract_all(x, pac_z=pac_z, phase=phase, sets=["pac", "catch22"])
+    # Assert
+    assert np.allclose(
+        out["values"], np.concatenate([pac_ref["values"], cat_ref["values"]])
     )
 
 
 def test_concat_reverse_order_is_reversed(x, pac_z, phase):
+    # Arrange
     pytest.importorskip("pycatch22")
     pytest.importorskip("sklearn")
-    out = extract_all(x, pac_z=pac_z, phase=phase, sets=["catch22", "pac"])
     pac_ref = pac_features(pac_z, phase)
     cat_ref = extract_all(x, sets=["catch22"])
+    # Act
+    out = extract_all(x, pac_z=pac_z, phase=phase, sets=["catch22", "pac"])
+    # Assert
     assert out["names"] == cat_ref["names"] + pac_ref["names"]
 
 
-def test_concat_every_name_has_registry_entry(x, pac_z, phase):
+def test_concat_names_all_in_registry(x, pac_z, phase):
+    # Arrange
     pytest.importorskip("pycatch22")
     pytest.importorskip("sklearn")
     out = extract_all(x, pac_z=pac_z, phase=phase, sets=["pac", "catch22"])
     reg = extract_all_registry(sets=["pac", "catch22"])
-    for name in out["names"]:
-        assert name in reg
-        rec = reg[name]
-        assert set(rec) >= {
-            "family",
-            "engine",
-            "interpretation",
-            "provisional",
-            "input_provisional",
-        }
+    # Act
+    missing = [n for n in out["names"] if n not in reg]
+    # Assert
+    assert missing == []
 
 
-def test_names_globally_unique_across_backends():
-    """pac and catch22 families must not share any feature name."""
+def test_concat_registry_records_have_core_keys(x, pac_z, phase):
+    # Arrange
+    pytest.importorskip("pycatch22")
+    pytest.importorskip("sklearn")
+    core = {"family", "engine", "interpretation", "provisional", "input_provisional"}
     reg = extract_all_registry(sets=["pac", "catch22"])
-    # A collision would have raised in extract_all_registry; also sanity-check
-    # the two name sets are disjoint.
+    # Act
+    bad = [n for n, r in reg.items() if not (set(r) >= core)]
+    # Assert
+    assert bad == []
+
+
+def test_pac_and_catch22_names_disjoint():
+    # Arrange
     pac_reg = extract_all_registry(sets=["pac"])
     cat_reg = extract_all_registry(sets=["catch22"])
+    # Act
+    # Assert
     assert set(pac_reg).isdisjoint(set(cat_reg))
+
+
+def test_merged_registry_is_union():
+    # Arrange
+    reg = extract_all_registry(sets=["pac", "catch22"])
+    pac_reg = extract_all_registry(sets=["pac"])
+    cat_reg = extract_all_registry(sets=["catch22"])
+    # Act
+    # Assert
     assert set(reg) == set(pac_reg) | set(cat_reg)
 
 
@@ -157,22 +287,31 @@ def test_names_globally_unique_across_backends():
 # error handling
 # ---------------------------------------------------------------------------
 def test_pac_without_pac_z_raises(x):
+    # Arrange
+    # Act
+    # Assert
     with pytest.raises(ValueError, match="pac_z"):
         extract_all(x, sets=["pac"])
 
 
 def test_unknown_backend_raises(x):
+    # Arrange
+    # Act
+    # Assert
     with pytest.raises(ValueError, match="unknown backend"):
         extract_all(x, sets=["not_a_backend"])
 
 
 def test_unknown_backend_in_registry_raises():
+    # Arrange
+    # Act
+    # Assert
     with pytest.raises(ValueError, match="unknown backend"):
         extract_all_registry(sets=["nope"])
 
 
 def test_catch22_missing_pycatch22_raises(monkeypatch, x):
-    """If pycatch22 is unavailable, the catch22 backend raises a clear ImportError."""
+    # Arrange
     import builtins
 
     real_import = builtins.__import__
@@ -183,6 +322,8 @@ def test_catch22_missing_pycatch22_raises(monkeypatch, x):
         return real_import(name, *args, **kwargs)
 
     monkeypatch.setattr(builtins, "__import__", fake_import)
+    # Act
+    # Assert
     with pytest.raises(ImportError, match="catch22"):
         extract_all(x, sets=["catch22"])
 
@@ -191,30 +332,51 @@ def test_catch22_missing_pycatch22_raises(monkeypatch, x):
 # defaults + introspection
 # ---------------------------------------------------------------------------
 def test_available_backends():
+    # Arrange
+    # Act
+    # Assert
     assert AVAILABLE_BACKENDS == ("pac", "catch22")
 
 
-def test_default_sets_runs_all_backends(x, pac_z, phase):
-    """sets=None defaults to all available backends (pac, catch22) in order."""
+def test_default_sets_names_match_explicit(x, pac_z, phase):
+    # Arrange
     pytest.importorskip("pycatch22")
     pytest.importorskip("sklearn")
-    out = extract_all(x, pac_z=pac_z, phase=phase)  # sets=None
     explicit = extract_all(x, pac_z=pac_z, phase=phase, sets=list(AVAILABLE_BACKENDS))
+    # Act
+    out = extract_all(x, pac_z=pac_z, phase=phase)  # sets=None
+    # Assert
     assert out["names"] == explicit["names"]
-    np.testing.assert_allclose(out["values"], explicit["values"])
+
+
+def test_default_sets_values_match_explicit(x, pac_z, phase):
+    # Arrange
+    pytest.importorskip("pycatch22")
+    pytest.importorskip("sklearn")
+    explicit = extract_all(x, pac_z=pac_z, phase=phase, sets=list(AVAILABLE_BACKENDS))
+    # Act
+    out = extract_all(x, pac_z=pac_z, phase=phase)  # sets=None
+    # Assert
+    assert np.allclose(out["values"], explicit["values"])
 
 
 def test_default_registry_covers_all_backends():
-    reg = extract_all_registry()  # sets=None
+    # Arrange
     explicit = extract_all_registry(sets=list(AVAILABLE_BACKENDS))
+    # Act
+    reg = extract_all_registry()  # sets=None
+    # Assert
     assert set(reg) == set(explicit)
 
 
 def test_registry_is_a_copy():
+    # Arrange
     reg = extract_all_registry(sets=["catch22"])
     name = next(iter(reg))
+    # Act
     reg[name]["family"] = "MUTATED"
     fresh = extract_all_registry(sets=["catch22"])
+    # Assert
     assert fresh[name]["family"] == "catch22"
 
 
