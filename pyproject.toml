@@ -57,6 +57,12 @@ features = [
     # (pac_features(..., include_gmm=True)). Absent -> clear ImportError.
     "scikit-learn",
 ]
+catch22 = [
+    # Optional/lazy engine for the "catch22" backend of extract_all
+    # (wraps pycatch22.catch22_all). Absent -> clear ImportError naming
+    # this extra.
+    "pycatch22",
+]
 dev = [
     "joblib",
     "flask",
@@ -66,6 +72,9 @@ dev = [
     # exercises the PROVISIONAL GMM feature family in
     # tests/scitex_dsp/_features/test__pac_features.py (importorskip'd).
     "scikit-learn",
+    # exercises the "catch22" backend of extract_all in
+    # tests/scitex_dsp/_features/test__extract_all.py (importorskip'd).
+    "pycatch22",
     # tests/scitex_dsp/_audio_io/test__mne.py,
     # tests/scitex_dsp/utils/test_filter.py,
     # tests/scitex_dsp/test__time.py — all importorskip("mne")
@@ -89,6 +98,7 @@ all = [
     "scitex-dsp[audio]",
     "scitex-dsp[pac]",
     "scitex-dsp[features]",
+    "scitex-dsp[catch22]",
 ]
 
 [project.urls]
