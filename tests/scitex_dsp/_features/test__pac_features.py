@@ -395,22 +395,10 @@ def test_bimodality_coeff_hand_computed():
     assert got == pytest.approx(expected)
 
 
-def test_gmm_missing_sklearn_raises(monkeypatch):
-    # Arrange
-    import builtins
-
-    real_import = builtins.__import__
-
-    def fake_import(name, *args, **kwargs):
-        if name.startswith("sklearn"):
-            raise ImportError("No module named 'sklearn'")
-        return real_import(name, *args, **kwargs)
-
-    monkeypatch.setattr(builtins, "__import__", fake_import)
-    # Act
-    # Assert
-    with pytest.raises(ImportError, match="scikit-learn"):
-        pac_features(np.arange(50.0), None, include_gmm=True)
+# NOTE: the "missing sklearn raises a clear ImportError" path is intentionally
+# NOT unit-tested — simulating an absent dependency requires import mocking,
+# which the ecosystem forbids (PA-306 no-mocks). The error path itself lives in
+# pac_features() and names the `scitex-dsp[features]` extra.
 
 
 # ---------------------------------------------------------------------------

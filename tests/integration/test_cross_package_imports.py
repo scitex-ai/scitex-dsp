@@ -31,6 +31,7 @@ CROSS_PACKAGE_IMPORTS = [
     "scitex_nn._PAC",
     "scitex_nn._PSD",
     "scitex_nn._Wavelet",
+    "scitex_stats.descriptive",
 ]
 # ===== END AUTO-GENERATED =====
 
