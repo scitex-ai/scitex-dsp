@@ -1,0 +1,447 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scitex_dsp._features._pac_features &mdash; scitex-dsp 0.1.11 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=1e825a29"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            scitex-dsp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">scitex-dsp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">scitex_dsp._features._pac_features</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for scitex_dsp._features._pac_features</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;Canonical PAC-summary feature set (`pac_features`) + feature registry.</span>
+
+<span class="sd">Summarises a per-window/per-channel PAC comodulogram of surrogate-z-scored</span>
+<span class="sd">PAC (``pac_z``, flattened over the phase x amplitude grid) into a flat, named</span>
+<span class="sd">scalar-feature vector — a ``catch22_all``-style ``{names, values}`` contract</span>
+<span class="sd">that makes the descriptor self-documenting for downstream DataFrames/figures.</span>
+
+<span class="sd">Motivation</span>
+<span class="sd">----------</span>
+<span class="sd">The downstream consumer (neurovista, an iEEG seizure pipeline) summarises each</span>
+<span class="sd">comodulogram into **19 scalar stats/channel** -&gt; a 304-dim (16 channels x 19)</span>
+<span class="sd">descriptor. This module ships that summary as a single canonical function so</span>
+<span class="sd">the exact feature set, ordering, and provenance live in one place.</span>
+
+<span class="sd">Feature families (19 features total)</span>
+<span class="sd">------------------------------------</span>
+<span class="sd">- ``pac_z_nan`` (11): NaN-aware descriptive stats over the flattened</span>
+<span class="sd">  ``pac_z`` samples. These map **1:1** onto ``scitex_stats.descriptive``</span>
+<span class="sd">  (``naniqr``/``nanrange`` are composed from quantiles/extrema).</span>
+<span class="sd">- ``phase_circular`` (4): circular descriptive stats over a caller-supplied</span>
+<span class="sd">  ``phase`` angle array.</span>
+<span class="sd">- ``pac_z_gmm`` (4): **PROVISIONAL** 2-component Gaussian-mixture summaries</span>
+<span class="sd">  of the flattened ``pac_z`` distribution. The exact upstream pipeline code</span>
+<span class="sd">  is not yet available; the closed forms here are the standard textbook</span>
+<span class="sd">  definitions and are subject to pinning once neurovista confirms.</span>
+
+<span class="sd">Canonical descriptor order (per-channel, alphabetical within family, GMM</span>
+<span class="sd">first to match neurovista&#39;s 304-dim assembly)::</span>
+
+<span class="sd">    [gmm_ashmans_d, gmm_bhattacharyya_coeff, gmm_bimodality_coeff,</span>
+<span class="sd">     gmm_weight_ratio, naniqr, nankurtosis, nanmax, nanmean, nanmin,</span>
+<span class="sd">     nanq25, nanq50, nanq75, nanrange, nanskewness, nanstd,</span>
+<span class="sd">     phase_circular_concentration, phase_circular_kurtosis,</span>
+<span class="sd">     phase_circular_mean, phase_circular_skewness]</span>
+
+<span class="sd">Notes on inputs</span>
+<span class="sd">---------------</span>
+<span class="sd">- ``pac_z`` is the flattened comodulogram samples (1-D array). A trailing-axis</span>
+<span class="sd">  batch is not assumed; pass one channel/window at a time.</span>
+<span class="sd">- ``phase`` is a caller-supplied phase-angle array (radians) that feeds the</span>
+<span class="sd">  circular stats. Its exact upstream source is still being confirmed by</span>
+<span class="sd">  neurovista, so it is accepted as-is and documented rather than derived here.</span>
+<span class="sd">  When ``phase is None`` the 4 circular features are **skipped** (and the</span>
+<span class="sd">  returned ``names`` shortened accordingly) — the least-surprising behaviour</span>
+<span class="sd">  for callers that only have ``pac_z``.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">scitex_stats.descriptive</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">circular_concentration</span><span class="p">,</span>
+    <span class="n">circular_kurtosis</span><span class="p">,</span>
+    <span class="n">circular_mean</span><span class="p">,</span>
+    <span class="n">circular_skewness</span><span class="p">,</span>
+    <span class="n">nankurtosis</span><span class="p">,</span>
+    <span class="n">nanmax</span><span class="p">,</span>
+    <span class="n">nanmean</span><span class="p">,</span>
+    <span class="n">nanmin</span><span class="p">,</span>
+    <span class="n">nanq25</span><span class="p">,</span>
+    <span class="n">nanq50</span><span class="p">,</span>
+    <span class="n">nanq75</span><span class="p">,</span>
+    <span class="n">nanskewness</span><span class="p">,</span>
+    <span class="n">nanstd</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">PAC_FEATURE_REGISTRY</span><span class="p">,</span> <span class="n">feature_registry</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;pac_features&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PAC_FEATURE_REGISTRY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;feature_registry&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Canonical descriptor order (must match the registry ordering).</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="n">_GMM_NAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;gmm_ashmans_d&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;gmm_bhattacharyya_coeff&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;gmm_bimodality_coeff&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;gmm_weight_ratio&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">_NAN_NAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;naniqr&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nankurtosis&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nanmax&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nanmean&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nanmin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nanq25&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nanq50&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nanq75&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nanrange&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nanskewness&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nanstd&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">_CIRCULAR_NAMES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;phase_circular_concentration&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;phase_circular_kurtosis&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;phase_circular_mean&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;phase_circular_skewness&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># nan-family engine: 1:1 reuse of scitex_stats.descriptive (naniqr/nanrange</span>
+<span class="c1"># composed from quantiles/extrema per the scitex-stats surface).</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_nan_features</span><span class="p">(</span><span class="n">pac_z</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the 11 NaN-aware descriptive stats over flattened ``pac_z``.</span>
+
+<span class="sd">    ``naniqr`` and ``nanrange`` are composed (scitex-stats does not ship them</span>
+<span class="sd">    directly): ``naniqr = nanq75 - nanq25`` and ``nanrange = nanmax - nanmin``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">q25</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">nanq25</span><span class="p">(</span><span class="n">pac_z</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">q75</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">nanq75</span><span class="p">(</span><span class="n">pac_z</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">mx</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">nanmax</span><span class="p">(</span><span class="n">pac_z</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">mn</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">nanmin</span><span class="p">(</span><span class="n">pac_z</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;naniqr&quot;</span><span class="p">:</span> <span class="n">q75</span> <span class="o">-</span> <span class="n">q25</span><span class="p">,</span>
+        <span class="s2">&quot;nankurtosis&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">nankurtosis</span><span class="p">(</span><span class="n">pac_z</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)),</span>
+        <span class="s2">&quot;nanmax&quot;</span><span class="p">:</span> <span class="n">mx</span><span class="p">,</span>
+        <span class="s2">&quot;nanmean&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">nanmean</span><span class="p">(</span><span class="n">pac_z</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)),</span>
+        <span class="s2">&quot;nanmin&quot;</span><span class="p">:</span> <span class="n">mn</span><span class="p">,</span>
+        <span class="s2">&quot;nanq25&quot;</span><span class="p">:</span> <span class="n">q25</span><span class="p">,</span>
+        <span class="s2">&quot;nanq50&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">nanq50</span><span class="p">(</span><span class="n">pac_z</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)),</span>
+        <span class="s2">&quot;nanq75&quot;</span><span class="p">:</span> <span class="n">q75</span><span class="p">,</span>
+        <span class="s2">&quot;nanrange&quot;</span><span class="p">:</span> <span class="n">mx</span> <span class="o">-</span> <span class="n">mn</span><span class="p">,</span>
+        <span class="s2">&quot;nanskewness&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">nanskewness</span><span class="p">(</span><span class="n">pac_z</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)),</span>
+        <span class="s2">&quot;nanstd&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">nanstd</span><span class="p">(</span><span class="n">pac_z</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)),</span>
+    <span class="p">}</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># circular-family engine: 1:1 reuse of scitex_stats.descriptive circular stats.</span>
+<span class="c1"># The scitex-stats circular funcs are histogram-weighted and require &gt;=2-D</span>
+<span class="c1"># input; we treat the supplied phase array as an unweighted sample of angles</span>
+<span class="c1"># (uniform weights) and add a leading batch axis to satisfy the API, then</span>
+<span class="c1"># squeeze the scalar result back out.</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_circular_features</span><span class="p">(</span><span class="n">phase</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the 4 circular descriptive stats over a phase-angle array.&quot;&quot;&quot;</span>
+    <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">phase</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># scitex-stats circular funcs require &gt;=2-D (batch-first); use uniform</span>
+    <span class="c1"># weights so the result is an unweighted circular statistic of the angles.</span>
+    <span class="c1"># With a single batch row, the non-keepdims reduction over dim=-1 leaves a</span>
+    <span class="c1"># length-1 batch axis, so flatten the result to a Python scalar.</span>
+    <span class="n">angles2d</span> <span class="o">=</span> <span class="n">angles</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">weights2d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">angles2d</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_scalar</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;phase_circular_concentration&quot;</span><span class="p">:</span> <span class="n">_scalar</span><span class="p">(</span>
+            <span class="n">circular_concentration</span><span class="p">(</span><span class="n">angles2d</span><span class="p">,</span> <span class="n">weights2d</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="s2">&quot;phase_circular_kurtosis&quot;</span><span class="p">:</span> <span class="n">_scalar</span><span class="p">(</span>
+            <span class="n">circular_kurtosis</span><span class="p">(</span><span class="n">angles2d</span><span class="p">,</span> <span class="n">weights2d</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="s2">&quot;phase_circular_mean&quot;</span><span class="p">:</span> <span class="n">_scalar</span><span class="p">(</span><span class="n">circular_mean</span><span class="p">(</span><span class="n">angles2d</span><span class="p">,</span> <span class="n">weights2d</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)),</span>
+        <span class="s2">&quot;phase_circular_skewness&quot;</span><span class="p">:</span> <span class="n">_scalar</span><span class="p">(</span>
+            <span class="n">circular_skewness</span><span class="p">(</span><span class="n">angles2d</span><span class="p">,</span> <span class="n">weights2d</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># GMM-family engine — PROVISIONAL.</span>
+<span class="c1">#</span>
+<span class="c1"># Standard closed forms on a 2-component 1-D Gaussian mixture fitted to the</span>
+<span class="c1"># flattened pac_z samples. sklearn is an OPTIONAL/lazy dependency; if it is</span>
+<span class="c1"># missing we raise a clear ImportError naming the missing dep rather than</span>
+<span class="c1"># silently returning NaN, so callers know the GMM block was not computed.</span>
+<span class="c1"># Every GMM quantity is PROVISIONAL — subject to neurovista pinning the exact</span>
+<span class="c1"># pipeline code.</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_sample_bimodality_coeff</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sarle&#39;s bimodality coefficient ``(skew^2 + 1) / kurt`` (sample-corrected).</span>
+
+<span class="sd">    Computed directly on the flattened samples ``x`` (not the fitted mixture),</span>
+<span class="sd">    using the sample-corrected skewness/kurtosis so the classic finite-sample</span>
+<span class="sd">    denominator applies. Returns NaN for ``n &lt; 4`` (correction undefined).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">)</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">std</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">std</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="n">std</span>
+    <span class="n">m3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">z</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">m4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">z</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span>
+    <span class="c1"># Sample-corrected skewness (g1 -&gt; G1) and excess kurtosis (g2 -&gt; G2).</span>
+    <span class="n">g1</span> <span class="o">=</span> <span class="n">m3</span>
+    <span class="n">g2</span> <span class="o">=</span> <span class="n">m4</span> <span class="o">-</span> <span class="mf">3.0</span>
+    <span class="n">G1</span> <span class="o">=</span> <span class="n">g1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">G2</span> <span class="o">=</span> <span class="p">((</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)))</span> <span class="o">*</span> <span class="p">((</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">g2</span> <span class="o">+</span> <span class="mi">6</span><span class="p">)</span>
+    <span class="c1"># Sarle uses full (non-excess) kurtosis in the denominator: kurt = G2 + 3.</span>
+    <span class="n">denom</span> <span class="o">=</span> <span class="n">G2</span> <span class="o">+</span> <span class="mf">3.0</span>
+    <span class="k">if</span> <span class="n">denom</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">((</span><span class="n">G1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">denom</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_gmm_features</span><span class="p">(</span><span class="n">pac_z</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fit a 2-component 1-D GMM to flattened ``pac_z`` and summarise it.</span>
+
+<span class="sd">    PROVISIONAL. Closed forms (components ``(mu0, sigma0, w0)``,</span>
+<span class="sd">    ``(mu1, sigma1, w1)``):</span>
+
+<span class="sd">    - ``gmm_ashmans_d = sqrt(2) * |mu0 - mu1| / sqrt(sigma0^2 + sigma1^2)``</span>
+<span class="sd">    - ``gmm_bhattacharyya_coeff = sqrt(2 * sigma0 * sigma1 / (sigma0^2 + sigma1^2))</span>
+<span class="sd">      * exp(-(mu0 - mu1)^2 / (4 * (sigma0^2 + sigma1^2)))``</span>
+<span class="sd">    - ``gmm_bimodality_coeff`` = Sarle&#39;s coefficient on the raw samples.</span>
+<span class="sd">    - ``gmm_weight_ratio = min(w0, w1) / max(w0, w1)``</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ImportError</span>
+<span class="sd">        If scikit-learn is not installed (install the ``[features]`` extra).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.mixture</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianMixture</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># pragma: no cover - exercised via importorskip</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;pac_features(..., include_gmm=True) requires scikit-learn for the &quot;</span>
+            <span class="s2">&quot;PROVISIONAL GMM feature family. Install it via &quot;</span>
+            <span class="s2">&quot;`pip install scitex-dsp[features]` (or `pip install scikit-learn`), &quot;</span>
+            <span class="s2">&quot;or call pac_features(..., include_gmm=False) to skip the GMM block.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pac_z</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">gmm</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">gmm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+
+    <span class="n">mu</span> <span class="o">=</span> <span class="n">gmm</span><span class="o">.</span><span class="n">means_</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="n">gmm</span><span class="o">.</span><span class="n">covariances_</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">gmm</span><span class="o">.</span><span class="n">weights_</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">mu0</span><span class="p">,</span> <span class="n">mu1</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">mu</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">mu</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">s0</span><span class="p">,</span> <span class="n">s1</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sigma</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">sigma</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">w0</span><span class="p">,</span> <span class="n">w1</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">var_sum</span> <span class="o">=</span> <span class="n">s0</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">s1</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">ashmans_d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">mu0</span> <span class="o">-</span> <span class="n">mu1</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var_sum</span><span class="p">)</span>
+    <span class="n">bhattacharyya</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">s0</span> <span class="o">*</span> <span class="n">s1</span> <span class="o">/</span> <span class="n">var_sum</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+        <span class="o">-</span><span class="p">((</span><span class="n">mu0</span> <span class="o">-</span> <span class="n">mu1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">var_sum</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">weight_ratio</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">w0</span><span class="p">,</span> <span class="n">w1</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">w0</span><span class="p">,</span> <span class="n">w1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;gmm_ashmans_d&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">ashmans_d</span><span class="p">),</span>
+        <span class="s2">&quot;gmm_bhattacharyya_coeff&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">bhattacharyya</span><span class="p">),</span>
+        <span class="s2">&quot;gmm_bimodality_coeff&quot;</span><span class="p">:</span> <span class="n">_sample_bimodality_coeff</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+        <span class="s2">&quot;gmm_weight_ratio&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">weight_ratio</span><span class="p">),</span>
+    <span class="p">}</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Public API.</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="pac_features">
+<a class="viewcode-back" href="../../../api.html#scitex_dsp.pac_features">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pac_features</span><span class="p">(</span>
+    <span class="n">pac_z</span><span class="p">,</span>
+    <span class="n">phase</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;np.ndarray&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">include_gmm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Summarise a flattened PAC comodulogram into a named scalar-feature vector.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pac_z : array-like, shape (n,)</span>
+<span class="sd">        The flattened ``n_pha x n_amp`` surrogate-z-scored PAC comodulogram</span>
+<span class="sd">        for a single channel and single window, flattened over the</span>
+<span class="sd">        phase x amplitude grid. 1-D input is expected; a trailing-axis batch</span>
+<span class="sd">        is not assumed.</span>
+<span class="sd">    phase : array-like, optional</span>
+<span class="sd">        Caller-supplied phase-angle array (radians) feeding the 4 circular</span>
+<span class="sd">        features. **PROVISIONAL input**: its exact upstream source is still</span>
+<span class="sd">        being confirmed by neurovista (likely a per-window preferred-phase /</span>
+<span class="sd">        phase-bin distribution), so it is accepted as-is and NOT derived here.</span>
+<span class="sd">        If ``None`` (default), the 4 ``phase_circular_*`` features are</span>
+<span class="sd">        **skipped** and ``names`` is shortened accordingly.</span>
+<span class="sd">    include_gmm : bool, default True</span>
+<span class="sd">        If True, compute the 4 PROVISIONAL ``pac_z_gmm`` features (requires</span>
+<span class="sd">        scikit-learn). If False, they are skipped and ``names`` shortened.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        ``{&quot;names&quot;: list[str], &quot;values&quot;: np.ndarray}`` — a flat, named,</span>
+<span class="sd">        catch22-style descriptor. ``values`` is ordered to match ``names``,</span>
+<span class="sd">        which follow the canonical descriptor order (GMM, nan, circular),</span>
+<span class="sd">        with any skipped families omitted.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The 11 ``pac_z_nan`` and 4 ``phase_circular`` features reuse</span>
+<span class="sd">      ``scitex_stats.descriptive`` 1:1 (``naniqr``/``nanrange`` composed).</span>
+<span class="sd">    - The 4 ``pac_z_gmm`` features are PROVISIONAL (see module docstring and</span>
+<span class="sd">      the feature registry ``provisional`` flag).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pac_z_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pac_z</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">values_by_name</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="n">include_gmm</span><span class="p">:</span>
+        <span class="n">values_by_name</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_gmm_features</span><span class="p">(</span><span class="n">pac_z_arr</span><span class="p">))</span>
+
+    <span class="n">values_by_name</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_nan_features</span><span class="p">(</span><span class="n">pac_z_arr</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">phase</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">values_by_name</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_circular_features</span><span class="p">(</span><span class="n">phase</span><span class="p">))</span>
+
+    <span class="c1"># Assemble in canonical order, omitting skipped families.</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">include_gmm</span><span class="p">:</span>
+        <span class="n">names</span> <span class="o">+=</span> <span class="n">_GMM_NAMES</span>
+    <span class="n">names</span> <span class="o">+=</span> <span class="n">_NAN_NAMES</span>
+    <span class="k">if</span> <span class="n">phase</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">names</span> <span class="o">+=</span> <span class="n">_CIRCULAR_NAMES</span>
+
+    <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">values_by_name</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;names&quot;</span><span class="p">:</span> <span class="n">names</span><span class="p">,</span> <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="n">values</span><span class="p">}</span></div>
+
+
+
+<span class="c1"># EOF</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Yusuke Watanabe.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

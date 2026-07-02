@@ -211,11 +211,7 @@ def pac(
     - amp_start_hz (float, optional): Start frequency for amplitude bands. Default is 60 Hz.
     - amp_end_hz (float, optional): End frequency for amplitude bands. Default is 160 Hz.
     - amp_n_bands (int, optional): Number of amplitude bands. Default is 100.
-    - backend (str, optional): PAC engine to use. ``"auto"`` (default) and
-      ``"scitex_nn"`` use the in-tree ``scitex_nn._PAC.PAC`` engine; ``"gpac"``
-      uses the third-party ``gpac`` (gpu-pac) GPU engine, which must be
-      installed via the ``scitex-dsp[pac]`` extra. ``"auto"`` resolves to
-      ``"scitex_nn"`` so the default behaviour is unchanged.
+    - backend (str, optional): PAC engine. "auto" (default) and "scitex_nn" use the in-tree scitex_nn._PAC.PAC engine; "gpac" uses the third-party gpac (gpu-pac) GPU engine, installed via the scitex-dsp[pac] extra. "auto" resolves to "scitex_nn", so default behaviour is unchanged.
 
     Returns:
     - torch.Tensor: PAC values. Shape: (batch_size, n_chs, pha_n_bands, amp_n_bands)
