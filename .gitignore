@@ -27,3 +27,4 @@ checkpoints
 .jupyter_ystore.db
 docs/sphinx/api/
 GITIGNORED/
+.worktrees/
