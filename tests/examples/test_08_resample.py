@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import importlib.util
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -16,8 +18,8 @@ NOTEBOOK = (
 
 
 pytestmark = pytest.mark.skipif(
-    shutil.which("jupyter") is None,
-    reason="jupyter not installed",
+    importlib.util.find_spec("nbconvert") is None,
+    reason="nbconvert not installed",
 )
 def test_08_resample_notebook_exists(tmp_path: Path) -> None:
     # Arrange
@@ -38,7 +40,7 @@ def test_08_resample_r_returncode_equals_n_0(tmp_path: Path) -> None:
     shutil.copy(NOTEBOOK, target)
     # Act
     r = subprocess.run(
-        ["jupyter", "nbconvert", "--to", "notebook", "--execute",
+        [sys.executable, "-m", "nbconvert", "--to", "notebook", "--execute",
          "--output", target.name, str(target)],
         cwd=tmp_path, capture_output=True, text=True, timeout=300,
     )
