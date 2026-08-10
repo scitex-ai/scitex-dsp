@@ -76,6 +76,39 @@ src/scitex_dsp/
 All public functions accept `(channels, samples)` or
 `(batch, channels, samples)`.
 
+## Feature Extraction
+
+A named-scalar feature front-end turns a signal (or a PAC map) into a
+flat, self-documenting `{names, values}` descriptor — every value is
+traceable to its registry entry.
+
+```python
+import scitex_dsp as dsp
+
+# Canonical PAC-summary set from a PAC map (+ its provenance registry).
+feats = dsp.pac_features(pac_z)          # {"names": [...], "values": [...]}
+dsp.PAC_FEATURE_REGISTRY                  # what each feature means / how it is computed
+
+# Multi-backend front-end over many engines (pac + catch22) in one call.
+out = dsp.extract_all(x, fs)              # {"names": [...], "values": [...]}
+dsp.AVAILABLE_BACKENDS                     # ("pac", "catch22")
+dsp.extract_all_registry()                 # provenance for every emitted feature
+
+# Real GPU-PAC engine (opt-in); "auto" keeps the CPU-safe default.
+pac, f_pha, f_amp = dsp.pac(x, fs, backend="gpac")
+
+# Quantify how much a mixed feature set duplicates itself.
+dsp.feature_correlation(X, names)
+dsp.redundancy_summary(X, names)
+dsp.pca_loadings(X, names)
+dsp.correlation_by_group(X, names)
+```
+
+The pip-installable optionals (`tensorpac`, `pycatch22`, `scikit-learn`,
+`sounddevice`, and the `gpu-pac` GPU-PAC engine behind
+`pac(backend="gpac")`) ship in a single `[all]` extra: `pip install
+scitex-dsp[all]` (or, for just the GPU engine, `pip install gpu-pac`).
+
 ## 2 Interfaces
 
 <details open>

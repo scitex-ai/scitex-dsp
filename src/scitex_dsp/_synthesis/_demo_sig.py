@@ -353,12 +353,18 @@ if __name__ == "__main__":
         # plt wrapper).
         CONFIG, sys.stdout, sys.stderr, plt, CC = scitex.session.start(sys, plt)
 
+    # NOTE: "meg" is intentionally excluded from this smoke-tested gallery.
+    # ``_demo_sig_meg`` calls ``mne.datasets.sample.data_path()`` — a ~1.5 GB
+    # network download that is unavailable/undesirable in CI (and fails outright
+    # when the runner's ``MNE_DATA`` points at a nonexistent dir). The real-MEG
+    # path stays available for users via ``demo_sig(sig_type="meg")`` once the
+    # MNE "sample" dataset is present locally; the smoke demo keeps only the
+    # self-contained synthetic signal types.
     SIG_TYPES = [
         "uniform",
         "gauss",
         "periodic",
         "chirp",
-        "meg",
         "ripple",
         "tensorpac",
         "pac",

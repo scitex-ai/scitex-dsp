@@ -20,6 +20,8 @@ except ImportError:
 
 from scitex_decorators import signal_fn
 
+from ._device import resolve_device
+
 if TORCH_AVAILABLE:
     from scitex_nn._PAC import PAC
 
@@ -31,61 +33,44 @@ def _check_torch():
         )
 
 
-"""
-scitex.dsp.pac function
-"""
+def _resolve_backend(backend):
+    """Resolve ``backend="auto"`` to a concrete backend name.
+
+    ``"auto"`` maps to ``"scitex_nn"`` so that the default behaviour is
+    byte-for-byte identical to previous releases (see the note in ``pac``).
+    Explicit ``"scitex_nn"`` / ``"gpac"`` pass through unchanged; anything
+    else is rejected early with a clear error.
+    """
+    if backend == "auto":
+        return "scitex_nn"
+    if backend not in ("scitex_nn", "gpac"):
+        raise ValueError(
+            f"Unknown pac backend {backend!r}; "
+            "expected one of 'auto', 'scitex_nn', 'gpac'."
+        )
+    return backend
 
 
-# @batch_fn
-@signal_fn
-def pac(
+def _pac_scitex_nn(
     x,
     fs,
-    pha_start_hz=2,
-    pha_end_hz=20,
-    pha_n_bands=100,
-    amp_start_hz=60,
-    amp_end_hz=160,
-    amp_n_bands=100,
-    device="cuda",
-    batch_size=1,
-    batch_size_ch=-1,
-    fp16=False,
-    trainable=False,
-    n_perm=None,
-    amp_prob=False,
+    pha_start_hz,
+    pha_end_hz,
+    pha_n_bands,
+    amp_start_hz,
+    amp_end_hz,
+    amp_n_bands,
+    device,
+    batch_size_ch,
+    fp16,
+    trainable,
+    n_perm,
+    amp_prob,
 ):
+    """Compute PAC with the in-tree ``scitex_nn._PAC.PAC`` engine.
+
+    This is the historical default path; its output is unchanged.
     """
-    Compute the phase-amplitude coupling (PAC) for signals. This function automatically handles inputs as
-    PyTorch tensors, NumPy arrays, or pandas DataFrames.
-
-    Arguments:
-    - x (torch.Tensor | np.ndarray | pd.DataFrame): Input signal. Shape can be either (batch_size, n_chs, seq_len) or
-    - fs (float): Sampling frequency of the input signal.
-    - pha_start_hz (float, optional): Start frequency for phase bands. Default is 2 Hz.
-    - pha_end_hz (float, optional): End frequency for phase bands. Default is 20 Hz.
-    - pha_n_bands (int, optional): Number of phase bands. Default is 100.
-    - amp_start_hz (float, optional): Start frequency for amplitude bands. Default is 60 Hz.
-    - amp_end_hz (float, optional): End frequency for amplitude bands. Default is 160 Hz.
-    - amp_n_bands (int, optional): Number of amplitude bands. Default is 100.
-
-    Returns:
-    - torch.Tensor: PAC values. Shape: (batch_size, n_chs, pha_n_bands, amp_n_bands)
-    - numpy.ndarray: Phase bands used for the computation.
-    - numpy.ndarray: Amplitude bands used for the computation.
-
-    Example:
-
-    .. code-block:: python
-
-        FS = 512
-        T_SEC = 4
-        xx, tt, fs = scitex.dsp.demo_sig(
-            batch_size=1, n_chs=1, fs=FS, t_sec=T_SEC, sig_type="tensorpac"
-        )
-        pac, pha_mids_hz, amp_mids_hz = scitex.dsp.pac(xx, fs)
-    """
-    _check_torch()
 
     def process_ch_batching(m, x, batch_size_ch, device):
         n_chs = x.shape[1]
@@ -97,7 +82,6 @@ def pac(
             _pac = m(x[:, start:end, :].to(device)).detach().cpu()
             agg.append(_pac)
 
-        # return np.concatenate(agg, axis=1)
         return torch.cat(agg, dim=1)
 
     m = PAC(
@@ -117,12 +101,172 @@ def pac(
 
     if batch_size_ch == -1:
         return m(x.to(device)), m.PHA_MIDS_HZ, m.AMP_MIDS_HZ
+    return (
+        process_ch_batching(m, x, batch_size_ch, device),
+        m.PHA_MIDS_HZ,
+        m.AMP_MIDS_HZ,
+    )
+
+
+def _pac_gpac(
+    x,
+    fs,
+    pha_start_hz,
+    pha_end_hz,
+    pha_n_bands,
+    amp_start_hz,
+    amp_end_hz,
+    amp_n_bands,
+    device,
+    fp16,
+    trainable,
+    n_perm,
+):
+    """Compute PAC with the third-party ``gpac`` (gpu-pac) GPU engine.
+
+    ``gpac.PAC.forward`` returns a dict; this adapter maps it onto the same
+    ``(pac_values, pha_mids_hz, amp_mids_hz)`` 3-tuple contract as the
+    ``scitex_nn`` path. ``gpac`` reports frequency bands as ``(n_bands, 2)``
+    ``[low, high]`` edges, so the 1-D band mids are the row-wise means.
+
+    Device placement is via ``gpac``'s own ``device_ids`` argument (``gpac``
+    does not honour ``nn.Module.to``): a CUDA device maps to ``device_ids=[i]``
+    (or ``"all"`` for plain ``"cuda"``); anything else runs on CPU
+    (``device_ids=[]``).
+    """
+    try:
+        import gpac
+    except ImportError as exc:  # pragma: no cover - exercised only when absent
+        raise ImportError(
+            "The 'gpac' backend requires the gpu-pac package (import name "
+            "'gpac'). Install it via `pip install scitex-dsp[all]` "
+            "(or `pip install gpu-pac`)."
+        ) from exc
+
+    if device.startswith("cuda"):
+        if ":" in device:
+            device_ids = [int(device.split(":", 1)[1])]
+        else:
+            device_ids = "all"
     else:
-        return (
-            process_ch_batching(m, x, batch_size_ch, device),
-            m.PHA_MIDS_HZ,
-            m.AMP_MIDS_HZ,
+        device_ids = []
+
+    m = gpac.PAC(
+        seq_len=x.shape[-1],
+        fs=fs,
+        pha_range_hz=(pha_start_hz, pha_end_hz),
+        amp_range_hz=(amp_start_hz, amp_end_hz),
+        pha_n_bands=pha_n_bands,
+        amp_n_bands=amp_n_bands,
+        n_perm=n_perm,
+        fp16=fp16,
+        trainable=trainable,
+        device_ids=device_ids,
+        compile_mode=False,
+    )
+
+    out = m(x.to(m.device))
+
+    pac_values = out["pac"]
+    pha_mids_hz = out["phase_bands_hz"].float().mean(dim=1).detach().cpu().numpy()
+    amp_mids_hz = out["amplitude_bands_hz"].float().mean(dim=1).detach().cpu().numpy()
+
+    return pac_values, pha_mids_hz, amp_mids_hz
+
+
+"""
+scitex.dsp.pac function
+"""
+
+
+# @batch_fn
+@signal_fn
+def pac(
+    x,
+    fs,
+    pha_start_hz=2,
+    pha_end_hz=20,
+    pha_n_bands=100,
+    amp_start_hz=60,
+    amp_end_hz=160,
+    amp_n_bands=100,
+    device="auto",
+    batch_size=1,
+    batch_size_ch=-1,
+    fp16=False,
+    trainable=False,
+    n_perm=None,
+    amp_prob=False,
+    backend="auto",
+):
+    """
+    Compute the phase-amplitude coupling (PAC) for signals. This function automatically handles inputs as
+    PyTorch tensors, NumPy arrays, or pandas DataFrames.
+
+    Arguments:
+    - x (torch.Tensor | np.ndarray | pd.DataFrame): Input signal. Shape can be either (batch_size, n_chs, seq_len) or
+    - fs (float): Sampling frequency of the input signal.
+    - pha_start_hz (float, optional): Start frequency for phase bands. Default is 2 Hz.
+    - pha_end_hz (float, optional): End frequency for phase bands. Default is 20 Hz.
+    - pha_n_bands (int, optional): Number of phase bands. Default is 100.
+    - amp_start_hz (float, optional): Start frequency for amplitude bands. Default is 60 Hz.
+    - amp_end_hz (float, optional): End frequency for amplitude bands. Default is 160 Hz.
+    - amp_n_bands (int, optional): Number of amplitude bands. Default is 100.
+    - backend (str, optional): PAC engine. "auto" (default) and "scitex_nn" use the in-tree scitex_nn._PAC.PAC engine; "gpac" uses the third-party gpac (gpu-pac) GPU engine, installed via the scitex-dsp[pac] extra. "auto" resolves to "scitex_nn", so default behaviour is unchanged.
+
+    Returns:
+    - torch.Tensor: PAC values. Shape: (batch_size, n_chs, pha_n_bands, amp_n_bands)
+    - numpy.ndarray: Phase bands used for the computation.
+    - numpy.ndarray: Amplitude bands used for the computation.
+
+    Example:
+
+    .. code-block:: python
+
+        FS = 512
+        T_SEC = 4
+        xx, tt, fs = scitex.dsp.demo_sig(
+            batch_size=1, n_chs=1, fs=FS, t_sec=T_SEC, sig_type="tensorpac"
         )
+        pac, pha_mids_hz, amp_mids_hz = scitex.dsp.pac(xx, fs)
+    """
+    _check_torch()
+
+    device = resolve_device(device)
+    backend = _resolve_backend(backend)
+
+    if backend == "gpac":
+        return _pac_gpac(
+            x,
+            fs,
+            pha_start_hz,
+            pha_end_hz,
+            pha_n_bands,
+            amp_start_hz,
+            amp_end_hz,
+            amp_n_bands,
+            device,
+            fp16,
+            trainable,
+            n_perm,
+        )
+
+    return _pac_scitex_nn(
+        x,
+        fs,
+        pha_start_hz,
+        pha_end_hz,
+        pha_n_bands,
+        amp_start_hz,
+        amp_end_hz,
+        amp_n_bands,
+        device,
+        batch_size_ch,
+        fp16,
+        trainable,
+        n_perm,
+        amp_prob,
+    )
 
 
 if __name__ == "__main__":

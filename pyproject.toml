@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scitex-dsp"
-version = "0.1.11"
+version = "0.2.0"
 description = "Digital signal processing (PAC, Hilbert, Wavelet, filters, demo signals, …) — standalone module from the SciTeX ecosystem"
 readme = "README.md"
 license = "AGPL-3.0-only"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 authors = [{name = "Yusuke Watanabe", email = "noreply@scitex.ai"}]
 keywords = ["scitex", "dsp", "signal-processing", "pytorch", "pac"]
 classifiers = [
@@ -29,6 +29,12 @@ dependencies = [
     "scitex-gen>=0.1.10",  # still owns to_z (._numeric._norm) used by _detect_ripples.py
     "scitex-math>=0.1.0",  # owns to_even / to_odd since their standalonization out of scitex_gen
     "scitex-nn>=0.1.13",
+    # scitex-stats owns the descriptive nan-/circular-stats engines reused
+    # 1:1 by scitex_dsp._features.pac_features (P1a). Core dep, not [dev]-only,
+    # because pac_features imports it at module load. Floor >=0.2.0 = first
+    # series shipping the descriptive._nan / descriptive._circular public
+    # surface (nanq25/50/75, circular_mean/concentration/skewness/kurtosis).
+    "scitex-stats>=0.2.0",
     # scitex-dsp calls `scitex_dev.try_import_optional` at module-load in
     # four src/ modules — _resample.py:12, _audio_io/_mne.py:6,
     # _synthesis/_demo_sig.py:12, utils/_differential_bandpass_filters.py:23.
@@ -40,17 +46,45 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-audio = [
-    "sounddevice",
-]
-pac = [
+# Single consolidated extra of the pip-installable runtime optionals
+# (scitex convention: extras are "nothing" or "[all]").
+#   - tensorpac      : cross-check PAC engine (utils.pac) + tensorpac path
+#   - sounddevice    : audio I/O (PortAudio playback / device selection)
+#   - pycatch22      : the "catch22" backend of extract_all
+#   - scikit-learn   : PROVISIONAL GMM PAC-feature family + PCA redundancy audit
+#   - gpu-pac>=0.3.4 : real GPU-PAC engine behind pac(..., backend="gpac")
+# NOTE: the GPU-PAC engine is the distribution `gpu-pac` (import name `gpac`),
+# published on PyPI since 0.3.4 with clean metadata (no direct/URL deps).
+# Pin a plain version specifier — NEVER a `git+https` / `@ git` URL — because a
+# direct URL under ANY extra makes PyPI reject the whole upload (400 "Can't
+# have direct dependency"). The unrelated PyPI package literally named "gpac"
+# is a different project; the import name `gpac` here comes from `gpu-pac`.
+all = [
     "tensorpac",
+    "sounddevice",
+    "pycatch22",
+    "scikit-learn",
+    "gpu-pac>=0.3.4",
 ]
 dev = [
     "joblib",
     "flask",
+    # All pip-installable runtime optionals whose tests live in the suite
+    # (PS-210 dev-extras-completeness) — mirrors [all]:
     "tensorpac",
     "sounddevice",
+    # Real GPU-PAC engine behind pac(..., backend="gpac"), now on PyPI
+    # (>=0.3.4). Present here so the gpac-backend tests in
+    # tests/scitex_dsp/_spectral/test__pac.py RUN in CI (they importorskip
+    # "gpac", so absent -> skip; present -> execute).
+    "gpu-pac>=0.3.4",
+    # exercises the "catch22" backend of extract_all in
+    # tests/scitex_dsp/_features/test__extract_all.py (importorskip'd).
+    "pycatch22",
+    # exercises the PROVISIONAL GMM feature family in
+    # tests/scitex_dsp/_features/test__pac_features.py and the PCA redundancy
+    # audit in test__redundancy.py (importorskip'd).
+    "scikit-learn",
     "ripple_detection",
     # tests/scitex_dsp/_audio_io/test__mne.py,
     # tests/scitex_dsp/utils/test_filter.py,
@@ -70,10 +104,6 @@ docs = [
     "myst-parser>=2.0",
     "sphinx-copybutton>=0.5",
     "sphinx-autodoc-typehints>=1.25",
-]
-all = [
-    "scitex-dsp[audio]",
-    "scitex-dsp[pac]",
 ]
 
 [project.urls]
@@ -104,7 +134,7 @@ source = ["scitex_dsp"]
 concurrency = ["multiprocessing", "thread"]
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py311"
 line-length = 88
 
 [tool.ruff.lint]

@@ -8,6 +8,8 @@
 from scitex_decorators import batch_fn, signal_fn
 from scitex_nn._Wavelet import Wavelet
 
+from ._device import resolve_device
+
 
 # Functions
 @signal_fn
@@ -17,9 +19,11 @@ def wavelet(
     fs,
     freq_scale="linear",
     out_scale="linear",
-    device="cuda",
+    device="auto",
     batch_size=32,
 ):
+    device = resolve_device(device)
+
     m = Wavelet(fs, freq_scale=freq_scale, out_scale="linear").to(device).eval()
     pha, amp, freqs = m(x.to(device))
 
@@ -147,7 +151,7 @@ if __name__ == "__main__":
         xx = xx[:, :, i_segment, :]
 
     # Main
-    pha, amp, freqs = wavelet(xx, fs, device="cuda")
+    pha, amp, freqs = wavelet(xx, fs)
     freqs = freqs[0, 0]
 
     # Plots
