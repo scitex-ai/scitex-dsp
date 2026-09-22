@@ -21,4 +21,11 @@ permissions:
 jobs:
   call:
     uses: scitex-ai/.github/.github/workflows/cla.yml@main
-    secrets: inherit
+    # Pass the ONE secret the callee declares, never `secrets: inherit`.
+    # This job is startable by an outsider (`issue_comment`,
+    # `pull_request_target`); under `secrets: inherit` every secret this
+    # repo holds would be forwarded into it. The callee declares
+    # `GH_PERSONAL_ACCESS_TOKEN` as an explicit `workflow_call` secret
+    # precisely so callers can stop inheriting. Flagged by PS-224 §1.
+    secrets:
+      GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}

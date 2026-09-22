@@ -6,6 +6,10 @@
 
 import numpy as np
 
+import scitex_logging as slogging
+
+log = slogging.getLogger(__name__)
+
 
 def time(start_sec, end_sec, fs):
     """Linearly spaced time samples between [start_sec, end_sec) at sample rate fs.
@@ -21,7 +25,7 @@ def time(start_sec, end_sec, fs):
 
 def main():
     out = time(10, 15, 256)
-    print(out)
+    log.info(out)
 
 
 if __name__ == "__main__":

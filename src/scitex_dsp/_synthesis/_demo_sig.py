@@ -10,6 +10,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import chirp
 from scitex_dev import try_import_optional
+import scitex_logging as slogging
+
+log = slogging.getLogger(__name__)
 
 mne = try_import_optional("mne", pkg="scitex-dsp")
 MNE_AVAILABLE = mne is not None
@@ -217,7 +220,7 @@ def _demo_sig_pac(
     seq_len = int(t_sec * fs)
     t = np.arange(seq_len) / fs
     if verbose:
-        print(f"Generating signal with length: {seq_len}")
+        log.info(f"Generating signal with length: {seq_len}")
 
     # Create empty array to store the signals
     signals = np.zeros((batch_size, n_chs, n_segments, seq_len))
@@ -288,7 +291,7 @@ def _demo_sig_periodic_1d(t_sec=10, fs=512, freqs_hz=None, verbose=False, **kwar
         n_freqs = random.randint(1, 5)
         freqs_hz = np.random.permutation(np.arange(fs))[:n_freqs]
         if verbose:
-            print(f"freqs_hz was randomly determined as {freqs_hz}")
+            log.info(f"freqs_hz was randomly determined as {freqs_hz}")
 
     n = int(t_sec * fs)
     t = np.linspace(0, t_sec, n, endpoint=False)

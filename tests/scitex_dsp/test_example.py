@@ -195,7 +195,7 @@ class TestCalcNormResampleFiltHilbert:
         # Act
         captured = capsys.readouterr()
         # Assert
-        assert "Index" in captured.out or "index" in captured.out
+        assert "Index" in captured.err or "index" in captured.err
 
     def test_verbose_output_len_captured_out_greater_than_0(self, capsys):
         # Arrange
@@ -206,7 +206,7 @@ class TestCalcNormResampleFiltHilbert:
         # Act
         captured = capsys.readouterr()
         # Assert
-        assert len(captured.out) > 0
+        assert len(captured.err) > 0
 
 
 class TestPlotSignals:

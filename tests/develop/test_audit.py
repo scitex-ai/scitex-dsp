@@ -18,21 +18,19 @@ import subprocess
 import pytest
 
 
+if shutil.which("scitex-dev") is None:
+    pytest.skip(
+        "scitex-dev not installed — add `scitex-dev[cli-audit]` "
+        "to [project.optional-dependencies.dev]",
+        allow_module_level=True,
+    )
+
+
 def test_audit_all_clean():
     # Arrange
-    # Act
-    # Assert
-    # Arrange
-    # Act
-    # Assert
-    if shutil.which("scitex-dev") is None:
-        pytest.skip(
-            "scitex-dev not installed — add `scitex-dev[cli-audit]` "
-            "to [project.optional-dependencies.dev]"
-        )
-
     # Run audit-all via subprocess.
     env = {**os.environ, "SCITEX_DEV_NO_AUDIT_DISCLAIMER": "1"}
+    # Act
     proc = subprocess.run(
         ["scitex-dev", "ecosystem", "audit-all", "scitex-dsp"],
         capture_output=True, text=True, timeout=120.0, env=env,
@@ -53,8 +51,8 @@ def test_audit_all_clean():
         f"(exit={proc.returncode}).\n"
         f"--- stdout ---\n{proc.stdout}\n--- stderr ---\n{proc.stderr}"
     )
-    if violations:
-        raise AssertionError(msg)
+    # Assert
+    assert not violations, msg
 
     # Non-zero exit with no violations in output means a sub-auditor was
     # killed by a signal (e.g. PyTorch CUDA cleanup segfault in some

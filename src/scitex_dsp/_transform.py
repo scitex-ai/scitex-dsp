@@ -4,6 +4,9 @@
 
 import numpy as np
 import pandas as pd
+import scitex_logging as slogging
+
+log = slogging.getLogger(__name__)
 
 try:
     import torch
@@ -68,13 +71,13 @@ if __name__ == "__main__":
     y = to_segments(x, 256)
 
     x = 100 * np.random.rand(16, 160, 1000)
-    print(_normalize_time(x))
+    log.info(_normalize_time(x))
 
     x = torch.randn(16, 160, 1000)
-    print(_normalize_time(x))
+    log.info(_normalize_time(x))
 
     x = torch.randn(16, 160, 1000).cuda()
-    print(_normalize_time(x))
+    log.info(_normalize_time(x))
 
 
 # EOF

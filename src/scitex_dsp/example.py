@@ -6,6 +6,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
+import scitex_logging as slogging
+
+log = slogging.getLogger(__name__)
 
 # Module-level constants (defaults for example functions)
 TGT_FS = 512
@@ -73,8 +76,8 @@ def calc_norm_resample_filt_hilbert(xx, tt, fs, sig_type, verbose=True):
     sigs = pd.DataFrame(sigs).set_index("index")
 
     if verbose:
-        print(sigs.index)
-        print(sigs.columns)
+        log.info(sigs.index)
+        log.info(sigs.columns)
 
     return sigs
 

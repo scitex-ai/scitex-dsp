@@ -8,8 +8,11 @@ import warnings
 
 import numpy as np
 import pandas as pd
+import scitex_logging as slogging
 from scipy.signal import find_peaks
 from scitex_gen import to_z
+
+log = slogging.getLogger(__name__)
 
 from ._resample import resample
 from ._spectral._hilbert import hilbert
@@ -46,7 +49,7 @@ def detect_ripples(
             return df, xx_r, fs_r
 
     except ValueError as e:
-        print("Caught an error:", e)
+        log.error(f"Caught an error: {e}")
 
 
 def _preprocess(xx, fs, low_hz, high_hz, smoothing_sigma_ms=4):
@@ -229,7 +232,7 @@ def _sort_columns(df):
 def main():
     xx, tt, fs = demo_sig(sig_type="ripple")
     df = detect_ripples(xx, fs, 80, 140)
-    print(df)
+    log.info(df)
 
 
 if __name__ == "__main__":

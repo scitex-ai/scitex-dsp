@@ -23,7 +23,7 @@ from scitex_decorators import signal_fn
 from ._device import resolve_device
 
 if TORCH_AVAILABLE:
-    from scitex_nn._PAC import PAC
+    from scitex_nn import PAC
 
 
 def _check_torch():

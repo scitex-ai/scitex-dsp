@@ -7,7 +7,13 @@ import os
 import sys
 
 import matplotlib.pyplot as plt
-import sounddevice as sd
+
+try:
+    import sounddevice as sd
+except ImportError as exc:
+    raise ImportError(
+        "scitex-dsp audio I/O needs sounddevice: pip install scitex-dsp[all]"
+    ) from exc
 
 os.environ["PULSE_SERVER"] = "unix:/mnt/wslg/PulseServer"
 

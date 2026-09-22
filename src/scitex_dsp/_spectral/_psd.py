@@ -15,7 +15,7 @@ except ImportError:
 from scitex_decorators import signal_fn
 
 if TORCH_AVAILABLE:
-    from scitex_nn._PSD import PSD
+    from scitex_nn import PSD
 
 
 @signal_fn

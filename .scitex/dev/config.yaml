@@ -12,6 +12,24 @@ audit:
       # SPEC_DEFAULT_FILES; spell it out so the audit gate passes even
       # against installed scitex-dev releases that haven't been bumped.
       - codecov.yml
+
+  exemptions:
+    PS-231:
+      - path: .github/workflows/rtd-sphinx-build-on-ubuntu-latest.yml
+        line: 0
+        reason: >-
+          PS-231's own BLOCKER 2, verified by reading this file: the org
+          reusable `rtd-sphinx-build` is BUILD-ONLY, while this leaf
+          workflow also PUBLISHES. On a develop push it rebuilds the
+          bundle, then `git add` / `git commit` / `git push`es
+          src/scitex_dsp/_sphinx_html (99 tracked files), and setuptools
+          package-data ships `_sphinx_html/**/*` inside the wheel.
+          Converting to a bare `uses:` would keep building and stop
+          publishing — CI green with documentation reaching users frozen.
+          The PR gate would also be lost: this file builds with
+          `sphinx-build -W` (warnings are errors) and the org build does
+          not. Re-evaluate if the org reusable gains a publish step and a
+          `-W` mode.
 # audit:
 #   skip:
 #     - PS-108

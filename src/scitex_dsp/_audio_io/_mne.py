@@ -4,6 +4,9 @@
 
 import pandas as pd
 from scitex_dev import try_import_optional
+import scitex_logging as slogging
+
+log = slogging.getLogger(__name__)
 
 from ..params import EEG_MONTAGE_1020
 
@@ -37,7 +40,7 @@ def get_eeg_pos(channel_names=EEG_MONTAGE_1020):
 
 
 if __name__ == "__main__":
-    print(get_eeg_pos())
+    log.info(get_eeg_pos())
 
 
 # EOF

@@ -4,6 +4,9 @@
 # File: ./scitex_repo/src/scitex/dsp/_crop.py
 
 import numpy as np
+import scitex_logging as slogging
+
+log = slogging.getLogger(__name__)
 
 
 def crop(sig_2d, window_length, overlap_factor=0.0, axis=-1, time=None):
@@ -117,8 +120,8 @@ def main():
     # Main
     xx, tt = crop(sig2d, window_pts, overlap_factor=FACTOR, time=time)
 
-    print(f"sig2d.shape: {sig2d.shape}")
-    print(f"xx.shape: {xx.shape}")
+    log.debug(f"sig2d.shape: {sig2d.shape}")
+    log.debug(f"xx.shape: {xx.shape}")
 
     # Validation
     i_seg = random.randint(0, len(xx) - 1)

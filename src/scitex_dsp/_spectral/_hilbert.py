@@ -11,7 +11,7 @@ import sys
 
 import matplotlib.pyplot as plt
 from scitex_decorators import signal_fn
-from scitex_nn._Hilbert import Hilbert
+from scitex_nn import Hilbert
 
 
 # Functions

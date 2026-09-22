@@ -5,6 +5,9 @@
 import numpy as np
 
 from scitex_decorators import signal_fn
+import scitex_logging as slogging
+
+log = slogging.getLogger(__name__)
 
 # No top-level imports from nn module to avoid circular dependency
 # Filters will be imported inside functions when needed
@@ -56,7 +59,7 @@ def highpass(x, fs, cutoffs_hz, t=None):
 
 
 def _custom_print(x):
-    print(type(x), x.shape)
+    log.debug(f"{type(x)} {x.shape}")
 
 
 if __name__ == "__main__":

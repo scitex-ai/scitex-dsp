@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://scitex.ai">
-    <img src="docs/assets/images/scitex-logo-blue-cropped.png" alt="SciTeX" width="400">
+    <img src="docs/scitex-logo-blue-cropped.png" alt="SciTeX" width="400">
   </a>
 </p>
 
@@ -31,15 +31,78 @@
 
 | # | Problem | Solution |
 |---|---------|----------|
-| 1 | **Signal-processing pipelines mix NumPy, SciPy, MNE, and PyTorch with incompatible array shapes.** | **`scitex_dsp` exposes a uniform `(batch, channel, time)` 3-D contract via `ensure_3d` and the `@torch_fn` decorator.** |
-| 2 | **Phase-Amplitude Coupling (PAC), wavelets, and ripple detection are scattered across one-off scripts.** | **First-class `pac`, `wavelet`, `hilbert`, `detect_ripples`, `modulation_index` reproducible primitives.** |
-| 3 | **Demo signals for testing pipelines have to be re-rolled by every project.** | **`demo_sig(sig_type=...)` produces deterministic chirp / periodic / ripple test signals.** |
+| 1 | **Shape mismatch.** Pipelines mix NumPy, SciPy, MNE, and PyTorch with incompatible array shapes. | **Uniform 3-D contract.** `scitex_dsp` exposes `(batch, channel, time)` via `ensure_3d` and the `@torch_fn` decorator. |
+| 2 | **Scattered methods.** PAC, wavelets, and ripple detection live in one-off scripts. | **First-class primitives.** `pac`, `wavelet`, `hilbert`, `detect_ripples`, `modulation_index`. |
+| 3 | **Re-rolled fixtures.** Demo signals for testing are rebuilt by every project. | **Deterministic signals.** `demo_sig(sig_type=...)` makes chirp, periodic, and ripple test signals. |
+
+## Demo
+
+A 13-notebook progressive tutorial lives in [`examples/`](examples/),
+committed with executed cell outputs — read on GitHub without running
+anything locally.
+
+```mermaid
+flowchart LR
+    A[01 demo_sig] --> B[02 ensure_3d / crop]
+    B --> C[03 norm]
+    C --> D[04 filt]
+    D --> E[05 hilbert]
+    E --> F[06 psd]
+    E --> G[07 wavelet]
+    D --> H[08 resample]
+    A --> I[09 add_noise]
+    B --> J[10 reference]
+    E --> K[11 modulation_index]
+    K --> L[12 pac]
+    E --> M[13 detect_ripples]
+```
+
+<p align="center"><sub><b>Figure 3.</b> Tutorial path through <code>examples/</code>: signals and shaping first, then filtering, spectra, coupling, and events.</sub></p>
+
+See [`examples/README.md`](examples/README.md) for the full index
+and suggested reading paths.
+
+<p align="center"><sub><b>Table 2.</b> Tutorial notebooks and the reference implementation each cross-checks.</sub></p>
+
+| # | Notebook | Topic | Cross-check |
+|---|---|---|---|
+| 01 | [`01_demo_sig.ipynb`](examples/01_demo_sig.ipynb) | synthetic test signals — uniform / gauss / periodic / chirp | — |
+| 04 | [`04_filt.ipynb`](examples/04_filt.ipynb) | Butterworth bandpass / bandstop | — |
+| 05 | [`05_hilbert.ipynb`](examples/05_hilbert.ipynb) | analytic signal — phase + envelope | `scipy.signal.hilbert` |
+| 06 | [`06_psd.ipynb`](examples/06_psd.ipynb) | PSD + per-band integrated power | — |
+| 07 | [`07_wavelet.ipynb`](examples/07_wavelet.ipynb) | continuous wavelet transform | — |
+| 09 | [`09_add_noise.ipynb`](examples/09_add_noise.ipynb) | gauss / white / pink / brown — traces + PSDs | — |
+| 12 | [`12_pac.ipynb`](examples/12_pac.ipynb) | phase-amplitude coupling heatmap | `tensorpac.Pac` |
+| 13 | [`13_detect_ripples.ipynb`](examples/13_detect_ripples.ipynb) | end-to-end ripple detection — DataFrame + shaded events | — |
+
+Re-run them all with `./examples/00_run_all.sh`.
 
 ## Installation
 
 ```bash
-pip install scitex-dsp
+uv pip install "scitex-dsp[all]"
 ```
+
+<details>
+<summary><b>Minimal install and extras</b></summary>
+
+<br>
+
+| Extra | Pulls in |
+|---|---|
+| (none) | pandas, matplotlib, numpy, scipy, torch, xarray + scitex core libs (minimal runtime) |
+| `all` | `tensorpac`, `sounddevice`, `pycatch22`, `scikit-learn`, `gpu-pac` GPU-PAC engine (recommended) |
+| `dev` | pytest, ruff + every optional dep so the test suite runs |
+| `docs` | Sphinx + RTD theme + myst-parser (docs build only) |
+
+<p align="center"><sub><b>Table 1.</b> Install extras: bare install is the minimal runtime, <code>[all]</code> is batteries-included.</sub></p>
+
+```bash
+uv pip install scitex-dsp      # minimal runtime
+uv pip install -e ".[dev]"     # editable install for contributors
+```
+
+</details>
 
 ## Architecture
 
@@ -61,6 +124,8 @@ flowchart LR
     psd  --> band_powers[per-band power]
 ```
 
+<p align="center"><sub><b>Figure 1.</b> Pipeline architecture: flat building blocks compose left-to-right from raw LFP/EEG to spectra, coupling, and events.</sub></p>
+
 ```
 src/scitex_dsp/
 ├── _hilbert.py   _psd.py        _wavelet.py
@@ -72,6 +137,8 @@ src/scitex_dsp/
 ├── add_noise.py  params.py      example.py
 └── utils/        # ensure_*, zero-pad, differential filters
 ```
+
+<p align="center"><sub><b>Figure 2.</b> Module layout: spectral primitives, signal utilities, and synthesis helpers under <code>src/scitex_dsp/</code>.</sub></p>
 
 All public functions accept `(channels, samples)` or
 `(batch, channels, samples)`.
@@ -140,44 +207,6 @@ scitex.dsp.demo_sig(sig_type="chirp")  # `scitex.dsp` aliases `scitex_dsp`
 
 </details>
 
-## Demo
-
-A 13-notebook progressive tutorial lives in [`examples/`](examples/),
-committed with executed cell outputs — read on GitHub without running
-anything locally.
-
-```mermaid
-flowchart LR
-    A[01 demo_sig] --> B[02 ensure_3d / crop]
-    B --> C[03 norm]
-    C --> D[04 filt]
-    D --> E[05 hilbert]
-    E --> F[06 psd]
-    E --> G[07 wavelet]
-    D --> H[08 resample]
-    A --> I[09 add_noise]
-    B --> J[10 reference]
-    E --> K[11 modulation_index]
-    K --> L[12 pac]
-    E --> M[13 detect_ripples]
-```
-
-See [`examples/README.md`](examples/README.md) for the full index
-and suggested reading paths.
-
-| # | Notebook | Topic | Cross-check |
-|---|---|---|---|
-| 01 | [`01_demo_sig.ipynb`](examples/01_demo_sig.ipynb) | synthetic test signals — uniform / gauss / periodic / chirp | — |
-| 04 | [`04_filt.ipynb`](examples/04_filt.ipynb) | Butterworth bandpass / bandstop | — |
-| 05 | [`05_hilbert.ipynb`](examples/05_hilbert.ipynb) | analytic signal — phase + envelope | `scipy.signal.hilbert` |
-| 06 | [`06_psd.ipynb`](examples/06_psd.ipynb) | PSD + per-band integrated power | — |
-| 07 | [`07_wavelet.ipynb`](examples/07_wavelet.ipynb) | continuous wavelet transform | — |
-| 09 | [`09_add_noise.ipynb`](examples/09_add_noise.ipynb) | gauss / white / pink / brown — traces + PSDs | — |
-| 12 | [`12_pac.ipynb`](examples/12_pac.ipynb) | phase-amplitude coupling heatmap | `tensorpac.Pac` |
-| 13 | [`13_detect_ripples.ipynb`](examples/13_detect_ripples.ipynb) | end-to-end ripple detection — DataFrame + shaded events | — |
-
-Re-run them all with `./examples/00_run_all.sh`.
-
 ## Part of SciTeX
 
 `scitex-dsp` is part of [**SciTeX**](https://scitex.ai).
@@ -196,5 +225,5 @@ Install via the umbrella with `pip install scitex[dsp]`, then access as `scitex.
 ---
 
 <p align="center">
-  <a href="https://scitex.ai" target="_blank"><img src="docs/assets/images/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
+  <a href="https://scitex.ai" target="_blank"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
 </p>

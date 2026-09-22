@@ -29,7 +29,12 @@ def calc_pac_with_tensorpac(xx, fs, t_sec, i_batch=0, i_ch=0):
     # Lazy import — tensorpac is an optional dep (`scitex-dsp[all]`).
     # Importing at module top would break `scitex_dsp.utils` for users
     # who don't need this cross-check helper.
-    import tensorpac
+    try:
+        import tensorpac
+    except ImportError as exc:
+        raise ImportError(
+            "calc_pac_with_tensorpac needs tensorpac: pip install scitex-dsp[all]"
+        ) from exc
 
     # Morlet's Wavelet Transfrmation
     p = tensorpac.Pac(f_pha="hres", f_amp="mres", dcomplex="wavelet")

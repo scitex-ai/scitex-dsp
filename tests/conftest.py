@@ -89,3 +89,17 @@ def _alias_scitex_dsp_to_standalone() -> None:
 
 
 _alias_scitex_dsp_to_standalone()
+
+
+# --- 3. scitex-logging level for tests --------------------------------------
+# scitex-logging defaults to WARN, so `log.info` (used by src/ verbose
+# paths instead of print, PS-220) would be silent under pytest. Set INFO
+# so verbose-output tests can observe log records on stderr.
+
+os.environ.setdefault("SCITEX_LOGGING_LEVEL", "INFO")
+try:
+    import scitex_logging as _slogging
+
+    _slogging.set_level("INFO")
+except Exception:
+    pass
