@@ -35,6 +35,10 @@ dependencies = [
     # series shipping the descriptive._nan / descriptive._circular public
     # surface (nanq25/50/75, circular_mean/concentration/skewness/kurtosis).
     "scitex-stats>=0.2.0",
+    # Package output goes through scitex-logging (PS-220): diagnostics via
+    # getLogger, human/plain stdout via getConsole / getPlainConsole.
+    # Floor 0.2.5 = current release, verified to expose getPlainConsole.
+    "scitex-logging>=0.2.5",
     # scitex-dsp calls `scitex_dev.try_import_optional` at module-load in
     # four src/ modules — _resample.py:12, _audio_io/_mne.py:6,
     # _synthesis/_demo_sig.py:12, utils/_differential_bandpass_filters.py:23.
@@ -50,7 +54,8 @@ dependencies = [
 # (scitex convention: extras are "nothing" or "[all]").
 #   - tensorpac      : cross-check PAC engine (utils.pac) + tensorpac path
 #   - sounddevice    : audio I/O (PortAudio playback / device selection)
-#   - pycatch22      : the "catch22" backend of extract_all
+#   - pycatch22>=1.0 : the "catch22" backend of extract_all (the registry
+#                      tracks the feature names pycatch22 1.0 introduced)
 #   - scikit-learn   : PROVISIONAL GMM PAC-feature family + PCA redundancy audit
 #   - gpu-pac>=0.3.4 : real GPU-PAC engine behind pac(..., backend="gpac")
 # NOTE: the GPU-PAC engine is the distribution `gpu-pac` (import name `gpac`),
@@ -62,7 +67,7 @@ dependencies = [
 all = [
     "tensorpac",
     "sounddevice",
-    "pycatch22",
+    "pycatch22>=1.0",
     "scikit-learn",
     "gpu-pac>=0.3.4",
 ]
@@ -80,7 +85,7 @@ dev = [
     "gpu-pac>=0.3.4",
     # exercises the "catch22" backend of extract_all in
     # tests/scitex_dsp/_features/test__extract_all.py (importorskip'd).
-    "pycatch22",
+    "pycatch22>=1.0",
     # exercises the PROVISIONAL GMM feature family in
     # tests/scitex_dsp/_features/test__pac_features.py and the PCA redundancy
     # audit in test__redundancy.py (importorskip'd).

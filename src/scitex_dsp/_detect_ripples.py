@@ -8,6 +8,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
+import scitex_logging as slogging
 from scipy.signal import find_peaks
 from scitex_gen import to_z
 
@@ -31,22 +32,16 @@ def detect_ripples(
     xx: 2-dimensional (n_chs, seq_len) or 3-dimensional (batch_size, n_chs, seq_len) wide-band signal.
     """
 
-    try:
-        xx_r, fs_r = _preprocess(xx, fs, low_hz, high_hz, smoothing_sigma_ms)
-        df = _find_events(xx_r, fs_r, sd, min_duration_ms)
-        df = _drop_ripples_at_edges(df, low_hz, xx_r, fs_r)
-        df = _calc_relative_peak_position(df)
-        # df = _calc_incidence(df, xx_r, fs_r)
-        df = _sort_columns(df)
+    xx_r, fs_r = _preprocess(xx, fs, low_hz, high_hz, smoothing_sigma_ms)
+    df = _find_events(xx_r, fs_r, sd, min_duration_ms)
+    df = _drop_ripples_at_edges(df, low_hz, xx_r, fs_r)
+    df = _calc_relative_peak_position(df)
+    # df = _calc_incidence(df, xx_r, fs_r)
+    df = _sort_columns(df)
 
-        if not return_preprocessed_signal:
-            return df
-
-        elif return_preprocessed_signal:
-            return df, xx_r, fs_r
-
-    except ValueError as e:
-        print("Caught an error:", e)
+    if return_preprocessed_signal:
+        return df, xx_r, fs_r
+    return df
 
 
 def _preprocess(xx, fs, low_hz, high_hz, smoothing_sigma_ms=4):
@@ -229,7 +224,7 @@ def _sort_columns(df):
 def main():
     xx, tt, fs = demo_sig(sig_type="ripple")
     df = detect_ripples(xx, fs, 80, 140)
-    print(df)
+    slogging.getPlainConsole(__name__).emit(str(df))
 
 
 if __name__ == "__main__":

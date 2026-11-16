@@ -5,6 +5,7 @@
 
 
 import numpy as np
+import scitex_logging as slogging
 
 
 def time(start_sec, end_sec, fs):
@@ -21,7 +22,7 @@ def time(start_sec, end_sec, fs):
 
 def main():
     out = time(10, 15, 256)
-    print(out)
+    slogging.getPlainConsole(__name__).emit(str(out))
 
 
 if __name__ == "__main__":

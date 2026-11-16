@@ -65,16 +65,12 @@ if __name__ == "__main__":
 
     x, t, f = scitex.dsp.demo_sig()
 
+    import scitex_logging as slogging
+
     y = to_segments(x, 256)
-
-    x = 100 * np.random.rand(16, 160, 1000)
-    print(_normalize_time(x))
-
-    x = torch.randn(16, 160, 1000)
-    print(_normalize_time(x))
-
-    x = torch.randn(16, 160, 1000).cuda()
-    print(_normalize_time(x))
+    slogging.getPlainConsole(__name__).emit(
+        f"to_segments: {tuple(x.shape)} -> {tuple(y.shape)}"
+    )
 
 
 # EOF

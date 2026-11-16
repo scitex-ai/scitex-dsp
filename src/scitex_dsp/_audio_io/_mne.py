@@ -37,7 +37,9 @@ def get_eeg_pos(channel_names=EEG_MONTAGE_1020):
 
 
 if __name__ == "__main__":
-    print(get_eeg_pos())
+    import scitex_logging as slogging
+
+    slogging.getPlainConsole(__name__).emit(str(get_eeg_pos()))
 
 
 # EOF

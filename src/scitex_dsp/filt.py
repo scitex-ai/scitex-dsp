@@ -3,7 +3,6 @@
 # File: ./scitex_repo/src/scitex/dsp/filt.py
 
 import numpy as np
-
 from scitex_decorators import signal_fn
 
 # No top-level imports from nn module to avoid circular dependency
@@ -20,7 +19,6 @@ def gauss(x, sigma, t=None):
 @signal_fn
 def bandpass(x, fs, bands, t=None):
     import torch
-
     from scitex_nn._Filters import BandPassFilter
 
     # Convert bands to tensor if it's not already
@@ -32,7 +30,6 @@ def bandpass(x, fs, bands, t=None):
 @signal_fn
 def bandstop(x, fs, bands, t=None):
     import torch
-
     from scitex_nn._Filters import BandStopFilter
 
     # Convert bands to tensor if it's not already
@@ -55,16 +52,11 @@ def highpass(x, fs, cutoffs_hz, t=None):
     return HighPassFilter(cutoffs_hz, fs, x.shape[-1])(x, t=t)
 
 
-def _custom_print(x):
-    print(type(x), x.shape)
-
-
 if __name__ == "__main__":
     import sys
 
-    import scitex  # noqa: E402  — script-only
-
     import matplotlib.pyplot as plt
+    import scitex  # noqa: E402  — script-only
 
     # Start
     CONFIG, sys.stdout, sys.stderr, plt, CC = scitex.session.start(sys, plt)
