@@ -104,22 +104,14 @@ def design_filter(sig_len, fs, low_hz=None, high_hz=None, cycle=3, is_bandstop=F
     order = determine_order(filter_mode, fs, low_freq, sig_len, cycle)
     numtaps = order + 1
 
-    try:
-        h = firwin(
-            numtaps=numtaps,
-            cutoff=cutoff,
-            pass_zero=(filter_mode in ["highpass", "bandstop"]),
-            window="hamming",
-            fs=fs,
-            scale=True,
-        )
-    except Exception as e:
-        print(e)
-        import ipdb
-
-        ipdb.set_trace()
-
-    return h
+    return firwin(
+        numtaps=numtaps,
+        cutoff=cutoff,
+        pass_zero=(filter_mode in ["highpass", "bandstop"]),
+        window="hamming",
+        fs=fs,
+        scale=True,
+    )
 
 
 @numpy_fn

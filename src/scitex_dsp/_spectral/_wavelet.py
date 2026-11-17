@@ -5,10 +5,13 @@
 
 """scitex.dsp.wavelet function"""
 
+import scitex_logging as slogging
 from scitex_decorators import batch_fn, signal_fn
 from scitex_nn._Wavelet import Wavelet
 
 from ._device import resolve_device
+
+logger = slogging.getLogger(__name__)
 
 
 # Functions
@@ -30,7 +33,7 @@ def wavelet(
     if out_scale == "log":
         amp = (amp + 1e-5).log()
         if amp.isnan().any():
-            print("NaN is detected while taking the lograrithm of amplitude.")
+            logger.warning("NaN is detected while taking the logarithm of amplitude.")
 
     return pha, amp, freqs
 

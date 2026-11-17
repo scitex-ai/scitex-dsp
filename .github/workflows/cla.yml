@@ -21,4 +21,11 @@ permissions:
 jobs:
   call:
     uses: scitex-ai/.github/.github/workflows/cla.yml@main
-    secrets: inherit
+    with:
+      # GitHub-hosted on purpose: outsiders trigger this workflow
+      # (pull_request_target / issue_comment), so it must never land on a
+      # private self-hosted runner.
+      runs_on: '["ubuntu-latest"]'
+    # Forward only the one secret the CLA workflow needs, never `inherit`.
+    secrets:
+      GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}

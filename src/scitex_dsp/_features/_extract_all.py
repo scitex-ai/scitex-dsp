@@ -20,7 +20,7 @@ Backends (shipped)
   ``pac_z`` raises a clear error. Reuses ``pac_features``' registry entries.
 - ``"catch22"`` — wraps :mod:`pycatch22` (``catch22_all`` on the 1-D time
   series ``x``). Lazy import; missing -> clear ImportError naming the
-  ``catch22`` extra. Registers its 22 canonical names into the merged registry
+  ``all`` extra. Registers its 22 canonical names into the merged registry
   (``family="catch22"``, ``engine="pycatch22"``, ``provisional=False``).
 
 Deferred backends
@@ -60,60 +60,48 @@ __all__ = [
 # catch22 canonical names + short interpretations.
 #
 # These are the 22 features pycatch22.catch22_all emits, in its canonical
-# order. We hardcode the names/interpretations so the registry is populated
-# *without* needing pycatch22 importable (registry queries must work even when
-# the optional engine is absent); the actual VALUES still come from pycatch22
-# and we assert name-agreement at call time.
+# output order, under the long names introduced in pycatch22 1.0 (catch22's
+# ``featureList.txt``). pycatch22 1.0 renamed eight features (e.g. the v0.x
+# ``CO_f1ecac`` is now ``CO_FirstCrossing_acf_1e_pointOfCrossing``) and
+# reordered its output; the v0.x names survive only as deprecated per-feature
+# function aliases, never in ``catch22_all(...)["names"]``. The ``all`` extra
+# therefore pins ``pycatch22>=1.0``.
+#
+# We hardcode the names/interpretations so the registry is populated *without*
+# needing pycatch22 importable (registry queries must work even when the
+# optional engine is absent); the actual VALUES still come from pycatch22 and
+# ``_backend_catch22`` asserts name-agreement at call time.
 # ---------------------------------------------------------------------------
-_CATCH22_NAMES: list[str] = [
-    "DN_HistogramMode_5",
-    "DN_HistogramMode_10",
-    "CO_f1ecac",
-    "CO_FirstMin_ac",
-    "CO_HistogramAMI_even_2_5",
-    "CO_trev_1_num",
-    "MD_hrv_classic_pnn40",
-    "SB_BinaryStats_mean_longstretch1",
-    "SB_TransitionMatrix_3ac_sumdiagcov",
-    "PD_PeriodicityWang_th0_01",
-    "CO_Embed2_Dist_tau_d_expfit_meandiff",
-    "IN_AutoMutualInfoStats_40_gaussian_fmmi",
-    "FC_LocalSimple_mean1_tauresrat",
-    "DN_OutlierInclude_p_001_mdrmd",
-    "DN_OutlierInclude_n_001_mdrmd",
-    "SP_Summaries_welch_rect_area_5_1",
-    "SB_BinaryStats_diff_longstretch0",
-    "SB_MotifThree_quantile_hh",
-    "SC_FluctAnal_2_rsrangefit_50_1_logi_prop_r1",
-    "SC_FluctAnal_2_dfa_50_1_2_logi_prop_r1",
-    "SP_Summaries_welch_rect_centroid",
-    "FC_LocalSimple_mean3_stderr",
-]
-
 _CATCH22_INTERP: dict[str, str] = {
     "DN_HistogramMode_5": "Mode of z-scored distribution (5-bin histogram).",
     "DN_HistogramMode_10": "Mode of z-scored distribution (10-bin histogram).",
-    "CO_f1ecac": "First 1/e crossing of the autocorrelation function.",
-    "CO_FirstMin_ac": "First minimum of the autocorrelation function.",
-    "CO_HistogramAMI_even_2_5": "Automutual information, m=2, 5 bins.",
-    "CO_trev_1_num": "Time-reversibility statistic (trev), lag 1.",
-    "MD_hrv_classic_pnn40": "Proportion of successive diffs exceeding 40 (pNN40).",
-    "SB_BinaryStats_mean_longstretch1": "Longest stretch above the mean (binary).",
-    "SB_TransitionMatrix_3ac_sumdiagcov": "Transition-matrix diagonal covariance.",
-    "PD_PeriodicityWang_th0_01": "Wang periodicity measure (threshold 0.01).",
-    "CO_Embed2_Dist_tau_d_expfit_meandiff": "Exp-fit residual of embedding distances.",
-    "IN_AutoMutualInfoStats_40_gaussian_fmmi": "First min of Gaussian automutual info.",
-    "FC_LocalSimple_mean1_tauresrat": "Change in correlation length after forecasting.",
     "DN_OutlierInclude_p_001_mdrmd": "Positive-outlier timing distribution.",
     "DN_OutlierInclude_n_001_mdrmd": "Negative-outlier timing distribution.",
-    "SP_Summaries_welch_rect_area_5_1": "Power in the lowest 20% of frequencies.",
+    "CO_FirstCrossing_acf_1e_pointOfCrossing": (
+        "First 1/e crossing of the autocorrelation function."
+    ),
+    "CO_FirstMin_ac": "First minimum of the autocorrelation function.",
+    "SP_Summaries_fft_area_5_1": "Power in the lowest 20% of frequencies.",
+    "SP_Summaries_fft_wq_50": "Median frequency of the FFT power spectrum.",
+    "FC_LocalSimple_mean3_stde": "Mean error from a 3-point rolling forecast.",
+    "FC_LocalSimple_mean1_taurat": "Change in correlation length after forecasting.",
+    "MD_pNN_pnn40": "Proportion of successive diffs exceeding 0.04 sd (pNN40).",
+    "SB_BinaryStats_mean_longstretch1": "Longest stretch above the mean (binary).",
     "SB_BinaryStats_diff_longstretch0": "Longest stretch of decreasing values.",
     "SB_MotifThree_quantile_hh": "Entropy of 3-letter symbolic motifs.",
+    "CO_HistogramAMI_even_5bin_ami2": "Automutual information, lag 2, 5 bins.",
+    "CO_trev_1_num": "Time-reversibility statistic (trev), lag 1.",
+    "IN_AutoMutualInfoStats_40_gaussian_fmmi": "First min of Gaussian automutual info.",
+    "SB_TransitionMatrix_quantile_3_ac_sumdiagcov": (
+        "Transition-matrix diagonal covariance."
+    ),
+    "PD_PeriodicityWang_th0_01": "Wang periodicity measure (threshold 0.01).",
+    "CO_Embed2_Dist_tau_d_expfit_meandiff": "Exp-fit residual of embedding distances.",
     "SC_FluctAnal_2_rsrangefit_50_1_logi_prop_r1": "Rescaled-range fluctuation slope.",
     "SC_FluctAnal_2_dfa_50_1_2_logi_prop_r1": "Detrended fluctuation-analysis slope.",
-    "SP_Summaries_welch_rect_centroid": "Centroid of the Welch power spectrum.",
-    "FC_LocalSimple_mean3_stderr": "Mean error from a 3-point rolling forecast.",
 }
+
+_CATCH22_NAMES: list[str] = list(_CATCH22_INTERP)
 
 
 def _catch22_registry() -> dict:
@@ -175,6 +163,12 @@ def _backend_catch22(x, fs, **kwargs) -> dict:
     series = np.asarray(x, dtype=float).reshape(-1).tolist()
     out = pycatch22.catch22_all(series)
     names = list(out["names"])
+    if names != _CATCH22_NAMES:
+        raise RuntimeError(
+            "pycatch22.catch22_all returned feature names that disagree with "
+            "the scitex-dsp catch22 registry, which tracks the pycatch22>=1.0 "
+            f"names: got {names}. Install pycatch22>=1.0."
+        )
     values = np.asarray(out["values"], dtype=float)
     return {"names": names, "values": values}
 
@@ -240,7 +234,7 @@ def extract_all(
         ``"pac"`` without ``pac_z``).
     ImportError
         If a requested backend's optional engine is absent (e.g. ``"catch22"``
-        without pycatch22 — install the ``catch22`` extra).
+        without pycatch22 — install the ``all`` extra).
 
     Notes
     -----

@@ -39,7 +39,7 @@ def catch22_names():
     return [
         "DN_HistogramMode_5",
         "DN_HistogramMode_10",
-        "CO_f1ecac",
+        "CO_FirstCrossing_acf_1e_pointOfCrossing",
         "CO_FirstMin_ac",
     ]
 
@@ -152,7 +152,7 @@ def test_unknown_name_falls_into_other_block(block_X, pac_names):
     names = pac_names + [
         "nanq25",
         "not_a_registered_feature",
-        "CO_f1ecac",
+        "CO_FirstCrossing_acf_1e_pointOfCrossing",
         "CO_FirstMin_ac",
     ]
     # Act
@@ -321,7 +321,7 @@ def groups(block_X):
     # Split rows into two contiguous windows (e.g. preictal vs ictal).
     n = block_X.shape[0]
     labels = np.zeros(n, dtype=bool)
-    labels[n // 2:] = True
+    labels[n // 2 :] = True
     return labels
 
 
